@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">    
+    <title>OS INVICTOS -- Rede Social dos Invictos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.osinvictos.com.br/">
+    <meta property="og:title" content="Sports Social Network / WEB 3.0"/>
+    <meta property="og:description" content="Converse com a IA do Treinador José Mourinho n@ Campo tático interativo"/>
+    <meta property="og:image" content="https://sportsocialnet.vercel.app/assets/logotaca.png"/>
+    <meta property="og:image:width" content="580"/>
+    <meta property="og:image:height" content="464"/>
+    <meta name="google-adsense-account" content="ca-pub-6390604470898441">
+    <link rel="stylesheet" href="https://sportsocialnet.vercel.app/dashboard/styles.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script src="https://fpyf8.com/88/tag.min.js" data-zone="179533" async data-cfasync="false"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8');
+    </script>
+  <style>
+    :root {
+      --cor-fundo: #0C1D2B;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      color: white;
+      font-family: Arial, sans-serif;
+      background-image: url('assets/background-image.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: var(--cor-fundo);
+      opacity: 0.8;
+      z-index: -1;
+    }
+
+    #center-scene {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- LOGO CENTRAL --- */
+    #logo-container {
+      position: relative;
+      z-index: 5;
+      width: 350px;
+      height: 350px;
+      filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      --environment-image: var(--cor-fundo);
+      --progress-bar-color: var(--cor-fundo);
+    }
+
+/* --- THUMBNAILS QUADRADOS SEM GLOW, COM TEXTO CENTRALIZADO --- */
+.thumbnail {
+  position: absolute;
+  width: 137px;
+  height: 139px;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #FFFFFF;
+  font-size: 12px;               /* tamanho reduzido */
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  animation: float 6s ease-in-out infinite;
+}
+
+.thumbnail a {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-family: Arial, sans-serif;
+  font-size: 12px;               /* texto dentro do link também 8px */
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+.thumbnail a:hover {
+  transform: scale(1.05);
+  color: #FFFFFF;
+}
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* --- POSIÇÕES ORBITANTES --- */
+.orbit-1 {
+  bottom: 25%;
+  left: 30%;
+  transform: translate(50%, 50%);
+}
+.orbit-2 {
+  top: 35%;
+  left: 68%;
+  transform: translateX(-50%);
+  background-image: url('assets/icon-tees.png');
+  background-size: cover;       /* makes it fill the element */
+  background-position: center;  /* centers the image */
+  background-repeat: no-repeat; /* prevents tiling */
+}
+.orbit-3 {
+ top: 10%;
+  left: 30%;
+  transform: translateX(-50%);
+  background-image: url('assets/icon-quotes.png');
+  background-size: cover;       /* makes it fill the element */
+  background-position: center;  /* centers the image */
+  background-repeat: no-repeat; /* prevents tiling */
+}
+.orbit-4 {
+  bottom: 35%;
+  left: 5%;
+  transform: translateX(-50%);
+  background-image: url('assets/icon-tactic.png');
+  background-size: cover;       /* makes it fill the element */
+  background-position: center;  /* centers the image */
+  background-repeat: no-repeat; /* prevents tiling */
+}
+.orbit-5 {
+  top: 15%;
+  right: 18%;
+  transform: translate(-50%);
+  background-image: url('assets/icon-book.png');
+  background-size: cover;       /* makes it fill the element */
+  background-position: center;  /* centers the image */
+  background-repeat: no-repeat; /* prevents tiling */
+}
+
+    @media (max-width: 768px) {
+      #logo-container { width: 250px; height: 250px; }
+      .thumbnail { width: 100px; height: 100px; box-shadow: none; }
+    }
+
+    #main-footer {
+      width: 100%;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      font-size: 14px;
+    }
+/* === MODO DE TRANSIÇÃO (LOGO + THUMBNAILS 2–5 NO TOPO) === */
+#center-scene.transition-layout {
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- LOGO sobe e alinha a 10% da esquerda --- */
+#center-scene.transition-layout #logo-container {
+  position: absolute;
+  top: 30px;
+  left: 10%;
+  transform: scale(0.6);
+  transition: all 1.5s ease-in-out;
+}
+
+/* --- THUMBNAIL-1 desaparece com fade-out --- */
+#center-scene.transition-layout .orbit-1 {
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all 0.8s ease-in-out;
+}
+
+/* --- OUTROS THUMBNAILS sobem e alinham ao lado do logo --- */
+#center-scene.transition-layout .orbit-2,
+#center-scene.transition-layout .orbit-3,
+#center-scene.transition-layout .orbit-4,
+#center-scene.transition-layout .orbit-5 {
+  position: absolute;
+  top: 40px;
+  transform: scale(0.6);
+  opacity: 1;
+  transition: all 1.5s ease-in-out;
+}
+
+/* --- POSIÇÕES ALINHADAS AO LADO DO LOGO --- */
+#center-scene.transition-layout .orbit-2 { left: 5%; }
+#center-scene.transition-layout .orbit-3 { left: 30%; }
+#center-scene.transition-layout .orbit-4 { left: 50%; }
+#center-scene.transition-layout .orbit-5 { left: 70%; }
+
+/* === Containers das frases === */
+#coach-quotes {
+  display: none;
+  position: absolute;
+  top: 350px; /* 👈 empurra o bloco mais abaixo do logo */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 900px;
+  text-align: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4em;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#coach-quotes.visible {
+  display: flex;
+  opacity: 1;
+}
+
+.quote-box {
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(255,255,255,0.2);
+}
+  </style>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const orbit3 = document.querySelector(".orbit-3");
+  const centerScene = document.querySelector("#center-scene");
+
+  if (orbit3 && centerScene) {
+    orbit3.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // Start animation
+      centerScene.classList.add("transition-layout");
+
+      // After animation, redirect to quotes.html
+      setTimeout(() => {
+        window.location.href = "./quotes.html";
+      }, 1500); // match your animation timing
+    });
+  }
+});
+</script>
+</head>
+<body>
+  <div id="center-scene">
+    <div id="logo-container">
+      <model-viewer src="assets/logo.glb" alt="Logo 3D" shadow-intensity="1" camera-controls auto-rotate ar></model-viewer>
+    </div>
+
+    <div class="thumbnail orbit orbit-1">
+      <img id="gif-rotativo" src="assets/icon1-gifs.gif" alt="Video">
+    </div>
+
+    <div class="thumbnail orbit orbit-2">
+      <a href="https://wa.me/c/5519988108063">Os Invictos!</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-3">
+     <a href="./quotes.html">Frases<br>de<br>Coach!</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-4">
+      <a href="./dashboard/">Mesa<br>Tática</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-5">
+      <a href="./book/">Agenda<br>do<br>Coach!</a>
+    </div>
+<div id="coach-quotes">
+  <div class="quote-box">1️⃣ "Algumas pessoas acreditam que o futebol é uma questão de vida ou morte. Essa atitude me decepciona. É mais importante que isso. "- Bill Shankly</div>
+  <div class="quote-box">2️⃣ "O futebol é o mais importante dos menos importantes" .- Jorge Valdano</div>
+  <div class="quote-box">3️⃣ "Para jogar futebol você não deve sofrer. O que é feito sofrimento não pode ir bem ".- Carles Rexach</div>
+  <div class="quote-box">4️⃣ "Eles dizem que é mais fácil mudar as mulheres do que as equipes de futebol ... E é verdade" .- Pep Guardiola</div>
+  <div class="quote-box">5️⃣ "Eu não posso acreditar, eu não posso acreditar. É futebol. Demônios! ".- Sir Alex Ferguson depois de vencer a final da Liga dos Campeões de 1999 contra o Bayern de Munique.</div>
+  <div class="quote-box">6️⃣ "O futebol é um esporte simples em que enquanto alguns gostam de conversar, eu adoro ganhar" .- Fabio Capello
+
+</div>
+  <div class="quote-box">7️⃣ "Nesta vida a única coisa que você não pode mudar é mãe e equipe" .- Diego Simeone</div>
+</div>
+  </div>
+
+  <footer id="main-footer">
+    <p>
+      RIRO TOYSPORT — <a href="mailto:dev@osinvictos.com.br" style="color:#25D366;">dev@osinvictos.com.br</a> — Brasil's CC '25
+    </p>
+  </footer>
+
+<script>
+(function() {
+  const gifFiles = [
+    'icon1-gifs.gif',
+    'icon2-gifs.gif',
+    'icon3-gifs.gif',
+    'icon4-gifs.gif',
+    'icon5-gifs.gif'
+  ];
+  const assetPath = 'assets/';
+
+  function setImageSrc(imgEl, filename) {
+    const cacheBuster = Date.now();
+    imgEl.src = assetPath + filename + '?v=' + cacheBuster;
+  }
+
+  function setOrbitBackground(selector, filename) {
+    const el = document.querySelector(selector);
+    if (!el) return false;
+    el.style.backgroundImage = "url('" + assetPath + filename + "')";
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    return true;
+  }
+
+  function rotateRandomGif() {
+    const randomIndex = Math.floor(Math.random() * gifFiles.length);
+    const selectedGif = gifFiles[randomIndex];
+
+    const imageElement = document.getElementById('gif-rotativo');
+    if (imageElement) {
+      setImageSrc(imageElement, selectedGif);
+      console.log('[rotateRandomGif] set <img#gif-rotativo> ->', selectedGif);
+      return;
+    }
+
+    const applied = setOrbitBackground('.orbit-1', selectedGif);
+    if (applied) {
+      console.log('[rotateRandomGif] set .orbit-1 background ->', selectedGif);
+      return;
+    }
+
+    console.warn('[rotateRandomGif] no target found for GIF rotation');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      rotateRandomGif();
+      setInterval(rotateRandomGif, 16000);
+    });
+  } else {
+    rotateRandomGif();
+    setInterval(rotateRandomGif, 16000);
+  }
+})();
+</script>
+
+</body>
+</html>
+

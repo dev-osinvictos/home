@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Panel - Web3 Login</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+    .card { box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center py-10 px-4">
+
+  <!-- LOGIN CARD -->
+  <div id="login-card" class="card w-full max-w-sm bg-white p-6 rounded-xl border border-gray-200 text-center">
+    <h1 class="text-2xl font-bold text-gray-900 mb-4">Coach Login (Web3)</h1>
+    <p class="text-gray-600 mb-4">Connect your coach wallet to continue.</p>
+    <button id="connect-btn"
+      class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">
+      Connect MetaMask
+    </button>
+    <p id="login-status" class="text-sm text-gray-600 mt-4"></p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden w-full max-w-5xl bg-white p-6 rounded-xl card border border-gray-200">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-extrabold text-gray-900">Coach Dashboard</h1>
+      <button id="logout-btn" class="text-sm text-red-600 font-bold hover:underline">Logout</button>
+    </div>
+
+    <div id="status" class="text-center mb-4 text-gray-600">Loading bookings...</div>
+
+    <table class="w-full text-sm text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
+          <th class="p-3">Player (Wallet)</th>
+          <th class="p-3">Appointment</th>
+          <th class="p-3">Tx Hash</th>
+          <th class="p-3">Cost (ETH)</th>
+          <th class="p-3">File</th>
+          <th class="p-3">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="bookings-table" class="divide-y divide-gray-200"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    const { ethers } = window;
+
+    // 🔹 Fetch Firebase config from your backend (Render)
+    const configRes = await fetch("https://coachappoint.onrender.com/config");
+    const { firebaseConfig } = await configRes.json();
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ✅ Your authorized wallet (for tests)
+    const COACH_WALLET = "0x5d02bbe2b4d7fef3b1439a690e401462cadf316a";
+
+    const loginCard = document.getElementById("login-card");
+    const dashboard = document.getElementById("dashboard");
+    const loginStatus = document.getElementById("login-status");
+    const statusEl = document.getElementById("status");
+
+let firebaseConfig;
+
+try {
+  const configRes = await fetch("https://coachappoint.onrender.com/config");
+  if (!configRes.ok) throw new Error(`Config fetch failed (${configRes.status})`);
+  const data = await configRes.json();
+  firebaseConfig = data.firebaseConfig;
+
+  if (!firebaseConfig?.apiKey) throw new Error("Invalid Firebase config");
+} catch (e) {
+  console.error("🔥 Firebase config fetch error:", e);
+  alert("Erro ao conectar ao servidor de configuração. Tente novamente mais tarde.");
+}
+
+    // 🔹 Handle MetaMask login
+    document.getElementById("connect-btn").addEventListener("click", async () => {
+      try {
+        if (!window.ethereum) {
+          loginStatus.textContent = "❌ MetaMask not detected.";
+          return;
+        }
+
+        loginStatus.textContent = "Connecting wallet...";
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const wallet = (await signer.getAddress()).toLowerCase();
+
+        // Check if this wallet is authorized
+        if (wallet !== COACH_WALLET) {
+          loginStatus.textContent = "❌ Unauthorized wallet address.";
+          return;
+        }
+
+        // Ask to sign a message to verify ownership
+        const message = "Login to Coach Panel - osinvictos.com.br";
+        await signer.signMessage(message);
+
+        loginStatus.textContent = "✅ Access granted!";
+        loginCard.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+
+        // Load Firestore bookings
+        db.collection("bookings").onSnapshot((snapshot) => {
+          const table = document.getElementById("bookings-table");
+          table.innerHTML = "";
+
+          if (snapshot.empty) {
+            statusEl.textContent = "No bookings yet.";
+            return;
+          }
+
+          snapshot.forEach((doc) => {
+            const b = doc.data();
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+              <td class="p-3 font-mono text-xs">${b.payerAddress || "Unknown"}</td>
+              <td class="p-3">${b.appointmentTime || "-"}</td>
+              <td class="p-3">
+                <a href="https://sepolia.etherscan.io/tx/${b.transactionHash}" 
+                   target="_blank" class="text-indigo-600 underline text-xs">
+                  ${b.transactionHash ? b.transactionHash.slice(0, 10) + "..." : "-"}
+                </a>
+              </td>
+              <td class="p-3">${b.costEth || "0"}</td>
+              <td class="p-3">
+                ${b.fileURL
+                  ? `<a href="${b.fileURL}" target="_blank" class="text-green-600 underline">Open</a>`
+                  : `<span class="text-gray-400">—</span>`}
+              </td>
+              <td class="p-3 text-xs text-gray-500">${new Date(b.timestamp).toLocaleString()}</td>
+            `;
+            table.appendChild(row);
+          });
+
+          statusEl.textContent = `Loaded ${snapshot.size} bookings ✅`;
+        });
+      } catch (err) {
+        console.error(err);
+        loginStatus.textContent = "❌ " + err.message;
+      }
+    });
+
+    // 🔹 Logout handler
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      dashboard.classList.add("hidden");
+      loginCard.classList.remove("hidden");
+      loginStatus.textContent = "Disconnected.";
+    });
+  </script>
+</body>
+</html>
+
