@@ -2,21 +2,9 @@
   "version": 2,
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
+   { "src": "book/**/*", "use": "@vercel/static" }
+    { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "resultados/**/*", "use": "@vercel/static" }
-  ],
-  "routes": [
-    {
-      "src": "/resultados/FLAxRAC10222025/?",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      },
-      "dest": "/resultados/FLAxRAC10222025/index.html"
-    },
-    {
-      "src": "/resultados/FLAxRAC10222025/(.*)",
-      "dest": "/dashboard/flamengo/index.html",
-      "status": 308
-    }
   ],
   "redirects": [
     {
