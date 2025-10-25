@@ -170,7 +170,6 @@ function buildRedFromFormation(formationKey, stats, ball, green) {
   return { red, phase };
 }
 
-
 // ===== Endpoint /ai/analyze =====
 app.post('/ai/analyze', async (req, res) => {
   try {
@@ -215,27 +214,21 @@ app.post('/ai/analyze', async (req, res) => {
         if (remote && remote.length > 0) coachComment = remote;
         else console.warn('[AI ANALYZE] OpenRouter devolveu vazio, usando fallback.');
       } catch (err) {
-        console.warn('[AI ANALYZE] erro OpenRouter:', err && err.message ? err.message : err);
+        console.warn('[AI ANALYZE] erro OpenRouter:', err?.message || err);
       }
     }
 
-    // local fallback if needed
-    if (!coachComment || coachComment === 'Mudança tática efetuada.') {
-      const phrases = [];
-      if (detectedFormation === '3-5-2') phrases.push('Fechamos o meio: controlo e presença por dentro.');
-      if (detectedFormation === '4-3-3') phrases.push('Subimos os extremos — pressão nas laterais.');
-      if (detectedFormation === '4-4-2') phrases.push('Alinhamos duas linhas e vamos correr para cima.');
-      if (detectedFormation === '4-2-3-1') phrases.push('Protegemos o meio e damos jogo ao 10.');
-      if (phrases.length === 0) phrases.push('Organiza-te: compactamos e vamos pressionar.');
+    // === 🔥 envia resposta JSON válida ===
+    res.json({
+      detectedFormation,
+      phase,
+      red,
+      coachComment
+    });
 
-      const phaseComment = phase === 'ataque' ? 'Pressão alta — corta linhas.' : (phase === 'defesa' ? 'Recuamos e fechamos espaços.' : '');
-      coachComment = `${phrases[0]} ${phaseComment}`.trim();
-    }
-
-    res.json({ red, coachComment, detectedFormation });
   } catch (err) {
-    console.error('[AI ANALYZE] erro interno:', err && err.stack ? err.stack : err);
-    res.status(500).json({ error: 'Erro interno na análise tática.' });
+    console.error('[AI ANALYZE] Erro geral:', err);
+    res.status(500).json({ error: 'Falha interna na IA Tática' });
   }
 });
 
