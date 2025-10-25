@@ -90,27 +90,6 @@
   <button id="ai-analise-btn" style="position:fixed;top:330px;left:120px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#33aaff;color:#fff;border:none;cursor:pointer;display:none;">AI Análise</button>
   <button id="pen-path-btn" style="position:fixed;top:330px;left:302px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer;display:none;">✎ Desenho Tático</button>
 
-<!-- 🎧 Botão Mute -->
-<button id="mute-btn"
-  style="
-    position:fixed;
-    top:330px;
-    left:500px;
-    z-index:10000;
-    font-size:1.2em;
-    padding:10px 18px;
-    border-radius:8px;
-    background:#aa3333;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-    display:none;
-    box-shadow:0 2px 6px rgba(0,0,0,0.25);
-    transition:all .25s ease;
-  ">
-  🔇 Mute
-</button>
-
   <!-- ===== Lógica do Campo e Botões ===== -->
   <script>
 const _traceCanvas = document.getElementById('trace-canvas');
@@ -203,35 +182,10 @@ socket.on("update_circle", (data) => {
     const exitBtn=document.getElementById('exit-fullscreen-btn');
     const aiBtn=document.getElementById('ai-analise-btn');
     const penBtn=document.getElementById('pen-path-btn');
+    function updateButtons(){const show=document.fullscreenElement?'block':'none';exitBtn.style.display=show;aiBtn.style.display=show;penBtn.style.display=show;}
     document.addEventListener('fullscreenchange',updateButtons);
     overlay.addEventListener('click',async()=>{await document.documentElement.requestFullscreen();overlay.style.display='none';updateButtons();});
     exitBtn.addEventListener('click',async()=>{if(document.exitFullscreen)await document.exitFullscreen();updateButtons();});
-
-    // === MUTE BUTTON ===
-    const muteBtn = document.getElementById('mute-btn');
-    let soundEnabled = true;
-
-    function updateButtons() {
-      const show = document.fullscreenElement ? 'block' : 'none';
-      exitBtn.style.display = show;
-      aiBtn.style.display = show;
-      penBtn.style.display = show;
-      muteBtn.style.display = show;
-    }
-
-      muteBtn.addEventListener('click', () => {
-      soundEnabled = !soundEnabled;
-      muteBtn.textContent = soundEnabled ? '🔇 Mute' : '🔊 Unmute';
-      muteBtn.style.background = soundEnabled ? '#aa3333' : '#33aa33';
-      muteBtn.style.boxShadow = soundEnabled
-        ? '0 2px 6px rgba(0,0,0,0.25)'
-        : '0 0 10px rgba(51,170,51,0.8)';
-      muteBtn.style.transform = soundEnabled ? 'scale(1)' : 'scale(1.05)';
-
-      // Envia para o servidor o estado atual do som
-      if (window.socket) {
-        window.socket.emit('toggle_sound', soundEnabled);
-     }
 
     // === AI Análise ===
     function getPositions(prefix){const arr=[];for(let i=2;i<=11;i++){const el=document.getElementById(prefix+i);arr.push({id:i,left:parseInt(el.style.left||el.offsetLeft),top:parseInt(el.style.top||el.offsetTop)});}return arr;}
@@ -245,7 +199,6 @@ socket.on("update_circle", (data) => {
         const data=await res.json();if(data.red){setPositions(data.red);notify("AI posicionou o time vermelho!");}
       }catch(e){notify("Erro na análise.");}
       this.disabled=false;this.textContent="AI Análise";
-
     });
   </script>
 <script>
@@ -410,54 +363,6 @@ socket.on("update_circle", (data) => {
     });
   }
 })();
-// ===== 1. Função Fullscreen + Rotação =====
-async function fullScreen() {
-  try {
-    await document.documentElement.requestFullscreen();
-    if (screen.orientation && screen.orientation.lock) {
-      await screen.orientation.lock("landscape");
-    }
-  } catch (err) {
-    console.warn("Não foi possível travar orientação:", err);
-  }
-  overlay.style.display = "none";
-  updateButtons();
-}
-overlay.addEventListener('click', fullScreen);
-
-
-// ===== hitTest + fala via servidor ::V.I.V.A.S. -- VECTOR INTERACT VISUAL AUDIO SYSTEM (PATENT AS M.U@BRZ"INPI" M.U. REFFERS Utility Model") =====
-function isColliding(el1, el2) {
-  const r1 = el1.getBoundingClientRect();
-  const r2 = el2.getBoundingClientRect();
-  return !(
-    r1.top > r2.bottom ||
-    r1.bottom < r2.top ||
-    r1.left > r2.right ||
-    r1.right < r2.left
-  );
-}
-
-function checkBallCollision() {
-  const ball = document.getElementById('circle24');
-  if (!ball || !window.socket) return;
-
-  for (let i = 1; i <= 23; i++) {
-    const player = document.getElementById('circle' + i);
-    if (!player) continue;
-    if (isColliding(ball, player)) {
-      const playerText = player.textContent.trim() || `jogador ${i}`;
-      window.socket.emit('ball_hit', { playerText });
-      break;
-    }
-  }
-}
-
-setInterval(checkBallCollision, 300);
-
-
-// Roda a verificação a cada 300ms
-setInterval(checkBallCollision, 300);
 </script>
   <!-- ===== Chat do Treinador Português ===== -->
   <div id="coach-chat" style="position:fixed;bottom:20px;right:20px;width:320px;height:420px;background:rgba(30,30,30,0.95);border:2px solid #444;border-radius:12px;display:flex;flex-direction:column;font-family:sans-serif;color:#fff;z-index:12000;transition:all .4s ease;">
