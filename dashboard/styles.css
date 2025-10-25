@@ -195,6 +195,24 @@
             border-radius: 1px;
             pointer-events: none;
         }
+/* 🔧 Garante que o chat fique acima da IA e o overlay acima de tudo */
+#chat-container {
+  z-index: 10005 !important;
+}
+
+/* 🔧 Garante que o painel da IA (formação detectada / fala do mister) fique visível acima do campo */
+#formation-info,
+#coach-comment,
+#tactical-analysis,
+.ai-info-box,
+#ai-notification {
+  bottom: 120px !important;
+  left: 120px !important;
+  right: auto !important;
+  z-index: 10004 !important;
+}
+
+
         .gol-square {
             position: absolute;
             left: 10px;  /* Adjust to place the square under the circles */
@@ -243,6 +261,9 @@
             font-size: 14px;
             user-select: none;
         }
+
+
+
         #circle1 { left: 25px; top: 160px; background: #ff33aa; }
         #circle2 { left: 160px; top: 270px; background: #000000; }
         #circle3 { left: 120px; top: 130px; background: #000000; }
@@ -254,6 +275,73 @@
         #circle9 { left: 370px; top: 160px; background: #000000; }
         #circle10 { left: 230px; top: 120px; background: #000000; }
         #circle11 { left: 320px; top: 40px; background: #000000; }
-        #circle23 { left: 620px; top: 150px; background: #660000; }
+        /* Goleiro no gol direito por padrão */
+        #circle23 { left: 620px !important; top: 150px !important; background: #660000; }
         #circle24 { left: 420px; top: 40px; background: #ffffff; }
         body { margin: 0; overflow: hidden; background-color: green; }
+
+/* === Botões principais OS INVICTOS === */
+button {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.1em;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 10px 18px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+}
+
+#ai-analise-btn {
+  background: linear-gradient(145deg, #33aaff, #1e8bd8);
+  color: #fff;
+}
+#ai-analise-btn:hover {
+  background: linear-gradient(145deg, #4dc6ff, #33aaff);
+  transform: scale(1.05);
+}
+
+#pen-path-btn {
+  background: linear-gradient(145deg, #333, #111);
+  color: #fff;
+}
+#pen-path-btn:hover {
+  background: linear-gradient(145deg, #444, #222);
+  transform: scale(1.05);
+}
+
+#exit-fullscreen-btn {
+  background: linear-gradient(145deg, #222, #000);
+  color: #fff;
+}
+#exit-fullscreen-btn:hover {
+  background: linear-gradient(145deg, #333, #111);
+  transform: scale(1.05);
+}
+
+#mute-btn {
+  background: linear-gradient(145deg, #aa3333, #881d1d);
+  color: #fff;
+}
+#mute-btn:hover {
+  background: linear-gradient(145deg, #cc4444, #aa3333);
+  transform: scale(1.05);
+}
+
+/* Layout fix for button bar */
+#exit-fullscreen-btn,
+#ai-analise-btn,
+#pen-path-btn,
+#mute-btn {
+  position: fixed;
+  top: 330px;
+  z-index: 10000;
+}
+
+/* Posicionamento lateral progressivo */
+#exit-fullscreen-btn { left: 20px; }
+#ai-analise-btn     { left: 130px; }
+#pen-path-btn       { left: 310px; }
+#mute-btn           { left: 500px; }
+
