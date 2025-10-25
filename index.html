@@ -257,7 +257,7 @@ socket.on("update_circle", (data) => {
 (function(){
   const canvas = document.getElementById("trace-canvas");
   const penBtn = document.getElementById("pen-path-btn");
-  const socket = window.socket || (window.io ? io() : null);
+  const socket = window.socket;
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
