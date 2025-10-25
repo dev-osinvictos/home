@@ -2,7 +2,8 @@
   "version": 2,
   "builds": [
     { "src": "server.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" }
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "styles.css", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/ai/analyze", "dest": "/server.js" },
