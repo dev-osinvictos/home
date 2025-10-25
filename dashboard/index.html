@@ -206,7 +206,7 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
   try {
     const green = collectGreenPositions();
     const ball = getBall();
-    const res = await fetch('/ai/analyze', {
+    const res = await fetch('/dashboard/ai/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ green, ball })
@@ -415,7 +415,7 @@ chatSend.addEventListener("click", async ()=>{
   appendMessage("user", message);
   chatInput.value = "";
   try {
-    const res = await fetch("/api/chat", {
+    const res = await fetch("/dashboard/api/chat", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ message })
