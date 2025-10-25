@@ -6,7 +6,15 @@
     { "src": "assets/**/*", "use": "@vercel/static" },
     { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
-    { "src": "resultados/**/*", "use": "@vercel/static" }
+    { "src": "resultados/**/*", "use": "@vercel/static" },
+    { "src": "dashboard/server.js", "use": "@vercel/node" }  // ✅ adiciona o backend da IA
+  ],
+
+  "routes": [
+    { "src": "/dashboard/ai/analyze", "dest": "/dashboard/server.js" },  // ✅ IA Tática
+    { "src": "/dashboard/api/chat", "dest": "/dashboard/server.js" },    // ✅ Chat do mister
+    { "src": "/dashboard/(.*)", "dest": "/dashboard/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
 
   "redirects": [
