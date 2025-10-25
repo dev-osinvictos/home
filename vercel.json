@@ -2,20 +2,22 @@
   "version": 2,
   "builds": [
     { "src": "dashboard/server.js", "use": "@vercel/node" },
+    { "src": "dashboard/(.*)", "use": "@vercel/static" },
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
     { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
-    { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
     { "src": "resultados/**/*", "use": "@vercel/static" }
   ],
+
   "rewrites": [
     { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
     { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
     { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
+
   "redirects": [
     {
       "source": "/resultados/FLAxRAC22102025",
@@ -28,6 +30,7 @@
       "permanent": false
     }
   ],
+
   "headers": [
     {
       "source": "/resultados/FLAxRAC22102025/(.*)",
