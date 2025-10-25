@@ -275,3 +275,4 @@ server.listen(PORT, () => {
   console.log(`🏟️  Servidor rodando na porta ${PORT} — IA Tática v3.1 ativa`);
 });
 
+module.exports = app; 

@@ -1,13 +1,14 @@
 {
   "version": 2,
   "builds": [
+    { "src": "dashboard/server.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
+    { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
     { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
-    { "src": "resultados/**/*", "use": "@vercel/static" },
-    { "src": "dashboard/server.js", "use": "@vercel/node" }
+    { "src": "resultados/**/*", "use": "@vercel/static" }
   ],
   "rewrites": [
     { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
