@@ -41,6 +41,11 @@ const io = new Server(server, {
   }
 });
 
+
+const espeak = require('espeak');
+
+let soundEnabled = true; // 🔊 controla mute global
+
 io.on('connection', (socket) => {
   console.log('🔌 Novo cliente conectado');
 
@@ -52,9 +57,24 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('path_draw', data);
   });
 
+  // 🎙️ fala o nome do jogador (sem prefixo)
+  socket.on('ball_hit', (data) => {
+    if (soundEnabled && data && data.playerText) {
+      console.log(`🎙️ Falando: ${data.playerText}`);
+      espeak.speak(data.playerText, { voice: 'pt+f3', speed: 150 });
+    }
+  });
+
+  // 🔇 ativa/desativa som
+  socket.on('toggle_sound', (state) => {
+    soundEnabled = state;
+    console.log(`🔈 Som está agora: ${soundEnabled ? 'Ligado' : 'Mutado'}`);
+  });
+
   socket.on('disconnect', () => {
     console.log('❌ Cliente desconectado');
   });
+
 });
 
 // ======= 🤖 AI Análise =======
