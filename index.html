@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-    <meta charset="UTF-8">    
-    <title>OS INVICTOS -- Rede Social dos Invictos</title>
+    <meta charset="UTF-8">
+    <title>OS INVICTOS -- Campo Tático Interativo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.osinvictos.com.br/">
+    <meta property="og:url" content="https://www.osinvictos.com.br/dashboard/">
     <meta property="og:title" content="Sports Social Network / WEB 3.0"/>
     <meta property="og:description" content="Converse com a IA do Treinador José Mourinho n@ Campo tático interativo"/>
-    <meta property="og:image" content="https://www.osinvictos.com.br/assets/logotaca.png"/>
+    <meta property="og:image" content="https://sportsocialnet.vercel.app/assets/xplain.png"/>
     <meta property="og:image:width" content="580"/>
     <meta property="og:image:height" content="464"/>
     <meta name="google-adsense-account" content="ca-pub-6390604470898441">
-    <link rel="stylesheet" href="https://www.osinvictos.com.br/styles.css">
+    <link rel="stylesheet" href="https://www.osinvictos.com.br/dashboard/styles.css">
+    <link rel="icon" type="image/png" href="https://www.osinvictos.com.br/dashboard/img/favicon.png">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -24,358 +23,481 @@
 
       gtag('config', 'G-ZDWS2F3NE8');
     </script>
-  <style>
-    :root {
-      --cor-fundo: #0C1D2B;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      color: white;
-      font-family: Arial, sans-serif;
-      background-image: url('assets/background-image.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      overflow: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: var(--cor-fundo);
-      opacity: 0.8;
-      z-index: -1;
-    }
-
-    #center-scene {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* --- LOGO CENTRAL --- */
-    #logo-container {
-      position: relative;
-      z-index: 5;
-      width: 350px;
-      height: 350px;
-      filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
-    }
-
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      --environment-image: var(--cor-fundo);
-      --progress-bar-color: var(--cor-fundo);
-    }
-
-/* --- THUMBNAILS QUADRADOS SEM GLOW, COM TEXTO CENTRALIZADO --- */
-.thumbnail {
-  position: absolute;
-  width: 137px;
-  height: 139px;
-  border: none;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #FFFFFF;
-  font-size: 12px;               /* tamanho reduzido */
-  font-family: Arial, sans-serif;
-  font-weight: bold;
-  text-transform: uppercase;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  animation: float 6s ease-in-out infinite;
-}
-
-.thumbnail a {
-  color: #FFFFFF;
-  text-decoration: none;
-  font-family: Arial, sans-serif;
-  font-size: 12px;               /* texto dentro do link também 8px */
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-
-.thumbnail a:hover {
-  transform: scale(1.05);
-  color: #FFFFFF;
-}
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-
-    /* --- POSIÇÕES ORBITANTES --- */
-.orbit-1 {
-  bottom: 25%;
-  left: 30%;
-  transform: translate(50%, 50%);
-}
-.orbit-2 {
-  top: 35%;
-  left: 68%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-tees.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-3 {
- top: 10%;
-  left: 30%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-quotes.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-4 {
-  bottom: 35%;
-  left: 5%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-tactic.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-5 {
-  top: 15%;
-  right: 18%;
-  transform: translate(-50%);
-  background-image: url('assets/icon-book.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-
-    @media (max-width: 768px) {
-      #logo-container { width: 250px; height: 250px; }
-      .thumbnail { width: 100px; height: 100px; box-shadow: none; }
-    }
-
-    #main-footer {
-      width: 100%;
-      background-color: #000;
-      color: #fff;
-      text-align: center;
-      padding: 10px 0;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      font-size: 14px;
-    }
-/* === MODO DE TRANSIÇÃO (LOGO + THUMBNAILS 2–5 NO TOPO) === */
-#center-scene.transition-layout {
-  position: relative;
-  overflow: hidden;
-}
-
-/* --- LOGO sobe e alinha a 10% da esquerda --- */
-#center-scene.transition-layout #logo-container {
-  position: absolute;
-  top: 30px;
-  left: 10%;
-  transform: scale(0.6);
-  transition: all 1.5s ease-in-out;
-}
-
-/* --- THUMBNAIL-1 desaparece com fade-out --- */
-#center-scene.transition-layout .orbit-1 {
-  opacity: 0;
-  transform: scale(0.4);
-  transition: all 0.8s ease-in-out;
-}
-
-/* --- OUTROS THUMBNAILS sobem e alinham ao lado do logo --- */
-#center-scene.transition-layout .orbit-2,
-#center-scene.transition-layout .orbit-3,
-#center-scene.transition-layout .orbit-4,
-#center-scene.transition-layout .orbit-5 {
-  position: absolute;
-  top: 40px;
-  transform: scale(0.6);
-  opacity: 1;
-  transition: all 1.5s ease-in-out;
-}
-
-/* --- POSIÇÕES ALINHADAS AO LADO DO LOGO --- */
-#center-scene.transition-layout .orbit-2 { left: 5%; }
-#center-scene.transition-layout .orbit-3 { left: 30%; }
-#center-scene.transition-layout .orbit-4 { left: 50%; }
-#center-scene.transition-layout .orbit-5 { left: 70%; }
-
-/* === Containers das frases === */
-#coach-quotes {
-  display: none;
-  position: absolute;
-  top: 350px; /* 👈 empurra o bloco mais abaixo do logo */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  max-width: 900px;
-  text-align: center;
-  color: white;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.4em;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#coach-quotes.visible {
-  display: flex;
-  opacity: 1;
-}
-
-.quote-box {
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 0 6px rgba(255,255,255,0.2);
-}
-  </style>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const orbit3 = document.querySelector(".orbit-3");
-  const centerScene = document.querySelector("#center-scene");
-
-  if (orbit3 && centerScene) {
-    orbit3.addEventListener("click", (e) => {
-      e.preventDefault();
-
-      // Start animation
-      centerScene.classList.add("transition-layout");
-
-      // After animation, redirect to quotes.html
-      setTimeout(() => {
-        window.location.href = "./quotes.html";
-      }, 1500); // match your animation timing
-    });
-  }
-});
-</script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
-<body>
-  <div id="center-scene">
-    <div id="logo-container">
-      <model-viewer src="assets/logo.glb" alt="Logo 3D" shadow-intensity="1" camera-controls auto-rotate ar></model-viewer>
-    </div>
+<body style="background-image:url('https://www.osinvictos.com.br/dashboard/img/estadium.jpg'); background-size:cover; background-repeat:no-repeat; background-position:center;">
 
-    <div class="thumbnail orbit orbit-1">
-      <img id="gif-rotativo" src="assets/icon1-gifs.gif" alt="Video">
-    </div>
+  <!-- ===== Campo Tático ===== -->
+    <div id="background-square" class="background-square"></div>
+    <div id="background-line"></div>
+    <div id="background-line2"></div>
+    <div id="background-line3"></div>
+    <div id="background-line4"></div>
+    <div id="background-line5"></div>
+    <div id="background-line6"></div>
+    <div id="background-line7"></div>
+    <div id="background-line8"></div>
+    <div id="background-line9"></div>
+    <div id="background-line10"></div>
+    <div id="background-line11"></div>
+    <div id="background-line12"></div>
+    <div id="background-line13"></div>
+    <div id="background-line14"></div>
+    <div id="background-line15"></div>
+    <div id="background-line16"></div>
+    <div id="background-line17"></div>
+  <div id="circle12" class="circlecentral" style="background:transparent;left:237px;top:100px;border:2px solid #fff;"></div>
+  <div id="gol-square" class="gol-square"></div>
+  <div id="gol2-square" class="gol2-square"></div>
 
-    <div class="thumbnail orbit orbit-2">
-      <a href="https://wa.me/c/5519988108063">Os Invictos!</a>
-    </div>
+  <!-- Jogadores -->
+  <div id="circle1" class="circle">1</div>
+  <div id="circle2" class="circle">2</div>
+  <div id="circle3" class="circle">3</div>
+  <div id="circle4" class="circle">4</div>
+  <div id="circle5" class="circle">5</div>
+  <div id="circle6" class="circle">6</div>
+  <div id="circle7" class="circle">7</div>
+  <div id="circle8" class="circle">8</div>
+  <div id="circle9" class="circle">9</div>
+  <div id="circle10" class="circle">10</div>
+  <div id="circle11" class="circle">11</div>
 
-    <div class="thumbnail orbit orbit-3">
-     <a href="./quotes.html">Frases<br>de<br>Coach!</a>
-    </div>
+  <div id="circle13" class="circle" style="background:#33FFCC;">11</div>
+  <div id="circle14" class="circle" style="background:#33FFCC;">2</div>
+  <div id="circle15" class="circle" style="background:#33FFCC;">3</div>
+  <div id="circle16" class="circle" style="background:#33FFCC;">4</div>
+  <div id="circle17" class="circle" style="background:#33FFCC;">5</div>
+  <div id="circle18" class="circle" style="background:#33FFCC;">6</div>
+  <div id="circle19" class="circle" style="background:#33FFCC;">7</div>
+  <div id="circle20" class="circle" style="background:#33FFCC;">8</div>
+  <div id="circle21" class="circle" style="background:#33FFCC;">9</div>
+  <div id="circle22" class="circle" style="background:#33FFCC;">10</div>
+  <div id="circle23" class="circle">01</div>
+  <div id="circle24" class="circle"></div>
 
-    <div class="thumbnail orbit orbit-4">
-      <a href="./dashboard/">Mesa<br>Tática</a>
-    </div>
+<canvas id="trace-canvas" width="600" height="300"
+ style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;">
+</canvas>
 
-    <div class="thumbnail orbit orbit-5">
-      <a href="./book/">Agenda<br>do<br>Coach!</a>
-    </div>
-<div id="coach-quotes">
-  <div class="quote-box">1️⃣ "Algumas pessoas acreditam que o futebol é uma questão de vida ou morte. Essa atitude me decepciona. É mais importante que isso. "- Bill Shankly</div>
-  <div class="quote-box">2️⃣ "O futebol é o mais importante dos menos importantes" .- Jorge Valdano</div>
-  <div class="quote-box">3️⃣ "Para jogar futebol você não deve sofrer. O que é feito sofrimento não pode ir bem ".- Carles Rexach</div>
-  <div class="quote-box">4️⃣ "Eles dizem que é mais fácil mudar as mulheres do que as equipes de futebol ... E é verdade" .- Pep Guardiola</div>
-  <div class="quote-box">5️⃣ "Eu não posso acreditar, eu não posso acreditar. É futebol. Demônios! ".- Sir Alex Ferguson depois de vencer a final da Liga dos Campeões de 1999 contra o Bayern de Munique.</div>
-  <div class="quote-box">6️⃣ "O futebol é um esporte simples em que enquanto alguns gostam de conversar, eu adoro ganhar" .- Fabio Capello
+  <div id="ai-notification" style="display:none;position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#33aaff;color:#fff;padding:18px 32px;border-radius:8px;z-index:10001;font-size:1.3em;box-shadow:0 2px 10px rgba(0,0,0,0.18);"></div>
 
-</div>
-  <div class="quote-box">7️⃣ "Nesta vida a única coisa que você não pode mudar é mãe e equipe" .- Diego Simeone</div>
-</div>
+  <!-- ===== Botões ===== -->
+  <div id="fullscreen-overlay" style="position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;font-size:2em;cursor:pointer;">
+    Toque para entrar na Mesa Tática
   </div>
 
-  <footer id="main-footer">
-    <p>
-      RIRO TOYSPORT — <a href="mailto:dev@osinvictos.com.br" style="color:#25D366;">dev@osinvictos.com.br</a> — Brasil's CC '25
-    </p>
-  </footer>
+  <button id="exit-fullscreen-btn" style="position:fixed;top:330px;left:20px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer;display:none;">Sair (x)</button>
+  <button id="ai-analise-btn" style="position:fixed;top:330px;left:120px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#33aaff;color:#fff;border:none;cursor:pointer;display:none;">AI Análise</button>
+  <button id="pen-path-btn" style="position:fixed;top:330px;left:302px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer;display:none;">✎ Desenho Tático</button>
 
-<script>
-(function() {
-  const gifFiles = [
-    'icon1-gifs.gif',
-    'icon2-gifs.gif',
-    'icon3-gifs.gif',
-    'icon4-gifs.gif',
-    'icon5-gifs.gif'
-  ];
-  const assetPath = 'assets/';
+<!-- 🎧 Botão Mute -->
+<button id="mute-btn"
+  style="
+    position:fixed;
+    top:330px;
+    left:500px;
+    z-index:10000;
+    font-size:1.2em;
+    padding:10px 18px;
+    border-radius:8px;
+    background:#aa3333;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    display:none;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    transition:all .25s ease;
+  ">
+  🔇 Mute
+</button>
 
-  function setImageSrc(imgEl, filename) {
-    const cacheBuster = Date.now();
-    imgEl.src = assetPath + filename + '?v=' + cacheBuster;
+  <!-- ===== Lógica do Campo e Botões ===== -->
+  <script>
+const _traceCanvas = document.getElementById('trace-canvas');
+if (_traceCanvas) {
+  _traceCanvas.style.pointerEvents = 'none';
+  _traceCanvas.style.zIndex = '1';
+}
+const socket = io("https://juventusfc.onrender.com", {
+  transports: ["websocket"]
+});
+window.socket = socket; // 🔌 torna o socket global
+const circles = {};
+const dragState = {};
+let activeId = null;
+
+for (let i = 1; i <= 24; i++) {
+  const el = document.getElementById("circle" + i);
+  circles[i] = el;
+  dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
+if (el) {
+  el.style.position = el.style.position || 'absolute';
+  el.style.zIndex = '20';
+}
+  // 🖱️ Mouse
+  el.addEventListener("mousedown", (e) => {
+    dragState[i].dragging = true;
+    dragState[i].offsetX = e.offsetX;
+    dragState[i].offsetY = e.offsetY;
+    activeId = i;
+  });
+
+  // 📱 Touch
+  el.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    const rect = el.getBoundingClientRect();
+    dragState[i].dragging = true;
+    dragState[i].offsetX = touch.clientX - rect.left;
+    dragState[i].offsetY = touch.clientY - rect.top;
+    activeId = i;
+    e.preventDefault(); // evita scroll
+  }, { passive: false });
+}
+
+// === Movimentos ===
+function moveElement(id, x, y) {
+  const el = circles[id];
+  if (el) {
+    el.style.left = x + "px";
+    el.style.top = y + "px";
   }
+}
 
-  function setOrbitBackground(selector, filename) {
-    const el = document.querySelector(selector);
-    if (!el) return false;
-    el.style.backgroundImage = "url('" + assetPath + filename + "')";
-    el.style.backgroundSize = 'cover';
-    el.style.backgroundPosition = 'center';
-    el.style.backgroundRepeat = 'no-repeat';
-    return true;
+// 🖱️ Mouse move
+document.addEventListener("mousemove", (e) => {
+  if (!activeId) return;
+  const i = activeId;
+  const x = e.clientX - dragState[i].offsetX;
+  const y = e.clientY - dragState[i].offsetY;
+  moveElement(i, x, y);
+  socket.emit("move_circle", { x, y, id: i });
+});
+
+// 📱 Touch move
+document.addEventListener("touchmove", (e) => {
+  if (!activeId) return;
+  const i = activeId;
+  const touch = e.touches[0];
+  const rect = circles[i].getBoundingClientRect();
+  const x = touch.clientX - dragState[i].offsetX;
+  const y = touch.clientY - dragState[i].offsetY;
+  moveElement(i, x, y);
+  socket.emit("move_circle", { x, y, id: i });
+  e.preventDefault(); // evita scroll
+}, { passive: false });
+
+// 🖱️ / 📱 Fim do arrasto
+function endDrag() {
+  if (activeId) {
+    dragState[activeId].dragging = false;
+    activeId = null;
   }
+}
+document.addEventListener("mouseup", endDrag);
+document.addEventListener("touchend", endDrag);
 
-  function rotateRandomGif() {
-    const randomIndex = Math.floor(Math.random() * gifFiles.length);
-    const selectedGif = gifFiles[randomIndex];
+// === Receber atualizações ===
+socket.on("update_circle", (data) => {
+  moveElement(data.id, data.x, data.y);
+});
+    // === Fullscreen ===
+    const overlay=document.getElementById('fullscreen-overlay');
+    const exitBtn=document.getElementById('exit-fullscreen-btn');
+    const aiBtn=document.getElementById('ai-analise-btn');
+    const penBtn=document.getElementById('pen-path-btn');
+    document.addEventListener('fullscreenchange',updateButtons);
+    overlay.addEventListener('click',async()=>{await document.documentElement.requestFullscreen();overlay.style.display='none';updateButtons();});
+    exitBtn.addEventListener('click',async()=>{if(document.exitFullscreen)await document.exitFullscreen();updateButtons();});
 
-    const imageElement = document.getElementById('gif-rotativo');
-    if (imageElement) {
-      setImageSrc(imageElement, selectedGif);
-      console.log('[rotateRandomGif] set <img#gif-rotativo> ->', selectedGif);
-      return;
+    // === MUTE BUTTON ===
+    const muteBtn = document.getElementById('mute-btn');
+    let soundEnabled = true;
+
+    function updateButtons() {
+      const show = document.fullscreenElement ? 'block' : 'none';
+      exitBtn.style.display = show;
+      aiBtn.style.display = show;
+      penBtn.style.display = show;
+      muteBtn.style.display = show;
     }
 
-    const applied = setOrbitBackground('.orbit-1', selectedGif);
-    if (applied) {
-      console.log('[rotateRandomGif] set .orbit-1 background ->', selectedGif);
-      return;
-    }
+      muteBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      muteBtn.textContent = soundEnabled ? '🔇 Mute' : '🔊 Unmute';
+      muteBtn.style.background = soundEnabled ? '#aa3333' : '#33aa33';
+      muteBtn.style.boxShadow = soundEnabled
+        ? '0 2px 6px rgba(0,0,0,0.25)'
+        : '0 0 10px rgba(51,170,51,0.8)';
+      muteBtn.style.transform = soundEnabled ? 'scale(1)' : 'scale(1.05)';
 
-    console.warn('[rotateRandomGif] no target found for GIF rotation');
-  }
+      // Envia para o servidor o estado atual do som
+      if (window.socket) {
+        window.socket.emit('toggle_sound', soundEnabled);
+      }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      rotateRandomGif();
-      setInterval(rotateRandomGif, 16000);
+     });
+    // === AI Análise ===
+    function getPositions(prefix){const arr=[];for(let i=2;i<=11;i++){const el=document.getElementById(prefix+i);arr.push({id:i,left:parseInt(el.style.left||el.offsetLeft),top:parseInt(el.style.top||el.offsetTop)});}return arr;}
+    function setPositions(red){for(const p of red){const el=document.getElementById('circle'+p.id);if(el){el.style.left=p.left+'px';el.style.top=p.top+'px';}}}
+    function getBall(){const el=document.getElementById('circle24');return {left:parseInt(el.style.left||el.offsetLeft),top:parseInt(el.style.top||el.offsetTop)};}
+    function notify(msg){const n=document.getElementById('ai-notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',2000);}
+    aiBtn.addEventListener('click',async function(){
+      this.disabled=true;this.textContent="Analisando...";
+      try{
+        const res=await fetch('https://juventusfc.onrender.com/ai/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({green:getPositions('circle'),ball:getBall()})});
+        const data=await res.json();if(data.red){setPositions(data.red);notify("AI posicionou o time vermelho!");}
+      }catch(e){notify("Erro na análise.");}
+      this.disabled=false;this.textContent="AI Análise";
+
     });
-  } else {
-    rotateRandomGif();
-    setInterval(rotateRandomGif, 16000);
+  </script>
+<script>
+/* ===== Desenho Tático: correção para offset mobile (HiDPI + CSS size sync) ===== */
+(function(){
+  const canvas = document.getElementById("trace-canvas");
+  const penBtn = document.getElementById("pen-path-btn");
+  const socket = window.socket || (window.io ? io() : null);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Faz o canvas ocupar um tamanho CSS estável (se quiser, ajuste aqui)
+  // Se preferir que o canvas seja responsivo, ajuste o CSS; aqui usamos o rect atual.
+  function resizeCanvasForDisplay() {
+    const ratio = window.devicePixelRatio || 1;
+    // pega o tamanho CSS real do canvas (dependendo do layout)
+    const rect = canvas.getBoundingClientRect();
+
+    // forçar CSS width/height para o tamanho do rect (garante consistência)
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+
+    // ajusta o buffer físico do canvas para HiDPI
+    canvas.width = Math.round(rect.width * ratio);
+    canvas.height = Math.round(rect.height * ratio);
+
+    // faz o ctx trabalhar em CSS pixels (transforma coords automaticamente)
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }
+
+  // chama no load e quando a viewport muda
+  resizeCanvasForDisplay();
+  window.addEventListener('resize', resizeCanvasForDisplay);
+  // também quando há rolagem (às vezes rect muda por UI do navegador)
+  window.addEventListener('scroll', () => {
+    // atualização leve — só se o canvas estiver visível
+    resizeCanvasForDisplay();
+  }, { passive: true });
+
+  // estado
+  let penMode = false;
+  let drawing = false;
+  let currentPath = [];
+  let pointerId = null;
+
+  // Toggle pen button: ativa/desativa captura de eventos
+  penBtn.addEventListener('click', () => {
+    penMode = !penMode;
+    penBtn.style.background = penMode ? "#33aaff" : "#222";
+    canvas.style.pointerEvents = penMode ? "auto" : "none";
+    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
+    if (penMode) {
+      canvas.style.zIndex = "1000";
+    } else {
+      canvas.style.zIndex = "1";
+    }
+  });
+
+  // evita scroll durante desenho
+  canvas.style.touchAction = "none";
+
+  // converte evento -> coordenada em CSS pixels relativa ao canvas
+  function getCoordFromEvent(evt) {
+    const rect = canvas.getBoundingClientRect();
+    // pointer events: clientX/clientY
+    if (evt.clientX !== undefined && evt.clientY !== undefined) {
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+    // touch fallback
+    if (evt.touches && evt.touches[0]) {
+      return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
+    }
+    return { x: 0, y: 0 };
+  }
+
+  // pointer events (recomendado)
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!penMode || !e.isPrimary) return;
+    drawing = true;
+    pointerId = e.pointerId;
+    try { canvas.setPointerCapture(pointerId); } catch (er) {}
+    const { x, y } = getCoordFromEvent(e);
+    currentPath = [[x, y]];
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!penMode || !drawing || e.pointerId !== pointerId) return;
+    const { x, y } = getCoordFromEvent(e);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "#ff3333";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    currentPath.push([x, y]);
+  });
+
+  function finishDrawing(e) {
+    if (!drawing) return;
+    drawing = false;
+    try { canvas.releasePointerCapture(pointerId); } catch (er) {}
+    ctx.closePath();
+    if (socket && currentPath.length > 1) {
+      socket.emit('path_draw', { path: currentPath });
+    }
+    currentPath = [];
+    pointerId = null;
+  }
+
+  canvas.addEventListener('pointerup', finishDrawing);
+  canvas.addEventListener('pointercancel', finishDrawing);
+  canvas.addEventListener('pointerout', (e) => {
+    if (drawing && e.pointerId === pointerId) finishDrawing(e);
+  });
+
+  // touch fallback (mantém compatibilidade)
+  canvas.addEventListener('touchstart', (e) => {
+    if (!penMode) return;
+    e.preventDefault();
+    const c = getCoordFromEvent(e);
+    drawing = true;
+    currentPath = [[c.x, c.y]];
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!penMode || !drawing) return;
+    e.preventDefault();
+    const c = getCoordFromEvent(e);
+    ctx.lineTo(c.x, c.y);
+    ctx.strokeStyle = "#ff3333";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    currentPath.push([c.x, c.y]);
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (!penMode || !drawing) return;
+    e.preventDefault();
+    drawing = false;
+    ctx.closePath();
+    if (socket && currentPath.length > 1) socket.emit('path_draw', { path: currentPath });
+    currentPath = [];
+  }, { passive: false });
+
+  // recebe e desenha paths de outros clientes (coord em CSS pixels)
+  if (socket) {
+    socket.on('path_draw', (data) => {
+      if (!data || !Array.isArray(data.path) || data.path.length === 0) return;
+      ctx.beginPath();
+      for (let i = 0; i < data.path.length; i++) {
+        const [x, y] = data.path[i];
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "#ff3333";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.closePath();
+    });
   }
 })();
-</script>
+// ===== 1. Função Fullscreen + Rotação =====
+async function fullScreen() {
+  try {
+    await document.documentElement.requestFullscreen();
+    if (screen.orientation && screen.orientation.lock) {
+      await screen.orientation.lock("landscape");
+    }
+  } catch (err) {
+    console.warn("Não foi possível travar orientação:", err);
+  }
+  overlay.style.display = "none";
+  updateButtons();
+}
+overlay.addEventListener('click', fullScreen);
 
+
+// ===== hitTest + fala via servidor ::V.I.V.A.S. -- VECTOR INTERACT VISUAL AUDIO SYSTEM (PATENT AS M.U@BRZ"INPI" M.U. REFFERS Utility Model") =====
+function isColliding(el1, el2) {
+  const r1 = el1.getBoundingClientRect();
+  const r2 = el2.getBoundingClientRect();
+  return !(
+    r1.top > r2.bottom ||
+    r1.bottom < r2.top ||
+    r1.left > r2.right ||
+    r1.right < r2.left
+  );
+}
+
+function checkBallCollision() {
+  const ball = document.getElementById('circle24');
+  if (!ball || !window.socket) return;
+
+  for (let i = 1; i <= 23; i++) {
+    const player = document.getElementById('circle' + i);
+    if (!player) continue;
+    if (isColliding(ball, player)) {
+      const playerText = player.textContent.trim() || `jogador ${i}`;
+      window.socket.emit('ball_hit', { playerText });
+      break;
+    }
+  }
+}
+
+
+// Roda a verificação a cada 300ms
+setInterval(checkBallCollision, 300);
+</script>
+  <!-- ===== Chat do Treinador Português ===== -->
+  <div id="coach-chat" style="position:fixed;bottom:20px;right:20px;width:320px;height:420px;background:rgba(30,30,30,0.95);border:2px solid #444;border-radius:12px;display:flex;flex-direction:column;font-family:sans-serif;color:#fff;z-index:12000;transition:all .4s ease;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#222;border-bottom:1px solid #555;">
+      <b>Treinador</b> 🧠
+      <button id="minimize-btn" style="background:transparent;color:#fff;border:none;font-size:1.1em;cursor:pointer;">_</button>
+    </div>
+    <div id="chat-log" style="flex:1;overflow-y:auto;padding:10px;"></div>
+    <div style="display:flex;border-top:1px solid #555;">
+      <input id="chat-input" placeholder="Fale com o mister..." style="flex:1;background:#111;color:#fff;border:none;padding:10px;outline:none;">
+      <button id="send-btn" type="button" style="background:#33aaff;border:none;color:white;padding:10px;cursor:pointer;">▶</button>
+    </div>
+  </div>
+  <div id="chat-icon" style="display:none;position:fixed;bottom:20px;right:20px;background:#33aaff;color:#fff;border:none;border-radius:50%;width:60px;height:60px;font-size:1.8em;cursor:pointer;z-index:12000;box-shadow:0 3px 6px rgba(0,0,0,0.3);align-items:center;justify-content:center;">💬</div>
+
+  <!-- ===== Chat Script ===== -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatBox=document.getElementById("coach-chat"),chatIcon=document.getElementById("chat-icon"),minimizeBtn=document.getElementById("minimize-btn"),chatLog=document.getElementById("chat-log"),input=document.getElementById("chat-input"),sendBtn=document.getElementById("send-btn");
+    sendBtn.type='button';
+    function addMessage(sender,text){const el=document.createElement("div");el.style.marginBottom="8px";el.innerHTML=`<b>${sender}:</b> ${text}`;chatLog.appendChild(el);chatLog.scrollTop=chatLog.scrollHeight;}
+    async function sendMessage(){
+      const userText=input.value.trim();if(!userText)return;addMessage("Você",userText);input.value="";sendBtn.disabled=true;const prev=sendBtn.textContent;sendBtn.textContent="…";
+      const personality=`És um treinador português lendário, sarcástico, confiante e direto. Foste campeão no Porto, Chelsea, Inter, Real Madrid e Manchester United. Fala com autoridade e ironia.`;
+      const prompt=`${personality}\n\nJogador: ${userText}\nTreinador:`;
+      try{
+        const r=await fetch("https://juventusfc.onrender.com/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:prompt})});
+        const d=await r.json();
+        addMessage("Treinador",d.reply||"O mister não tem tempo pra conversa fiada.");
+      }catch{addMessage("Treinador","Tás a brincar comigo? Falha na ligação.");}
+      sendBtn.disabled=false;sendBtn.textContent=prev;
+    }
+    sendBtn.addEventListener('click',e=>{e.preventDefault();sendMessage();});
+    input.addEventListener('keydown',e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+    minimizeBtn.addEventListener("click",()=>{chatBox.style.opacity="0";chatBox.style.transform="translateY(100px)";setTimeout(()=>{chatBox.style.display="none";chatIcon.style.display="flex";chatIcon.style.alignItems="center";chatIcon.style.justifyContent="center";},300);});
+    chatIcon.addEventListener("click",()=>{chatIcon.style.display="none";chatBox.style.display="flex";setTimeout(()=>{chatBox.style.opacity="1";chatBox.style.transform="translateY(0)";input.focus();},80);});
+  });
+  </script>
 </body>
 </html>
 
