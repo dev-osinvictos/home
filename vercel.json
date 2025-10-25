@@ -7,16 +7,14 @@
     { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
     { "src": "resultados/**/*", "use": "@vercel/static" },
-    { "src": "dashboard/server.js", "use": "@vercel/node" }  // ✅ adiciona o backend da IA
+    { "src": "dashboard/server.js", "use": "@vercel/node" }
   ],
-
-  "routes": [
-    { "src": "/dashboard/ai/analyze", "dest": "/dashboard/server.js" },  // ✅ IA Tática
-    { "src": "/dashboard/api/chat", "dest": "/dashboard/server.js" },    // ✅ Chat do mister
-    { "src": "/dashboard/(.*)", "dest": "/dashboard/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
+    { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
+    { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
-
   "redirects": [
     {
       "source": "/resultados/FLAxRAC22102025",
@@ -29,7 +27,6 @@
       "permanent": false
     }
   ],
-
   "headers": [
     {
       "source": "/resultados/FLAxRAC22102025/(.*)",
