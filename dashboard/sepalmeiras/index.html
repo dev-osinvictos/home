@@ -334,18 +334,193 @@ socket.on("update_circle", (data) => {
   let pointerId = null;
   let currentPath = [];
 
-  // === resize canvas (DPI fix) ===
+// === PEN MODE PRO 2.2 SYNC ===
+(function () {
+  const penBtn = document.getElementById("pen-path-btn");
+  const canvas = document.getElementById("trace-canvas") || (() => {
+    const c = document.createElement("canvas");
+    c.id = "trace-canvas";
+    Object.assign(c.style, {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      zIndex: "1",
+      pointerEvents: "none",
+    });
+    document.body.appendChild(c);
+    return c;
+  })();
+
+  const ctx = canvas.getContext("2d");
+  let penMode = false, drawing = false, pointerId = null;
+  let currentPath = [], lastPoint = null;
+
+  // === resize canvas (DPI fix & preserve content) ===
   function resizeCanvasForDisplay() {
     const ratio = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    let old;
+    try { old = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch {}
     canvas.width = rect.width * ratio;
     canvas.height = rect.height * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(255,51,51,0.4)";
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(255,51,51,0.9)";
+    if (old) try { ctx.putImageData(old, 0, 0); } catch {}
   }
   resizeCanvasForDisplay();
-  window.addEventListener("resize", resizeCanvasForDisplay);
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => resizeCanvasForDisplay(), 150);
+  });
+
+  // === botão ===
+  penBtn.addEventListener("click", () => {
+    penMode = !penMode;
+    penBtn.style.background = penMode ? "#33aaff" : "#222";
+    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
+    canvas.style.pointerEvents = penMode ? "auto" : "none";
+    canvas.style.zIndex = penMode ? "1000" : "1";
+  });
+
+  // === coordenadas ===
+  function getCoord(evt) {
+    const rect = canvas.getBoundingClientRect();
+    if (evt.touches && evt.touches[0])
+      return {
+        x: evt.touches[0].clientX - rect.left,
+        y: evt.touches[0].clientY - rect.top,
+      };
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+  }
+
+  // === traço feather + spline ===
+  function drawLineSegment(path, color = "rgba(255,51,51,0.9)") {
+    if (path.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(path[0][0], path[0][1]);
+    // Catmull–Rom para suavizar
+    for (let i = 1; i < path.length - 2; i++) {
+      const xc = (path[i][0] + path[i + 1][0]) / 2;
+      const yc = (path[i][1] + path[i + 1][1]) / 2;
+      ctx.quadraticCurveTo(path[i][0], path[i][1], xc, yc);
+    }
+    ctx.lineTo(path[path.length - 1][0], path[path.length - 1][1]);
+    ctx.strokeStyle = color;
+    ctx.shadowColor = color.replace("0.9", "0.3");
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  function drawLineTo(x, y, color = "rgba(255,51,51,0.9)") {
+    if (!lastPoint) {
+      lastPoint = { x, y, t: Date.now() };
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      return;
+    }
+    const now = Date.now();
+    const dx = x - lastPoint.x;
+    const dy = y - lastPoint.y;
+    const dt = now - lastPoint.t || 1;
+    const velocity = Math.sqrt(dx * dx + dy * dy) / dt;
+    const targetWidth = Math.max(2, Math.min(8, 10 / (velocity + 0.2)));
+    ctx.lineWidth = ctx.lineWidth * 0.7 + targetWidth * 0.3;
+    ctx.shadowColor = color.replace("0.9", "0.4");
+    ctx.strokeStyle = color;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    lastPoint = { x, y, t: now };
+  }
+
+  // === POINTER EVENTS ===
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!penMode) return;
+    drawing = true;
+    pointerId = e.pointerId;
+    currentPath = [];
+    try { canvas.setPointerCapture(pointerId); } catch {}
+    const { x, y } = getCoord(e);
+    drawLineTo(x, y);
+    currentPath.push([x, y]);
+  });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!penMode || !drawing || e.pointerId !== pointerId) return;
+    const { x, y } = getCoord(e);
+    drawLineTo(x, y);
+    currentPath.push([x, y]);
+  });
+
+  canvas.addEventListener("pointerup", () => {
+    if (!penMode) return;
+    drawing = false;
+    ctx.closePath();
+    if (window.socket) {
+      const rect = canvas.getBoundingClientRect();
+      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+      socket.emit("path_draw", { path: normPath, author: "local" });
+    }
+    lastPoint = null;
+    currentPath = [];
+  });
+
+  // === TOUCH ===
+  canvas.style.touchAction = "none";
+  canvas.addEventListener("touchstart", (e) => {
+    if (!penMode) return;
+    drawing = true;
+    currentPath = [];
+    const { x, y } = getCoord(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    currentPath.push([x, y]);
+    e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", (e) => {
+    if (!penMode || !drawing) return;
+    const { x, y } = getCoord(e);
+    drawLineTo(x, y);
+    currentPath.push([x, y]);
+    e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener("touchend", () => {
+    drawing = false;
+    ctx.closePath();
+    if (window.socket) {
+      const rect = canvas.getBoundingClientRect();
+      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+      socket.emit("path_draw", { path: normPath, author: "local" });
+    }
+    lastPoint = null;
+    currentPath = [];
+  }, { passive: false });
+
+  // === RECEBE DESENHOS DE OUTROS USUÁRIOS ===
+  if (window.socket) {
+    socket.on("path_draw", (data) => {
+      if (!data || !Array.isArray(data.path)) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
+      const color = data.author === "local"
+        ? "rgba(255,51,51,0.9)"
+        : "rgba(51,153,255,0.9)";
+      drawLineSegment(scaled, color);
+    });
+  }
+})();
+
 
   // === botão ===
   penBtn.addEventListener("click", () => {
@@ -438,9 +613,13 @@ socket.on("update_circle", (data) => {
     ctx.closePath();
 
     // envia o traço para o servidor (SYNC)
-    if (currentPath.length > 1 && window.socket) {
-      socket.emit("path_draw", { path: currentPath });
+    if (window.socket) {
+      const rect = canvas.getBoundingClientRect();
+      // Normaliza coordenadas entre 0 e 1
+      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+      socket.emit("path_draw", { path: normPath });
     }
+
     lastPoint = null;
     currentPath = [];
   });
@@ -471,9 +650,13 @@ socket.on("update_circle", (data) => {
     drawing = false;
     ctx.closePath();
 
-    if (currentPath.length > 1 && window.socket) {
-      socket.emit("path_draw", { path: currentPath });
+    if (window.socket) {
+      const rect = canvas.getBoundingClientRect();
+      // Normaliza coordenadas entre 0 e 1
+      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+      socket.emit("path_draw", { path: normPath });
     }
+
     lastPoint = null;
     currentPath = [];
   }, { passive: false });
@@ -482,11 +665,14 @@ socket.on("update_circle", (data) => {
   if (window.socket) {
     socket.on("path_draw", (data) => {
       if (!data || !Array.isArray(data.path)) return;
-      drawRemotePath(data.path);
+      const rect = canvas.getBoundingClientRect();
+
+      // Reconstrói coordenadas reais conforme tamanho local
+      const scaledPath = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
+      drawRemotePath(scaledPath);
     });
   }
 })();
-
 
 </script>
 
