@@ -1,17 +1,292 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta property="og:title" content="CT Virtual SE Palmeiras"><meta property="og:description" content="Simulação tática com física real e análise de IA - CT Virtual Palmeiras"><meta property="og:image" content="https://www.osinvictos.com.br/img/palmeiras_og.jpg"><meta property="og:url" content="https://www.osinvictos.com.br"><title>CT Virtual SE Palmeiras</title><style>body{margin:0;overflow:hidden;background:url('img/estadium.jpg') center/cover no-repeat;font-family:'Segoe UI',sans-serif}.circle{position:absolute;width:40px;height:40px;border-radius:50%;background-color:rgba(0,255,0,.8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;cursor:grab;user-select:none}#circle24{background:rgba(255,255,255,.95);color:#000}#tactical-status,#ai-notification{position:fixed;right:20px;color:#fff;font-family:'Segoe UI',sans-serif;border-radius:8px;padding:12px 18px;z-index:10001;display:none;line-height:1.4}#tactical-status{top:20px;background:rgba(0,0,0,.85)}#ai-notification{bottom:20px;background:rgba(0,100,255,.85)}#trace-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}</style></head><body><canvas id="trace-canvas"></canvas><script>for(let i=1;i<=24;i++){const d=document.createElement('div');d.id="circle"+i;d.className="circle";d.textContent=i;d.style.left=(100+i*50)+"px";d.style.top=(200+(i%5)*60)+"px";document.body.appendChild(d);}</script><button id="ai-analise-btn" style="position:fixed;bottom:80px;left:20px;padding:12px 18px;border:none;background:#007bff;color:#fff;border-radius:6px;font-weight:bold;cursor:pointer;z-index:10002">AI Análise</button><button id="pen-path-btn" style="position:fixed;bottom:20px;left:20px;padding:10px 16px;border:none;background:#222;color:#fff;border-radius:6px;cursor:pointer;z-index:10002">✎ Desenho Tático</button><div id="tactical-status"></div><div id="ai-notification"></div><script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script><script>
-const socket=io("https://sepalmeiras.onrender.com",{transports:["websocket","polling"]});window.socket=socket;function throttle(f,d){let l=0;return(...a)=>{const n=Date.now();if(n-l>=d){l=n;f(...a)}}}
-const circles={},dragState={};let activeId=null;for(let i=1;i<=24;i++){const e=document.getElementById("circle"+i);circles[i]=e;dragState[i]={dragging:!1,offsetX:0,offsetY:0};if(!e)continue;e.addEventListener("mousedown",t=>{dragState[i].dragging=!0;dragState[i].offsetX=t.offsetX;dragState[i].offsetY=t.offsetY;activeId=i});e.addEventListener("touchstart",t=>{const c=t.touches[0],r=e.getBoundingClientRect();dragState[i].dragging=!0;dragState[i].offsetX=c.clientX-r.left;dragState[i].offsetY=c.clientY-r.top;activeId=i;t.preventDefault()},{passive:!1})}
-const emitPlayerMove=throttle((i,l,t)=>{socket.emit("player-move",{id:i,left:l,top:t})},50),emitBallMove=throttle((i,l,t)=>{socket.emit("ball-move",{id:i,left:l,top:t})},50);
-let lastSpoken={},ballVelocity={x:0,y:0},ballMoving=!1;
-function checkCollision(p,b){const pr=p.getBoundingClientRect(),br=b.getBoundingClientRect(),dx=pr.left-br.left,dy=pr.top-br.top;return Math.sqrt(dx*dx+dy*dy)<30}
-function speakPlayerNumber(id){const n=id.replace("circle",""),u=new SpeechSynthesisUtterance("Jogador "+n);u.lang="pt-BR";u.rate=1;const v=speechSynthesis.getVoices().find(v=>v.lang==="pt-BR"&&v.name.includes("Luciana"));if(v)u.voice=v;window.speechSynthesis.speak(u)}
-window.speechSynthesis.onvoiceschanged=()=>{};
-function moveElement(id,x,y){const e=circles[id];if(!e)return;const ox=parseFloat(e.style.left||0),oy=parseFloat(e.style.top||0);e.style.left=x+"px";e.style.top=y+"px";const b=document.getElementById("circle24");if(!b)return;if(checkCollision(e,b)){const n=Date.now();if(!lastSpoken[id]||n-lastSpoken[id]>1e3){speakPlayerNumber("circle"+id);lastSpoken[id]=n}
-const vx=(x-ox)*.6,vy=(y-oy)*.6;ballVelocity.x=vx;ballVelocity.y=vy;ballMoving=!0}}
-function updateBallPhysics(){if(!ballMoving)return;const b=document.getElementById("circle24");if(!b)return;let bx=parseFloat(b.style.left||0),by=parseFloat(b.style.top||0);bx+=ballVelocity.x;by+=ballVelocity.y;ballVelocity.x*=.94;ballVelocity.y*=.94;if(Math.abs(ballVelocity.x)<.05&&Math.abs(ballVelocity.y)<.05)ballMoving=!1;bx=Math.max(0,Math.min(bx,window.innerWidth-40));by=Math.max(0,Math.min(by,window.innerHeight-40));b.style.left=bx+"px";b.style.top=by+"px";emitBallMove("circle24",bx,by)}
-setInterval(updateBallPhysics,30);
-document.addEventListener("mousemove",e=>{if(!activeId)return;const i=activeId,x=e.clientX-dragState[i].offsetX,y=e.clientY-dragState[i].offsetY;moveElement(i,x,y);emitPlayerMove("circle"+i,x,y)});document.addEventListener("touchmove",e=>{if(!activeId)return;const i=activeId,t=e.touches[0],x=t.clientX-dragState[i].offsetX,y=t.clientY-dragState[i].offsetY;moveElement(i,x,y);emitPlayerMove("circle"+i,x,y);e.preventDefault()},{passive:!1});document.addEventListener("mouseup",()=>activeId=null);document.addEventListener("touchend",()=>activeId=null);
-socket.on("update_circle",d=>{const e=document.getElementById("circle"+d.id);if(e){e.style.left=d.left+"px";e.style.top=d.top+"px"}});
-document.getElementById("ai-analise-btn").addEventListener("click",async function(){const b=this;b.disabled=!0;b.textContent="Analisando... ⚙️";try{const g=Array.from({length:10},(_,i)=>2+i).map(id=>{const e=document.getElementById("circle"+id);return{id,left:parseInt(e.style.left||0),top:parseInt(e.style.top||0)}}),ball={left:parseInt(document.getElementById("circle24").style.left||0),top:parseInt(document.getElementById("circle24").style.top||0)},r=await fetch(`https://sepalmeiras.onrender.com/ai/analyze`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({green:g,ball:ball})}),d=await r.json();alert(`📋 ${d.detectedFormation}\n🧠 ${d.coachComment}`)}catch(e){alert("Erro na análise");console.error(e)}finally{b.disabled=!1;b.textContent="AI Análise"}});
-</script></body></html>
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="CT Virtual SE Palmeiras">
+  <meta property="og:description" content="Simulação tática com física real e análise de IA - CT Virtual Palmeiras">
+  <meta property="og:image" content="https://www.osinvictos.com.br/img/palmeiras_og.jpg">
+  <meta property="og:url" content="https://www.osinvictos.com.br">
+  <title>CT Virtual SE Palmeiras</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-image: url('img/estadium.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .circle {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: rgba(0,255,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      cursor: grab;
+      user-select: none;
+    }
+    #circle24 {
+      background-color: rgba(255,255,255,0.95);
+      color: #000;
+    }
+    #tactical-status, #ai-notification {
+      position: fixed;
+      right: 20px;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      border-radius: 8px;
+      padding: 12px 18px;
+      z-index: 10001;
+      display: none;
+      line-height: 1.4;
+    }
+    #tactical-status { top: 20px; background: rgba(0,0,0,0.85); }
+    #ai-notification { bottom: 20px; background: rgba(0,100,255,0.85); }
+    #trace-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="trace-canvas"></canvas>
+
+  <!-- jogadores -->
+  <script>
+    for (let i = 1; i <= 24; i++) {
+      const div = document.createElement('div');
+      div.id = "circle" + i;
+      div.className = "circle";
+      div.textContent = i;
+      div.style.left = (100 + i * 50) + "px";
+      div.style.top = (200 + (i % 5) * 60) + "px";
+      document.body.appendChild(div);
+    }
+  </script>
+
+  <button id="ai-analise-btn" style="
+    position:fixed; bottom:80px; left:20px;
+    padding:12px 18px; border:none;
+    background:#007bff; color:#fff;
+    border-radius:6px; font-weight:bold;
+    cursor:pointer; z-index:10002;">AI Análise</button>
+
+  <button id="pen-path-btn" style="
+    position:fixed; bottom:20px; left:20px;
+    padding:10px 16px; border:none;
+    background:#222; color:#fff;
+    border-radius:6px; cursor:pointer; z-index:10002;">✎ Desenho Tático</button>
+
+  <div id="tactical-status"></div>
+  <div id="ai-notification"></div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <script>
+  /* ===== CT Virtual SE Palmeiras 11.7 — Física FIFA + AI ===== */
+
+  const socket = io("https://sepalmeiras.onrender.com", {
+    transports: ["websocket", "polling"]
+  });
+  window.socket = socket;
+
+  // throttle utilitário
+  function throttle(fn, delay) {
+    let last = 0;
+    return (...args) => {
+      const now = Date.now();
+      if (now - last >= delay) {
+        last = now;
+        fn(...args);
+      }
+    };
+  }
+
+  const circles = {};
+  const dragState = {};
+  let activeId = null;
+
+  for (let i = 1; i <= 24; i++) {
+    const el = document.getElementById("circle" + i);
+    circles[i] = el;
+    dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
+    if (!el) continue;
+
+    el.addEventListener("mousedown", (e) => {
+      dragState[i].dragging = true;
+      dragState[i].offsetX = e.offsetX;
+      dragState[i].offsetY = e.offsetY;
+      activeId = i;
+    });
+
+    el.addEventListener("touchstart", (e) => {
+      const touch = e.touches[0];
+      const rect = el.getBoundingClientRect();
+      dragState[i].dragging = true;
+      dragState[i].offsetX = touch.clientX - rect.left;
+      dragState[i].offsetY = touch.clientY - rect.top;
+      activeId = i;
+      e.preventDefault();
+    }, { passive: false });
+  }
+
+  const emitPlayerMove = throttle((id, left, top) => {
+    socket.emit("player-move", { id, left, top });
+  }, 50);
+
+  const emitBallMove = throttle((id, left, top) => {
+    socket.emit("ball-move", { id, left, top });
+  }, 50);
+
+  let lastSpoken = {};
+  let ballVelocity = { x: 0, y: 0 };
+  let ballMoving = false;
+
+  function checkCollision(playerEl, ballEl) {
+    const pr = playerEl.getBoundingClientRect();
+    const br = ballEl.getBoundingClientRect();
+    const dx = pr.left - br.left;
+    const dy = pr.top - br.top;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < 30;
+  }
+
+  function speakPlayerNumber(playerId) {
+    const number = playerId.replace("circle", "");
+    const utter = new SpeechSynthesisUtterance("Jogador " + number);
+    utter.lang = "pt-BR";
+    utter.rate = 1.0;
+    const voices = speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang === "pt-BR" && v.name.includes("Luciana"));
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  }
+  window.speechSynthesis.onvoiceschanged = () => {};
+
+  function moveElement(id, x, y) {
+    const el = circles[id];
+    if (!el) return;
+
+    const oldX = parseFloat(el.style.left || 0);
+    const oldY = parseFloat(el.style.top || 0);
+
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+
+    const ball = document.getElementById("circle24");
+    if (!ball) return;
+
+    if (checkCollision(el, ball)) {
+      const now = Date.now();
+
+      if (!lastSpoken[id] || now - lastSpoken[id] > 1000) {
+        speakPlayerNumber("circle" + id);
+        lastSpoken[id] = now;
+      }
+
+      // impacto proporcional à velocidade
+      const vx = (x - oldX) * 0.6;
+      const vy = (y - oldY) * 0.6;
+      ballVelocity.x = vx;
+      ballVelocity.y = vy;
+      ballMoving = true;
+    }
+  }
+
+  // física da bola (FIFA mode)
+  function updateBallPhysics() {
+    if (!ballMoving) return;
+
+    const ball = document.getElementById("circle24");
+    if (!ball) return;
+
+    let bx = parseFloat(ball.style.left || 0);
+    let by = parseFloat(ball.style.top || 0);
+
+    bx += ballVelocity.x;
+    by += ballVelocity.y;
+
+    ballVelocity.x *= 0.94;
+    ballVelocity.y *= 0.94;
+
+    if (Math.abs(ballVelocity.x) < 0.05 && Math.abs(ballVelocity.y) < 0.05) {
+      ballMoving = false;
+    }
+
+    bx = Math.max(0, Math.min(bx, window.innerWidth - 40));
+    by = Math.max(0, Math.min(by, window.innerHeight - 40));
+
+    ball.style.left = bx + "px";
+    ball.style.top = by + "px";
+
+    emitBallMove("circle24", bx, by);
+  }
+  setInterval(updateBallPhysics, 30);
+
+  document.addEventListener("mousemove", (e) => {
+    if (!activeId) return;
+    const i = activeId;
+    const x = e.clientX - dragState[i].offsetX;
+    const y = e.clientY - dragState[i].offsetY;
+    moveElement(i, x, y);
+    emitPlayerMove("circle" + i, x, y);
+  });
+
+  document.addEventListener("touchmove", (e) => {
+    if (!activeId) return;
+    const i = activeId;
+    const touch = e.touches[0];
+    const x = touch.clientX - dragState[i].offsetX;
+    const y = touch.clientY - dragState[i].offsetY;
+    moveElement(i, x, y);
+    emitPlayerMove("circle" + i, x, y);
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("mouseup", () => activeId = null);
+  document.addEventListener("touchend", () => activeId = null);
+
+  socket.on("update_circle", (data) => {
+    const el = document.getElementById("circle" + data.id);
+    if (el) {
+      el.style.left = data.left + "px";
+      el.style.top = data.top + "px";
+    }
+  });
+
+  /* ===== AI Análise (unchanged from stable 11.6) ===== */
+  document.getElementById('ai-analise-btn').addEventListener('click', async function(){
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Analisando... ⚙️';
+
+    try {
+      const green = Array.from({length:10},(_,i)=>2+i).map(id=>{
+        const el=document.getElementById('circle'+id);
+        return {id,left:parseInt(el.style.left||0),top:parseInt(el.style.top||0)};
+      });
+      const ball = { left: parseInt(document.getElementById('circle24').style.left||0), top: parseInt(document.getElementById('circle24').style.top||0) };
+      const res = await fetch(`https://sepalmeiras.onrender.com/ai/analyze`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({green,ball})
+      });
+      const data = await res.json();
+      alert(`📋 ${data.detectedFormation}\n🧠 ${data.coachComment}`);
+    } catch(e){alert('Erro na análise');console.error(e);} 
+    finally{btn.disabled=false;btn.textContent='AI Análise';}
+  });
+  </script>
+</body>
+</html>
 
