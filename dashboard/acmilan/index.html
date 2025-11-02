@@ -481,21 +481,76 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
     emitPartial(segment);
   });
 
-  function finishDrawing() {
-    if (!drawing) return;
-    drawing = false;
-    ctx.closePath();
-    if (socketLocal && currentPath.length > 2) {
-      const simplified = currentPath;
-      const lastSegment = currentPath.slice(-8);
-      socketLocal.emit("path_draw_partial", { segment: lastSegment, color: DRAW_COLOR, last: true });
-      socketLocal.emit("path_draw", { path: simplified, color: DRAW_COLOR });
-    }
-    currentPath = [];
+// === SMOOTH DRAW ENGINE (versão final limpa) ===
+let lastPoint = null;
+let lastTime = 0;
+
+function drawSmoothSegment(x, y, color) {
+  const now = performance.now();
+  const delta = now - lastTime;
+  lastTime = now;
+
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // Espessura dinâmica conforme velocidade
+  const targetWidth = Math.max(2, Math.min(5, 60 / (delta + 1)));
+  ctx.lineWidth = ctx.lineWidth * 0.7 + targetWidth * 0.3;
+
+  if (!lastPoint) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  } else {
+    const midX = (lastPoint.x + x) / 2;
+    const midY = (lastPoint.y + y) / 2;
+    ctx.quadraticCurveTo(lastPoint.x, lastPoint.y, midX, midY);
+    ctx.stroke();
+  }
+  lastPoint = { x, y };
+}
+
+// === Eventos principais ===
+canvas.addEventListener("pointerdown", (e) => {
+  if (!penMode) return;
+  drawing = true;
+  const { x, y } = getCoord(e);
+  lastPoint = { x, y };
+  lastTime = performance.now();
+  currentPath = [[x, y]];
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  if (!drawing || !penMode) return;
+  const { x, y } = getCoord(e);
+  drawSmoothSegment(x, y, DRAW_COLOR);
+  currentPath.push([x, y]);
+
+  // envia o trecho parcial pro LiveSync
+  const segment = currentPath.slice(-8);
+  emitPartial(segment);
+});
+
+function finishDrawing() {
+  if (!drawing) return;
+  drawing = false;
+  ctx.closePath();
+
+  if (socketLocal && currentPath.length > 2) {
+    const lastSegment = currentPath.slice(-8);
+    socketLocal.emit("path_draw_partial", { segment: lastSegment, color: DRAW_COLOR, last: true });
+    socketLocal.emit("path_draw", { path: currentPath, color: DRAW_COLOR });
   }
 
-  canvas.addEventListener("pointerup", finishDrawing);
-  canvas.addEventListener("pointerout", finishDrawing);
+  currentPath = [];
+  lastPoint = null;
+}
+
+canvas.addEventListener("pointerup", finishDrawing);
+canvas.addEventListener("pointerout", finishDrawing);
+
 
   // Recebe paths existentes e novos
   socketLocal.on("existing_paths", list => {
