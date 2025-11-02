@@ -14,7 +14,12 @@ dotenv.config();
 // === Configura servidor HTTP e WebSocket ===
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: "*" } });
+const io = new Server(httpServer, {
+  cors: {
+    origin: ["https://www.osinvictos.com.br"],
+    methods: ["GET", "POST"]
+  }
+});
 
 // === Caminhos absolutos ===
 const __filename = fileURLToPath(import.meta.url);
