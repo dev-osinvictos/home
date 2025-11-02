@@ -29,13 +29,10 @@
     { "source": "/dashboard/juventusfc", "destination": "/dashboard/juventusfc/index.html" },
     { "source": "/dashboard/sepalmeiras", "destination": "/dashboard/sepalmeiras/index.html" },
 
-    /* ✅ Exceções para arquivos estáticos (não redireciona para index.html) */
     { "source": "/assets/(.*)", "destination": "/assets/$1" },
     { "source": "/book/(.*)", "destination": "/book/$1" },
     { "source": "/resultados/(.*)", "destination": "/resultados/$1" },
     { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" }
-
-    /* ❌ Importante: removemos o rewrite global "/(.*)" */
   ],
 
   "redirects": [
