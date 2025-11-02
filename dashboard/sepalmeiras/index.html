@@ -57,7 +57,7 @@
   <div id="circle9" class="circle">9</div>
   <div id="circle10" class="circle">10</div>
   <div id="circle11" class="circle">11</div>
-  <div id="circle12" class="circle" style="background:#000000;">A</div>
+  <div id="circle12" class="circle" style="background:#FF0000;">A</div>
   <div id="circle13" class="circle" style="background:#33FFCC;">2</div>
   <div id="circle14" class="circle" style="background:#33FFCC;">6</div>
   <div id="circle15" class="circle" style="background:#33FFCC;">3</div>
@@ -185,16 +185,22 @@ window.speechSynthesis.onvoiceschanged = () => {};
 function moveElement(id, x, y) {
   const el = circles[id];
   if (!el) return;
-  if (id === 24) return;
 
+  // 🟥 impede o juiz (circle12) de movimentar a bola ou ter impacto
+  if (id === 12) return;
+
+  // 🟢 permite o movimento da bola localmente
   const oldX = parseFloat(el.style.left || 0);
   const oldY = parseFloat(el.style.top || 0);
 
   el.style.left = x + "px";
   el.style.top = y + "px";
 
-  const ball = document.getElementById("circle24");
-  if (!ball) return;
+  // Se for a bola, apenas emite o movimento e sai (sem colisão)
+  if (id === 24) {
+    emitBallMove("circle24", x, y);
+    return;
+  }
 
   // detecta colisão jogador-bola
   if (checkCollision(el, ball)) {
