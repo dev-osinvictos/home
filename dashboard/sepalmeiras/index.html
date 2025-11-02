@@ -57,7 +57,7 @@
   <div id="circle9" class="circle">9</div>
   <div id="circle10" class="circle">10</div>
   <div id="circle11" class="circle">11</div>
-
+  <div id="circle12" class="circle" style="background:#000000;">A</div>
   <div id="circle13" class="circle" style="background:#33FFCC;">2</div>
   <div id="circle14" class="circle" style="background:#33FFCC;">6</div>
   <div id="circle15" class="circle" style="background:#33FFCC;">3</div>
@@ -69,7 +69,7 @@
   <div id="circle21" class="circle" style="background:#33FFCC;">11</div>
   <div id="circle22" class="circle" style="background:#33FFCC;">9</div>
   <div id="circle23" class="circle">01</div>
-  <div id="circle12" class="circle"></div>
+  <div id="circle24" class="circle"></div>
 
   <canvas id="trace-canvas" width="600" height="300"
    style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;"></canvas>
@@ -109,7 +109,7 @@ const dragState = {};
 let activeId = null;
 
 // === Inicializa círculos (jogadores) ===
-for (let i = 1; i <= 23; i++) {
+for (let i = 1; i <= 24; i++) {
   const el = document.getElementById("circle" + i);
   circles[i] = el;
   dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
@@ -140,7 +140,7 @@ const emitBallMove = throttle((id, left, top) => {
   socket.emit("ball-move", { id, left, top });
 }, 50);
 
-const ball = document.getElementById("circle12");
+const ball = document.getElementById("circle24");
 
 // === Detecção de colisão ===
 function checkCollision(playerEl, ballEl) {
@@ -185,7 +185,7 @@ window.speechSynthesis.onvoiceschanged = () => {};
 function moveElement(id, x, y) {
   const el = circles[id];
   if (!el) return;
-  if (id === 12) return;
+  if (id === 24) return;
 
   const oldX = parseFloat(el.style.left || 0);
   const oldY = parseFloat(el.style.top || 0);
@@ -193,7 +193,7 @@ function moveElement(id, x, y) {
   el.style.left = x + "px";
   el.style.top = y + "px";
 
-  const ball = document.getElementById("circle12");
+  const ball = document.getElementById("circle24");
   if (!ball) return;
 
   // detecta colisão jogador-bola
@@ -219,7 +219,7 @@ function moveElement(id, x, y) {
 function updateBallPhysics() {
   if (!ballMoving) return;
 
-  const ball = document.getElementById("circle12");
+  const ball = document.getElementById("circle24");
   if (!ball) return;
 
   let bx = parseFloat(ball.style.left || 0);
@@ -250,7 +250,7 @@ function updateBallPhysics() {
   ball.style.top = by + "px";
 
   // envia posição ao servidor
-  emitBallMove("circle12", bx, by);
+  emitBallMove("circle24", bx, by);
 }
 
 // === Atualiza a física a cada frame ===
@@ -318,7 +318,7 @@ socket.on("update_circle", (data) => {
   }
 
   function getBall() {
-    const el = document.getElementById('circle12');
+    const el = document.getElementById('circle24');
     return {
       left: parseInt(el.style.left || el.offsetLeft),
       top: parseInt(el.style.top || el.offsetTop)
