@@ -387,277 +387,134 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
 
 
 
-/* ===== Desenho tático streaming (partial) ===== */
-(function(){
+<!-- ====== Canvas e Desenho Tático com Live Sync ====== -->
+<script>
+(function() {
   const canvas = document.getElementById("trace-canvas");
   const penBtn = document.getElementById("pen-path-btn");
+  if (!canvas || !penBtn) return;
 
-  // ✅ Usa o socket global já conectado (ou cria se ainda não existir)
+  // 🔗 Socket global
   const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
     transports: ["websocket", "polling"]
   });
 
-  if (!canvas) return;
   const ctx = canvas.getContext("2d");
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.shadowBlur = 0;
 
-  // resize same as before
   function resizeCanvasForDisplay() {
     const ratio = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.style.width = rect.width + "px";
     canvas.style.height = rect.height + "px";
-    canvas.width = Math.round(rect.width * ratio);
-    canvas.height = Math.round(rect.height * ratio);
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
   }
   resizeCanvasForDisplay();
-  window.addEventListener('resize', resizeCanvasForDisplay);
+  window.addEventListener("resize", resizeCanvasForDisplay);
 
-  // throttle util
+  let penMode = false, drawing = false, currentPath = [], pointerId = null;
+  const DRAW_COLOR = "#ff3333";
+  const LINE_WIDTH = 3;
+
+  penBtn.addEventListener("click", () => {
+    penMode = !penMode;
+    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
+    penBtn.style.background = penMode ? "#2a8fff" : "#333";
+    canvas.style.pointerEvents = penMode ? "auto" : "none";
+  });
+
   function throttle(fn, delay) {
     let last = 0;
     return (...args) => {
       const now = Date.now();
-      if (now - last >= delay) {
+      if (now - last > delay) {
         last = now;
         fn(...args);
       }
     };
   }
 
-  let penMode = false, drawing = false, currentPath = [], pointerId = null;
-  const DRAW_COLOR = "#ff3333";
-  const LINE_WIDTH = 4;
-
-  if (penBtn) {
-    penBtn.addEventListener('click', () => {
-      penMode = !penMode;
-      penBtn.style.background = penMode ? "#33aaff" : "#222";
-      canvas.style.pointerEvents = penMode ? "auto" : "none";
-      penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
-    });
-  }
-
-  canvas.style.touchAction = "none";
-
-  function getCoordFromEvent(evt) {
+  function getCoord(e) {
     const rect = canvas.getBoundingClientRect();
-    if (evt.clientX !== undefined && evt.clientY !== undefined) return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
-    if (evt.touches && evt.touches[0]) return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
-    return { x: 0, y: 0 };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  // --- partial emit: envia segmentos enquanto desenha (throttle)
-  const emitPartial = throttle((segment) => {
-    if (!socketLocal) return;
-    try {
-      socketLocal.emit('path_draw_partial', { segment, color: DRAW_COLOR });
-    } catch (e) { console.warn('emitPartial err', e); }
-  }, 100); // 100ms
+  const emitPartial = throttle(segment => {
+    if (socketLocal) socketLocal.emit("path_draw_partial", { segment, color: DRAW_COLOR });
+  }, 100);
 
-  // --- draw helpers
   function drawSegment(segment, color) {
-    if (!segment || segment.length === 0) return;
     ctx.beginPath();
     ctx.moveTo(segment[0][0], segment[0][1]);
-    for (let i=1;i<segment.length;i++){
-      ctx.lineTo(segment[i][0], segment[i][1]);
-    }
-    ctx.strokeStyle = color || DRAW_COLOR;
+    for (let i = 1; i < segment.length; i++) ctx.lineTo(segment[i][0], segment[i][1]);
+    ctx.strokeStyle = color;
     ctx.lineWidth = LINE_WIDTH;
     ctx.stroke();
     ctx.closePath();
   }
 
-  // --- pointer events (streaming)
-  canvas.addEventListener('pointerdown', (e) => {
+  canvas.addEventListener("pointerdown", e => {
     if (!penMode) return;
-    drawing = true; pointerId = e.pointerId;
-    try { canvas.setPointerCapture(pointerId); } catch (er){}
-    const { x,y } = getCoordFromEvent(e);
-    currentPath = [[x,y]];
-    ctx.beginPath(); ctx.moveTo(x,y);
+    drawing = true;
+    pointerId = e.pointerId;
+    const { x, y } = getCoord(e);
+    currentPath = [[x, y]];
+    ctx.beginPath();
+    ctx.moveTo(x, y);
   });
 
-  canvas.addEventListener('pointermove', (e) => {
-    if (!penMode || !drawing || e.pointerId !== pointerId) return;
-    const { x,y } = getCoordFromEvent(e);
-    ctx.lineTo(x,y);
-    ctx.strokeStyle = DRAW_COLOR; ctx.lineWidth = LINE_WIDTH; ctx.stroke();
-    currentPath.push([x,y]);
-
-    // send partial chunks of ~10 points to keep payload small
-    // build a small segment from lastSentIndex -> end
-    // For simplicity, we slice last N points (e.g. last 8)
-    const SLICE_SIZE = 8;
-    const start = Math.max(0, currentPath.length - SLICE_SIZE);
-    const segment = currentPath.slice(start);
+  canvas.addEventListener("pointermove", e => {
+    if (!drawing || !penMode) return;
+    const { x, y } = getCoord(e);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = DRAW_COLOR;
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.stroke();
+    currentPath.push([x, y]);
+    const segment = currentPath.slice(-8);
     emitPartial(segment);
   });
 
-function finishDrawing(e) {
-  if (!drawing) return;
-  drawing = false;
-  try { canvas.releasePointerCapture(pointerId); } catch (er){}
-  ctx.closePath();
-
-  if (socketLocal && currentPath.length > 1) {
-    const simplified = simplifyPath(currentPath, 1.0);
-
-    // envia último segmento parcial com flag "last:true"
-    const SLICE_SIZE = 8;
-    const start = Math.max(0, currentPath.length - SLICE_SIZE);
-    const lastSegment = currentPath.slice(start);
-    socketLocal.emit('path_draw_partial', {
-      segment: lastSegment,
-      color: DRAW_COLOR,
-      last: true
-    });
-
-    // envia o path final para persistência e histórico
-    socketLocal.emit('path_draw', { path: simplified, color: DRAW_COLOR });
-  }
-
-  currentPath = [];
-  pointerId = null;
-}
-
-
-  canvas.addEventListener('pointerup', finishDrawing);
-  canvas.addEventListener('pointercancel', finishDrawing);
-  canvas.addEventListener('pointerout', (e) => { if (drawing && e.pointerId === pointerId) finishDrawing(e); });
-
-  // touch fallback (emit partials)
-  canvas.addEventListener('touchstart', (e) => {
-    if (!penMode) return;
-    e.preventDefault();
-    const c = getCoordFromEvent(e);
-    drawing = true; currentPath = [[c.x,c.y]];
-    ctx.beginPath(); ctx.moveTo(c.x,c.y);
-  }, { passive: false });
-
-  canvas.addEventListener('touchmove', (e) => {
-    if (!penMode || !drawing) return;
-    e.preventDefault();
-    const c = getCoordFromEvent(e);
-    ctx.lineTo(c.x,c.y); ctx.strokeStyle = DRAW_COLOR; ctx.lineWidth = LINE_WIDTH; ctx.stroke();
-    currentPath.push([c.x,c.y]);
-
-    // emit partial as above
-    const SLICE_SIZE = 8;
-    const start = Math.max(0, currentPath.length - SLICE_SIZE);
-    const segment = currentPath.slice(start);
-    emitPartial(segment);
-  }, { passive: false });
-
-canvas.addEventListener('touchend', (e) => {
-  if (!penMode || !drawing) return;
-  e.preventDefault();
-  drawing = false;
-  ctx.closePath();
-
-  if (socketLocal && currentPath.length > 1) {
-    const simplified = simplifyPath(currentPath, 1.0);
-
-    const SLICE_SIZE = 8;
-    const start = Math.max(0, currentPath.length - SLICE_SIZE);
-    const lastSegment = currentPath.slice(start);
-    socketLocal.emit('path_draw_partial', {
-      segment: lastSegment,
-      color: DRAW_COLOR,
-      last: true
-    });
-
-    socketLocal.emit('path_draw', { path: simplified, color: DRAW_COLOR });
-  }
-
-  currentPath = [];
-}, { passive: false });
-
-
-  // ===== receive partials and final paths from others =====
-  // buffer of partials currently being drawn by other clients
-  const partialBuffers = {}; // key: socketId, value: array of points
-
-  if (socketLocal) {
-    // historic finals
-    socketLocal.on('existing_paths', (list) => {
-      if (!Array.isArray(list)) return;
-      for (const item of list) drawPathOnCanvas(item.path, item.color || DRAW_COLOR);
-    });
-
-    // final persisted path
-    socketLocal.on('path_draw', (data) => {
-      if (!data || !Array.isArray(data.path)) return;
-      drawPathOnCanvas(data.path, data.color || DRAW_COLOR);
-      // clear any partial buffer for that id
-      if (data.id && partialBuffers[data.id]) delete partialBuffers[data.id];
-    });
-
-    // partial segment (append & draw)
-    socketLocal.on('path_draw_partial', (data) => {
-      if (!data || !Array.isArray(data.segment)) return;
-      // append to buffer
-      if (!partialBuffers[data.id]) partialBuffers[data.id] = [];
-      partialBuffers[data.id].push(...data.segment);
-      // draw the segment only (minimizes redraw)
-      drawSegment(data.segment, data.color || DRAW_COLOR);
-      // if data.last is true, collapse into final (server doesn't send last for partial in this design)
-      if (data.last) {
-        // move buffer into final and clear
-        drawPathOnCanvas(partialBuffers[data.id], data.color || DRAW_COLOR);
-        delete partialBuffers[data.id];
-      }
-    });
-
-    socketLocal.on('path_clear', () => {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for (const k in partialBuffers) delete partialBuffers[k];
-    });
-  }
-
-  // helper to draw whole path
-  function drawPathOnCanvas(path, color) {
-    if (!path || path.length === 0) return;
-    ctx.beginPath();
-    for (let i=0;i<path.length;i++){
-      const [x,y] = path[i];
-      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  function finishDrawing() {
+    if (!drawing) return;
+    drawing = false;
+    ctx.closePath();
+    if (socketLocal && currentPath.length > 2) {
+      const simplified = currentPath;
+      const lastSegment = currentPath.slice(-8);
+      socketLocal.emit("path_draw_partial", { segment: lastSegment, color: DRAW_COLOR, last: true });
+      socketLocal.emit("path_draw", { path: simplified, color: DRAW_COLOR });
     }
-    ctx.strokeStyle = color || DRAW_COLOR; ctx.lineWidth = LINE_WIDTH; ctx.stroke(); ctx.closePath();
+    currentPath = [];
   }
 
-  // helper to draw just segment
-  function drawSegment(segment, color) {
-    if (!segment || segment.length === 0) return;
-    ctx.beginPath();
-    ctx.moveTo(segment[0][0], segment[0][1]);
-    for (let i=1;i<segment.length;i++) ctx.lineTo(segment[i][0], segment[i][1]);
-    ctx.strokeStyle = color || DRAW_COLOR; ctx.lineWidth = LINE_WIDTH; ctx.stroke(); ctx.closePath();
-  }
+  canvas.addEventListener("pointerup", finishDrawing);
+  canvas.addEventListener("pointerout", finishDrawing);
 
-  // simplifyPath (kept same)
-  function simplifyPath(points, tol) {
-    if (!points || points.length < 3) return points;
-    const out = [points[0]];
-    let last = points[0];
-    for (let i=1;i<points.length;i++){
-      const p = points[i];
-      const dx = p[0]-last[0], dy = p[1]-last[1];
-      if (Math.abs(dx) + Math.abs(dy) >= tol) {
-        out.push(p);
-        last = p;
-      }
-    }
-    if (out[out.length-1] !== points[points.length-1]) out.push(points[points.length-1]);
-    return out;
-  }
+  // Recebe paths existentes e novos
+  socketLocal.on("existing_paths", list => {
+    for (const item of list) drawSegment(item.path, item.color);
+  });
 
+  socketLocal.on("path_draw_partial", data => {
+    if (data && Array.isArray(data.segment)) drawSegment(data.segment, data.color);
+  });
+
+  socketLocal.on("path_draw", data => {
+    if (data && Array.isArray(data.path)) drawSegment(data.path, data.color);
+  });
+
+  socketLocal.on("path_clear", () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
 })();
-
 </script>
+
 <script>
   // === Funções auxiliares ===
   function getPositions(prefix) {
