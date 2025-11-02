@@ -11,33 +11,26 @@
     { "src": "dashboard/**/*", "use": "@vercel/static" }
   ],
 
-  "rewrites": [
-
-    { "source": "/dashboard.html", "destination": "/dashboard.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/dashboard/", "destination": "/dashboard.html" },
-
-    { "source": "/dashboard/acmilan", "destination": "/dashboard/acmilan/index.html" },
-    { "source": "/dashboard/guaranifc", "destination": "/dashboard/guaranifc/index.html" },
-    { "source": "/dashboard/cariverplate", "destination": "/dashboard/cariverplate/index.html" },
-    { "source": "/dashboard/cabocajuniors", "destination": "/dashboard/cabocajuniors/index.html" },
-    { "source": "/dashboard/crflamengo", "destination": "/dashboard/crflamengo/index.html" },
-    { "source": "/dashboard/racingclub", "destination": "/dashboard/racingclub/index.html" },
-    { "source": "/dashboard/scinternacional", "destination": "/dashboard/scinternacional/index.html" },
-    { "source": "/dashboard/santosfc", "destination": "/dashboard/santosfc/index.html" },
-    { "source": "/dashboard/juventusfc", "destination": "/dashboard/juventusfc/index.html" },
+"rewrites": [
+  { "source": "/dashboard.html", "destination": "/dashboard.html" },
+  { "source": "/dashboard", "destination": "/dashboard.html" },
+  { "source": "/dashboard/", "destination": "/dashboard.html" },
+  { "source": "/dashboard/acmilan", "destination": "/dashboard/acmilan/index.html" },
+  { "source": "/dashboard/guaranifc", "destination": "/dashboard/guaranifc/index.html" },
+  { "source": "/dashboard/cariverplate", "destination": "/dashboard/cariverplate/index.html" },
+  { "source": "/dashboard/cabocajuniors", "destination": "/dashboard/cabocajuniors/index.html" },
+  { "source": "/dashboard/crflamengo", "destination": "/dashboard/crflamengo/index.html" },
+  { "source": "/dashboard/racingclub", "destination": "/dashboard/racingclub/index.html" },
+  { "source": "/dashboard/scinternacional", "destination": "/dashboard/scinternacional/index.html" },
+  { "source": "/dashboard/santosfc", "destination": "/dashboard/santosfc/index.html" },
+  { "source": "/dashboard/juventusfc", "destination": "/dashboard/juventusfc/index.html" },
   { "source": "/dashboard/sepalmeiras", "destination": "/dashboard/sepalmeiras/index.html" },
-
-  { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
-
   { "source": "/assets/(.*)", "destination": "/assets/$1" },
   { "source": "/book/(.*)", "destination": "/book/$1" },
   { "source": "/resultados/(.*)", "destination": "/resultados/$1" },
   { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
-
-  { "source": "/(.*)", "destination": "/index.html" },
-  { "source": "/assets/(.*)", "has": [{ "type": "host", "value": "www.osinvictos.com.br" }], "destination": "/assets/$1" }
-  ],
+  { "source": "/(.*)", "destination": "/index.html" }
+],
 
   "redirects": [
     {
