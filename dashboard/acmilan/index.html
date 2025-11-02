@@ -12,8 +12,10 @@
     <meta property="og:description" content="Campeão Invicto do Campeonato Italiano na temporada 1991–1992">
     <meta property="og:image" content="https://www.osinvictos.com.br/dashboard/acmilan/img/acmilan-previa.png">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+
+
 </head>
 <body style="
   background-image: url('img/estadium.jpg');
@@ -394,15 +396,10 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
   const penBtn = document.getElementById("pen-path-btn");
   if (!canvas || !penBtn) return;
 
-  // 🔗 Socket global
-//  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
-//    transports: ["websocket", "polling"]
-//  });
-
-const socketLocal = window.socket = window.socket || io(window.location.origin, {
-  transports: ["websocket", "polling"]
+// 🔗 Socket global
+  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
+    transports: ["websocket", "polling"]
 });
-
 
   const ctx = canvas.getContext("2d");
   ctx.lineCap = "round";
