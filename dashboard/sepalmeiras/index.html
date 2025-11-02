@@ -590,79 +590,70 @@ socket.on("update_circle", (data) => {
   }
 
   // === Botão da Análise IA ===
-  const aiBtn = document.getElementById('ai-analise-btn');
-  aiBtn.addEventListener('click', async function() {
-    aiBtn.disabled = true;
-    aiBtn.textContent = "Analisando... ⚙️";
-    notify("🤖 O Abel está avaliando o adversário...", 3000);
+const aiBtn = document.getElementById('ai-analise-btn');
 
-    try {
-      // coleta posições
-      const green = getPositions('circle'); // Palmeiras
-      const black = getPositions('red');    // Adversário (ajuste prefixo se necessário)
-      const ball = getBall();
-      const possession = detectBallPossession(green, ball); // "verde" | "preto"
+aiBtn.addEventListener('click', async function() {
+  aiBtn.disabled = true;
+  aiBtn.textContent = "Analisando... ⚙️";
+  notify("🤖 O Abel está avaliando o adversário...", 3000);    
 
-      // envia POSSESSION também
-      const res = await fetch(`https://sepalmeiras.onrender.com/ai/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ green, black, ball, possession })
-      });
+  try {
+    // coleta posições
+    const green = getPositions('circle'); 
+    const black = getPositions('black');
+    const ball = getBall();
+    const possession = detectBallPossession(green, ball);
 
-      if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
-      const data = await res.json();
+    // envia POSSESSION também
+    const res = await fetch(`https://sepalmeiras.onrender.com/ai/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ green, black, ball, possession })
+    });
 
-      if (data.detectedFormation) {
-        notify(`🧠 Esquema adversário: ${data.detectedFormation}`, 4000);
-      }
+    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+    const data = await res.json();
 
-      // ===== AÇÃO 4: se Palmeiras em posse, avançar time verde localmente =====
-      const attackAdvance = possession === "verde" ? 50 : 0;
-
-      if (data.red) {
-        animateTeam('circle', data.red);
-
-//    const advanced = data.red.map(p => {
-//    if (p.id === 13) return p;
-//    let newLeft = p.left + attackAdvance;
-//        newLeft = Math.max(10, Math.min(newLeft, (window.innerWidth || 600) - 40));
-//    return { id: p.id, left: newLeft, top: p.top };
-//    });
-
-      const advanced = data.red.map(p => {
-        if (p.id === 13) return p; // goleiro parado
-
-        // defensores (14–17) recuam menos
-        const defenseFactor = (p.id >= 14 && p.id <= 17) ? 0.4 : 1.0;
-        let newLeft = p.left + attackAdvance * defenseFactor;
-
-        newLeft = Math.max(10, Math.min(newLeft, (window.innerWidth || 600) - 40));
-        return { id: p.id, left: newLeft, top: p.top };
-      });
-
-          setTimeout(() => animateTeam('circle', advanced), 300);
-          notify("🟢 Palmeiras avança em ataque coordenado!", 3000);
-        } else {
-          notify("⚫ Ajuste defensivo aplicado ao adversário.", 2500);
-        }
-      }
-
-      // === Pop-up do Abel 15s depois ===
-      if (data.coachComment) {
-        setTimeout(() => {
-          showAbelCommentPopup(data.coachComment);
-        }, 15000);
-      }
-
-    } catch (err) {
-      console.error("AI analyze error:", err);
-      notify("❌ Erro na análise da IA! Verifique conexão.", 5000);
-    } finally {
-      aiBtn.disabled = false;
-      aiBtn.textContent = "AI Análise";
+    // === Retornos da IA ===
+    if (data.detectedFormation) {
+      notify(`🧠 Esquema adversário: ${data.detectedFormation}`, 4000);
     }
-  });
+
+    // ===== AÇÃO 4: se Palmeiras em posse, avançar time verde localmente =====
+    const attackAdvance = possession === "verde" ? 50 : 0;
+
+    if (data.red) {
+      animateTeam('circle', data.red);
+
+      if (attackAdvance > 0) {
+        const advanced = data.red.map(p => {
+          if (p.id === 13) return p; // impede o goleiro de recuar/avançar
+          let newLeft = p.left + attackAdvance;
+          newLeft = Math.max(10, Math.min(newLeft, (window.innerWidth || 600) - 40));
+          return { id: p.id, left: newLeft, top: p.top };
+        });
+        setTimeout(() => animateTeam('circle', advanced), 300);
+        notify("🟢 Palmeiras avança em ataque coordenado!", 3000);
+      } else {
+        notify("⚫ Ajuste defensivo aplicado ao adversário.", 2500);
+      }
+    }
+
+    if (data.coachComment) {
+      setTimeout(() => {
+        showAbelCommentPopup(data.coachComment);
+      }, 15000);
+    }
+
+  } catch (err) {
+    console.error("AI analyze error:", err);
+    notify("❌ Erro na análise da IA! Verifique conexão.", 5000);
+  } finally {
+    aiBtn.disabled = false;
+    aiBtn.textContent = "AI Análise";
+  }
+});
+
 </script>
 
 
