@@ -135,9 +135,6 @@ for (let i = 1; i <= 24; i++) {
   }, { passive: false });
 }
 
-// === Controle de fala global ===
-let lastSpoken = {};
-
 // === Física da bola ===
 const emitBallMove = throttle((id, left, top) => {
   socket.emit("ball-move", { id, left, top });
@@ -530,7 +527,6 @@ chatInput.addEventListener("keydown", (e)=>{
 });
 </script>
 <!-- === WebSocket: sincroniza jogadores em tempo real === -->
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
   socket.on("connect", () => {
     console.log("📡 Conectado ao servidor WebSocket");
