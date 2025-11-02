@@ -308,33 +308,7 @@ socket.on("update_circle", (data) => {
   }
 });
 
-// === PEN MODE PRO 3.3 SYNC ===
-(function() {
-  const penBtn = document.getElementById("pen-path-btn");
-  const canvas = document.getElementById("trace-canvas") || (() => {
-    const c = document.createElement("canvas");
-    c.id = "trace-canvas";
-    Object.assign(c.style, {
-      position: "absolute",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      zIndex: "1",
-      pointerEvents: "none"
-    });
-    document.body.appendChild(c);
-    return c;
-  })();
-
-  const ctx = canvas.getContext("2d");
-  let penMode = false;
-  let drawing = false;
-  let lastPoint = null;
-  let pointerId = null;
-  let currentPath = [];
-
-// === PEN MODE PRO 2.3 AUTO FADE TACTICAL BOARD ===
+// === PEN MODE PRO 2.3.1 — Mobile Sync + Silent Fix ===
 (function () {
   const penBtn = document.getElementById("pen-path-btn");
   const canvas = document.getElementById("trace-canvas") || (() => {
@@ -348,12 +322,14 @@ socket.on("update_circle", (data) => {
       height: "100%",
       zIndex: "1",
       pointerEvents: "none",
+      touchAction: "none"
     });
     document.body.appendChild(c);
     return c;
   })();
 
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  // === Contexto 2D otimizado ===
+  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
 
   let penMode = false, drawing = false, pointerId = null;
   let currentPath = [], lastPoint = null;
@@ -399,32 +375,25 @@ socket.on("update_circle", (data) => {
     }
   });
 
-  // === Resize com preservação ===
+  // === Resize Canvas (sem getImageData, zero warning)
   function resizeCanvasForDisplay() {
     const ratio = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    let old;
-    try { old = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch {}
     canvas.width = rect.width * ratio;
     canvas.height = rect.height * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.shadowColor = "rgba(255,51,51,0.4)";
     ctx.shadowBlur = 6;
     ctx.lineWidth = 4;
-    ctx.strokeStyle = colors[tacticalLayer];
-    if (old) try { ctx.putImageData(old, 0, 0); } catch {}
   }
 
   resizeCanvasForDisplay();
-  let resizeTimer;
   window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => resizeCanvasForDisplay(), 150);
+    resizeCanvasForDisplay();
   });
 
-  // === Botão principal ===
+  // === Botão principal
   penBtn.addEventListener("click", () => {
     penMode = !penMode;
     penBtn.style.background = penMode ? "#33aaff" : "#222";
@@ -433,28 +402,27 @@ socket.on("update_circle", (data) => {
     canvas.style.zIndex = penMode ? "1000" : "1";
   });
 
-  // === Coordenadas corrigidas ===
+  // === Coordenadas ajustadas (Mobile Precision)
   function getCoord(evt) {
     const rect = canvas.getBoundingClientRect();
     const ratio = canvas.width / rect.width;
     if (evt.touches && evt.touches[0]) {
       return {
         x: (evt.touches[0].clientX - rect.left) * ratio,
-        y: (evt.touches[0].clientY - rect.top) * ratio,
+        y: (evt.touches[0].clientY - rect.top + window.scrollY) * ratio,
       };
     }
     return {
       x: (evt.clientX - rect.left) * ratio,
-      y: (evt.clientY - rect.top) * ratio,
+      y: (evt.clientY - rect.top + window.scrollY) * ratio,
     };
   }
 
-  // === Feather + spline ===
   function drawLineSegment(path, color) {
     if (path.length < 2) return;
     ctx.beginPath();
     ctx.moveTo(path[0][0], path[0][1]);
-    for (let i = 1; i < path.length - 2; i++) {
+    for (let i = 1; i < path.length - 1; i++) {
       const xc = (path[i][0] + path[i + 1][0]) / 2;
       const yc = (path[i][1] + path[i + 1][1]) / 2;
       ctx.quadraticCurveTo(path[i][0], path[i][1], xc, yc);
@@ -462,27 +430,16 @@ socket.on("update_circle", (data) => {
     ctx.lineTo(path[path.length - 1][0], path[path.length - 1][1]);
     ctx.strokeStyle = color;
     ctx.shadowColor = color.replace("0.9", "0.3");
-    ctx.shadowBlur = 6;
-    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.closePath();
 
-    // 🕒 fade automático após 5s
+    // 🕒 Fade após 5s
     setTimeout(() => {
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";
-      const fadeSteps = 20;
-      let alpha = 0.05;
-      const fadeInterval = setInterval(() => {
-        ctx.globalAlpha = alpha;
-        drawLineSegment(path, "rgba(0,0,0,1)");
-        alpha += 0.05;
-        if (alpha >= 1) {
-          clearInterval(fadeInterval);
-          ctx.globalAlpha = 1;
-          ctx.restore();
-        }
-      }, 1000 / fadeSteps);
+      ctx.globalAlpha = 0.15;
+      drawLineSegment(path, "rgba(0,0,0,1)");
+      ctx.restore();
     }, 5000);
   }
 
@@ -507,20 +464,19 @@ socket.on("update_circle", (data) => {
     lastPoint = { x, y, t: now };
   }
 
-  // === POINTER EVENTS ===
+  // === POINTER + TOUCH unificados ===
   canvas.addEventListener("pointerdown", (e) => {
     if (!penMode) return;
     drawing = true;
     pointerId = e.pointerId;
     currentPath = [];
-    try { canvas.setPointerCapture(pointerId); } catch {}
     const { x, y } = getCoord(e);
     drawLineTo(x, y, colors[tacticalLayer]);
     currentPath.push([x, y]);
   });
 
   canvas.addEventListener("pointermove", (e) => {
-    if (!penMode || !drawing || e.pointerId !== pointerId) return;
+    if (!penMode || !drawing) return;
     const { x, y } = getCoord(e);
     drawLineTo(x, y, colors[tacticalLayer]);
     currentPath.push([x, y]);
@@ -530,57 +486,25 @@ socket.on("update_circle", (data) => {
     if (!penMode) return;
     drawing = false;
     ctx.closePath();
+
     if (window.socket) {
       const rect = canvas.getBoundingClientRect();
-      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-      socket.emit("path_draw", { path: normPath, layer: tacticalLayer });
+      const norm = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+      socket.emit("path_draw", { path: norm, layer: tacticalLayer });
     }
-    drawLineSegment(currentPath, colors[tacticalLayer]); // aplica fade local
-    lastPoint = null;
+
+    drawLineSegment(currentPath, colors[tacticalLayer]);
     currentPath = [];
+    lastPoint = null;
   });
 
-  // === TOUCH ===
-  canvas.style.touchAction = "none";
-  canvas.addEventListener("touchstart", (e) => {
-    if (!penMode) return;
-    drawing = true;
-    currentPath = [];
-    const { x, y } = getCoord(e);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    currentPath.push([x, y]);
-    e.preventDefault();
-  }, { passive: false });
-
-  canvas.addEventListener("touchmove", (e) => {
-    if (!penMode || !drawing) return;
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y, colors[tacticalLayer]);
-    currentPath.push([x, y]);
-    e.preventDefault();
-  }, { passive: false });
-
-  canvas.addEventListener("touchend", () => {
-    drawing = false;
-    ctx.closePath();
-    if (window.socket) {
-      const rect = canvas.getBoundingClientRect();
-      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-      socket.emit("path_draw", { path: normPath, layer: tacticalLayer });
-    }
-    drawLineSegment(currentPath, colors[tacticalLayer]);
-    lastPoint = null;
-    currentPath = [];
-  }, { passive: false });
-
-  // === RECEBE DESENHOS DE OUTROS ===
+  // === RECEBE DESENHOS (SYNC) ===
   if (window.socket) {
     socket.on("path_draw", (data) => {
       if (!data || !Array.isArray(data.path)) return;
       const rect = canvas.getBoundingClientRect();
       const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
-      const color = colors[data.layer] || "rgba(51,153,255,0.9)";
+      const color = colors[data.layer] || colors.defesa;
       drawLineSegment(scaled, color);
     });
   }
