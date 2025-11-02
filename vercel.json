@@ -2,17 +2,20 @@
   "version": 2,
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "dashboard.html", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
     { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
-    { "src": "resultados/**/*", "use": "@vercel/static" }
+    { "src": "resultados/**/*", "use": "@vercel/static" },
+    { "src": "dashboard/**/*", "use": "@vercel/static" }
   ],
 
   "rewrites": [
     { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
     { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
 
+    { "source": "/dashboard.html", "destination": "/dashboard.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/dashboard/", "destination": "/dashboard.html" },
 
@@ -39,7 +42,7 @@
     },
     {
       "source": "/resultados/FLAxRAC22102025/redirect",
-      "destination": "https://www.osinvictos.com.br/dashboard/flamengo/index.html",
+      "destination": "https://www.osinvictos.com.br/dashboard/crflamengo/index.html",
       "permanent": false
     }
   ],
