@@ -386,7 +386,7 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
 });
 
 
-
+<script src="/socket.io/socket.io.js"></script>
 <!-- ====== Canvas e Desenho Tático com Live Sync ====== -->
 <script>
 (function() {
@@ -395,9 +395,14 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
   if (!canvas || !penBtn) return;
 
   // 🔗 Socket global
-  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
-    transports: ["websocket", "polling"]
-  });
+//  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
+//    transports: ["websocket", "polling"]
+//  });
+
+const socketLocal = window.socket = window.socket || io(window.location.origin, {
+  transports: ["websocket", "polling"]
+});
+
 
   const ctx = canvas.getContext("2d");
   ctx.lineCap = "round";
