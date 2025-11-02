@@ -391,7 +391,12 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
 (function(){
   const canvas = document.getElementById("trace-canvas");
   const penBtn = document.getElementById("pen-path-btn");
-  const socketLocal = window.socket || null;
+
+  // ✅ Usa o socket global já conectado (ou cria se ainda não existir)
+  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
+    transports: ["websocket", "polling"]
+  });
+
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
