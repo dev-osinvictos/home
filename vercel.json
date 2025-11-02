@@ -3,42 +3,11 @@
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
+    { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
-    { "src": "dashboard/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
     { "src": "resultados/**/*", "use": "@vercel/static" }
-  ],
-
-  "redirects": [
-    {
-      "source": "/resultados/FLAxRAC22102025",
-      "destination": "/resultados/FLAxRAC22102025/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/resultados/FLAxRAC22102025/redirect",
-      "destination": "https://www.osinvictos.com.br/dashboard/flamengo/index.html",
-      "permanent": false
-    }
-  ],
-
-  "headers": [
-    {
-      "source": "/resultados/FLAxRAC22102025/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Content-Type", "value": "text/html; charset=UTF-8" }
-      ]
-    },
-    {
-      "source": "/resultados/FLAxRAC22102025/bgFLAxRAC1a0.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Content-Type", "value": "image/png" }
-      ]
-    }
+    { "src": "dashboard/**/*", "use": "@vercel/static" }
   ]
 }
 

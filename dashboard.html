@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>OS INVICTOS, Campo Tático</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="CAMPO TÁTICO — DOS CAMPEÕES INVICTOS">
+  <meta property="og:description" content="Os maiores campeões invictos do futebol mundial">
+  <meta property="og:image" content="https://www.osinvictos.com.br/assets/xplain.png">
+  <link rel="stylesheet" href="https://www.osinvictos.com.br/styles.css">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+  <style>
+    :root { --cor-fundo: #0C1D2B; }
+
+    body{
+      margin:0; padding:0;
+      color:#fff; font-family:Arial, sans-serif;
+      background-image: url('assets/background-image.jpg');
+      background-size: cover; background-position: center;
+      background-attachment: fixed; overflow: hidden;
+    }
+    body::before{
+      content:''; position:fixed; top:0; left:0; width:100%; height:100%;
+      background-color:var(--cor-fundo); opacity:.8; z-index:-1;
+    }
+
+    #center-scene{
+      position:relative; width:100%; height:100vh;
+      display:flex; justify-content:center; align-items:center;
+    }
+
+    /* logo central (3D) */
+    #logo-container{
+      position:relative; z-index:5;
+      width:350px; height:350px;
+      filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+    }
+    model-viewer{ width:100%; height:100%; }
+
+    /* thumbnails (escudos) boiando ao redor do logo — mesmo efeito do index.html */
+    .thumbnail{
+      position:absolute;
+      width:120px; height:120px;
+      background-size:contain; background-repeat:no-repeat; background-position:center;
+      border-radius:50%;
+      display:flex; align-items:flex-end; justify-content:center; text-align:center;
+      color:#fff; font-size:11px; font-weight:bold; text-shadow:0 0 5px #000;
+      animation: float 6s ease-in-out infinite;
+      transition: transform .25s ease, box-shadow .25s ease;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .thumbnail:hover{ transform: translateY(-8px) scale(1.06); z-index:12; box-shadow:0 6px 18px rgba(0,0,0,0.5); }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* texto inferior com número de vezes invicto (pequeno badge) */
+    .thumb-label{
+      position:absolute; bottom:-28px; left:50%; transform:translateX(-50%);
+      background: rgba(0,0,0,0.6); padding:6px 8px; border-radius:6px;
+      font-size:12px; white-space:nowrap; text-shadow:none;
+    }
+
+    /* posições manuais (espalhadas ao redor do logo, iguais estilo do index) */
+    .orbit-1  { top: 8%;   left: 48%; transform: translate(-50%,-50%); background-image: url('assets/escudo-racing.svg'); }
+    .orbit-2  { top: 18%;  right: 22%; transform: translate(50%,0);   background-image: url('assets/escudo-bocajuniors.png'); }
+    .orbit-3  { top: 40%;  right: 5%;  transform: translate(0,-50%); background-image: url('assets/escudo-riverplate.png'); }
+    .orbit-4  { bottom: 30%; right: 10%; transform: translate(0,0);  background-image: url('assets/escudo-palmeiras.svg'); }
+    .orbit-5  { bottom: 18%; left: 70%; transform: translate(0,0);  background-image: url('assets/escudo-santos.png'); }
+    .orbit-6  { bottom: 16%;  left: 45%; transform: translate(-50%,0);  background-image: url('assets/escudo-guaranifc.png'); }
+    .orbit-7  { bottom: 15%; left: 20%; transform: translate(0,0);    background-image: url('assets/escudo-milan.svg'); }
+    .orbit-8  { bottom: 38%; left: 18%;  transform: translate(0,0);    background-image: url('assets/escudo-juventus.png'); }
+    .orbit-9  { top: 32%;  left: 10%; transform: translate(0,0);      background-image: url('assets/escudo-scinternacional.svg'); }
+    .orbit-10 { top: 15%;  left: 32%; transform: translate(0,0);      background-image: url('assets/escudo-flamengo.svg'); }
+
+    /* responsividade */
+    @media (max-width:768px){
+      #logo-container{ width:240px; height:240px; }
+      .thumbnail{ width:80px; height:80px;}
+      .thumb-label{ font-size:11px; bottom:-22px; }
+    }
+
+    footer{
+      width:100%; background:#000; color:#fff; text-align:center; padding:10px 0;
+      position:fixed; bottom:0; left:0; font-size:14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="center-scene">
+    <div id="logo-container">
+      <model-viewer src="assets/logo.glb" alt="Logo OS INVICTOS" auto-rotate camera-controls></model-viewer>
+    </div>
+
+    <!-- === ESCUDOS (div clicável com href via data-href) ===
+         Usei os dados que você forneceu; onde não havia números (Milan/Juventus/Flamengo)
+         deixei "dados não informados" no label — me diga os números que quer mostrar e eu atualizo. -->
+
+    <div class="thumbnail orbit orbit-1"
+         role="link" tabindex="0"
+         data-href="./dashboard/racingclub/index.html"
+         title="Racing Club — 5 vezes invicto: 1914 (11V 1E); 1915 (22V 2E); 1918 (17V 2E); 1919 (13V 0E); 1925 (15V 9E)"
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Racing — 5x invicto</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-2"
+         role="link" tabindex="0"
+         data-href="./dashboard/cabocajuniors/index.html"
+         title="Boca Juniors — vezes invicto (dados fornecidos): 1919 (12V 1E); 1924 (18V 1E); 1926 (15V 2E); 1998 (12V 7E)"
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Boca — 4x (dados)</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-3"
+         role="link" tabindex="0"
+         data-href="./dashboard/cariverplate/index.html"
+         title="River Plate — 1994: 12V 7E (invicto)"
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">River — 1x invicto</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-4"
+         role="link" tabindex="0"
+         data-href="./dashboard/sepalmeiras/index.html"
+         title="Palmeiras — 1960 invicto (Campeonato informado: 1960). Vitórias/empates não fornecidos."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Palmeiras — 1x (1960)</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-5"
+         role="link" tabindex="0"
+         data-href="./dashboard/santosfc/index.html"
+         title="Santos FC — invicto: 1963, 1964, 1965 (Pelé era base do time). Dados de vitórias/empates não fornecidos."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Santos — 3x invicto</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-6"
+         role="link" tabindex="0"
+         data-href="./dashboard/guaranifc/index.html"
+         title="Guarani FC — 2025 futebol de sete — campeão invicto da Copa do Brasil (info fornecida)."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Guarani — 1x (2025)</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-7"
+         role="link" tabindex="0"
+         data-href="./dashboard/acmilan/index.html"
+         title="AC Milan — dados de títulos invictos não informados (informe se quiser que eu adicione)."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Milan — 1x invicto</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-8"
+         role="link" tabindex="0"
+         data-href="./dashboard/juventusfc/index.html"
+         title="Juventus — dados de títulos invictos não informados (informe se quiser que eu adicione)."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Juventus — 1x invicta</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-9"
+         role="link" tabindex="0"
+         data-href="./dashboard/scinternacional/index.html"
+         title="SC Internacional — 1979 (campeão brasileiro invicto) — detalhes de vitórias/empates não fornecidos."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Internacional — 1x (1979)</div>
+    </div>
+
+    <div class="thumbnail orbit orbit-10"
+         role="link" tabindex="0"
+         data-href="./dashboard/crflamengo/index.html"
+         title="Flamengo — dados de títulos invictos não informados (adicione os anos/dados que quiser mostrar)."
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">Flamengo — 1x invicto</div>
+    </div>
+
+  </div>
+
+  <footer>
+    RIRO TOYSPORT — <a href="mailto:dev@osinvictos.com.br" style="color:#25D366;">dev@osinvictos.com.br</a> — Brasil's CC '25
+  </footer>
+
+  <!-- script leve para prevenir abertura acidental em telas sensíveis e permitir touch -->
+  <script>
+    // Touch: tornar toda a div clicável (já temos onclick inline), mas prevenimos arrastar
+    document.querySelectorAll('.thumbnail').forEach(el=>{
+      el.addEventListener('touchstart', ()=>{ el.classList.add('touch-active'); });
+      el.addEventListener('touchend', ()=>{ el.classList.remove('touch-active'); });
+    });
+  </script>
+</body>
+</html>
+
