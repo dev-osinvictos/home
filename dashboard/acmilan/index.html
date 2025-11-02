@@ -44,7 +44,7 @@
     <div id="background-line15"></div>
     <div id="background-line16"></div>
     <div id="background-line17"></div>
-  <div id="circle12" class="circlecentral" style="background:transparent;left:237px;top:100px;border:2px solid #fff;"></div>
+  <div id="circulo" class="circlecentral" style="background:transparent;left:237px;top:100px;border:2px solid #fff;"></div>
   <div id="gol-square" class="gol-square"></div>
   <div id="gol2-square" class="gol2-square"></div>
 
@@ -72,7 +72,7 @@
   <div id="circle21" class="circle" style="background:#33FFCC;">11</div>
   <div id="circle22" class="circle" style="background:#33FFCC;">9</div>
   <div id="circle23" class="circle">01</div>
-  <div id="circulocentral" class="circle"></div>
+  <div id="circle24" class="circle"></div>
 
   <canvas id="trace-canvas" width="600" height="300"
    style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;"></canvas>
@@ -113,7 +113,7 @@ const circles = {};
 const dragState = {};
 let activeId = null;
 
-for (let i = 1; i <= 24; i++) {
+for (let i = 1; i <= 23; i++) {
   const el = document.getElementById("circle" + i);
   circles[i] = el;
   dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
