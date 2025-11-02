@@ -12,8 +12,6 @@
   ],
 
   "rewrites": [
-    { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
-    { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
 
     { "source": "/dashboard.html", "destination": "/dashboard.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
@@ -28,10 +26,16 @@
     { "source": "/dashboard/scinternacional", "destination": "/dashboard/scinternacional/index.html" },
     { "source": "/dashboard/santosfc", "destination": "/dashboard/santosfc/index.html" },
     { "source": "/dashboard/juventusfc", "destination": "/dashboard/juventusfc/index.html" },
-    { "source": "/dashboard/sepalmeiras", "destination": "/dashboard/sepalmeiras/index.html" },
+  { "source": "/dashboard/sepalmeiras", "destination": "/dashboard/sepalmeiras/index.html" },
 
-    { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
+
+  { "source": "/assets/(.*)", "destination": "/assets/$1" },
+  { "source": "/book/(.*)", "destination": "/book/$1" },
+  { "source": "/resultados/(.*)", "destination": "/resultados/$1" },
+  { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
+
+  { "source": "/(.*)", "destination": "/index.html" }
   ],
 
   "redirects": [
