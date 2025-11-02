@@ -1,7 +1,6 @@
 {
   "version": 2,
   "builds": [
-
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
     { "src": "store.html", "use": "@vercel/static" },
@@ -14,8 +13,21 @@
   "rewrites": [
     { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
     { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
+
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/dashboard/", "destination": "/dashboard/index.html" },
+
+    { "source": "/dashboard/acmilan", "destination": "/dashboard/acmilan/index.html" },
+    { "source": "/dashboard/guaranifc", "destination": "/dashboard/guaranifc/index.html" },
+    { "source": "/dashboard/cariverplate", "destination": "/dashboard/cariverplate/index.html" },
+    { "source": "/dashboard/cabocajuniors", "destination": "/dashboard/cabocajuniors/index.html" },
+    { "source": "/dashboard/crflamengo", "destination": "/dashboard/crflamengo/index.html" },
+    { "source": "/dashboard/racingclub", "destination": "/dashboard/racingclub/index.html" },
+    { "source": "/dashboard/scinternacional", "destination": "/dashboard/scinternacional/index.html" },
+    { "source": "/dashboard/santosfc", "destination": "/dashboard/santosfc/index.html" },
+    { "source": "/dashboard/juventusfc", "destination": "/dashboard/juventusfc/index.html" },
+    { "source": "/dashboard/sepalmeiras", "destination": "/dashboard/sepalmeiras/index.html" },
+
     { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
