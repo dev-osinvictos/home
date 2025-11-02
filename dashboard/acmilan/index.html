@@ -4,24 +4,18 @@
     <meta charset="UTF-8">
     <title>AC Milan, Campo Tático</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="fb:app_id" content="1172093813515512"> 
-    <meta property="fb:admins" content="100009876543210"> 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.osinvictos.com.br/dashboard/acmilan/">
-    <meta name="twitter:title" content="AC Milan, Campo Tático">
-    <meta name="twitter:description" content="Campeão Invicto do Campeonato Italiano 1991–1992">
-    <meta name="twitter:image" content="https://www.osinvictos.com.br/dashboard/acmilan/img/acmilan-previa.png">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://www.osinvictos.com.br/dashboard/acmilan/img/acmilan-previa.png">
     <meta property="og:title" content="AC Milan, Campo Tático">
     <meta property="og:description" content="Campeão Invicto do Campeonato Italiano na temporada 1991–1992">
     <meta property="og:image" content="https://www.osinvictos.com.br/dashboard/acmilan/img/acmilan-previa.png">
-    <meta property="ia:markup_url" content="https://www.osinvictos.com.br/dashboard/acmilan/instant.html">
-    <meta property="ia:markup_url_dev" content="https://dev.osinvictos.com.br/dashboard/acmilan/instant.html">
-    <meta property="ia:rules_url" content="https://www.osinvictos.com.br/instant-articles/rules.json">
-    <meta property="ia:rules_url_dev" content="https://dev.osinvictos.com.br/instant-articles/rules.json">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+
 </head>
 <body style="
   background-image: url('img/estadium.jpg');
@@ -90,26 +84,18 @@
     Toque para entrar na Mesa Tática
   </div>
 
-  <button id="ai-analise-btn" style="position:fixed;top:330px;left:20px;z-index:10000;">Análise IA</button>
-  <button id="pen-path-btn" style="position:fixed;top:330px;left:120px;z-index:10000;">✎ Desenho Tático</button>
-  <button id="share-tactic-btn" style="position:fixed;top:330px;left:220px;z-index:10000;">Conferência</button>
-  <button id="exit-fullscreen-btn" style="position:fixed;top:330px;left:320px;z-index:10000;">Sair (x)</button>
+  <button id="exit-fullscreen-btn" style="position:fixed;top:330px;left:20px;z-index:10000;">Sair (x)</button>
+  <button id="ai-analise-btn" style="position:fixed;top:330px;left:120px;z-index:10000;">Análise IA</button>
+  <button id="pen-path-btn" style="position:fixed;top:330px;left:302px;z-index:10000;">✎ Desenho Tático</button>
 
-<!-- === Inicialização do Socket.IO global (antes de tudo) === -->
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
-/* === SOCKET GLOBAL INSTANTÂNEO (4.2.4) === */
-const socket = window.socket = io("https://acmilan-5qt5.onrender.com", {
+
+/* ===== CORE: movimento, socket e AI analyze ===== */
+const socket = io("https://acmilan-5qt5.onrender.com", {
   transports: ["websocket", "polling"]
 });
+window.socket = socket;
 
-socket.on("connect", () => console.log("📡 Conectado ao servidor WebSocket"));
-socket.on("disconnect", () => console.log("🔌 Desconectado do servidor"));
-</script>
-
-  <div class="share-tactic-btn" data-href="https://www.osinvictos.com.br/dashboard/acmilan/index.html" data-layout="button" data-size="small"></div>   
-
-<script>
 // === Utilitário: throttle ===
 // limita quantas vezes por segundo um evento pode ser enviado
 function throttle(fn, delay) {
@@ -403,11 +389,16 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
 });
 
 
-// ====== Canvas e Desenho Tático com Live Sync ====== -->
+<!-- ====== Canvas e Desenho Tático com Live Sync ====== -->
 (function() {
   const canvas = document.getElementById("trace-canvas");
   const penBtn = document.getElementById("pen-path-btn");
   if (!canvas || !penBtn) return;
+
+// 🔗 Socket global
+  const socketLocal = window.socket = window.socket || io("https://acmilan-5qt5.onrender.com", {
+    transports: ["websocket", "polling"]
+});
 
   const ctx = canvas.getContext("2d");
   ctx.lineCap = "round";
@@ -455,7 +446,7 @@ document.getElementById('ai-analise-btn').addEventListener('click', async functi
   }
 
   const emitPartial = throttle(segment => {
-    if (window.socket) window.socket.emit("path_draw_partial", { segment, color: DRAW_COLOR });
+    if (socketLocal) socketLocal.emit("path_draw_partial", { segment, color: DRAW_COLOR });
   }, 100);
 
   function drawSegment(segment, color) {
@@ -547,10 +538,10 @@ function finishDrawing() {
   drawing = false;
   ctx.closePath();
 
-  if (window.socket && currentPath.length > 2) {
+  if (socketLocal && currentPath.length > 2) {
     const lastSegment = currentPath.slice(-8);
-    window.socket.emit("path_draw_partial", { segment: lastSegment, color: DRAW_COLOR, last: true });
-    window.socket.emit("path_draw", { path: currentPath, color: DRAW_COLOR });
+    socketLocal.emit("path_draw_partial", { segment: lastSegment, color: DRAW_COLOR, last: true });
+    socketLocal.emit("path_draw", { path: currentPath, color: DRAW_COLOR });
   }
 
   currentPath = [];
@@ -562,59 +553,21 @@ canvas.addEventListener("pointerout", finishDrawing);
 
 
   // Recebe paths existentes e novos
-  window.socket.on("existing_paths", list => {
+  socketLocal.on("existing_paths", list => {
     for (const item of list) drawSegment(item.path, item.color);
   });
 
-  window.socket.on("path_draw_partial", data => {
+  socketLocal.on("path_draw_partial", data => {
     if (data && Array.isArray(data.segment)) drawSegment(data.segment, data.color);
   });
 
-  window.socket.on("path_draw", data => {
+  socketLocal.on("path_draw", data => {
     if (data && Array.isArray(data.path)) drawSegment(data.path, data.color);
   });
 
-  window.socket.on("path_clear", () => {
+  socketLocal.on("path_clear", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   });
-
-// ==== SHARETACTIC AI ANÁLISE 4.2.4 ==== //
-// Compartilha a análise atual no Facebook (conferência tática)
-
-document.getElementById("share-tactic-btn").addEventListener("click", function() {
-  try {
-    const currentUrl = window.location.href;
-    const title = document.title || "Análise Tática ao Vivo";
-    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&t=${encodeURIComponent(title)}`;
-    
-    window.open(
-      shareUrl,
-      "sharer",
-      "toolbar=0,status=0,width=626,height=436"
-    );
-  } catch (err) {
-    console.error("Erro ao compartilhar:", err);
-    alert("⚠️ Não foi possível abrir o compartilhamento no momento.");
-  }
-});
-
-// Carrega SDK do Facebook (compatível com cache do WhatsApp e meta OG tags)
-window.fbAsyncInit = function() {
-FB.init({
-  appId: '1172093813515512',
-  autoLogAppEvents: true,
-  xfbml: true,
-  version: 'v19.0'
-});
-};
-(function(d, s, id){
-  let js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) return;
-  js = d.createElement(s); js.id = id;
-  js.src = "https://connect.facebook.net/en_US/sdk.js";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
 })();
 </script>
 
@@ -708,6 +661,7 @@ FB.init({
     aiBtn.textContent = "AI Análise";
   });
 </script>
+
 <!-- Chat markup + script (mantido igual ao seu original) -->
 <!-- ... (se preferir, mantenho o bloco de chat original sem alterações) -->
 <script>
@@ -738,7 +692,6 @@ document.addEventListener("fullscreenchange", () => {
   }
 });
 </script>
-
 <!-- === Chat do Treinador Português === -->
 <div id="chat-container" style="
   position:fixed;bottom:20px;right:20px;width:300px;max-height:400px;
@@ -846,7 +799,7 @@ chatInput.addEventListener("keydown", (e)=>{
 });
 </script>
 <!-- === WebSocket: sincroniza jogadores em tempo real === -->
-
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
   socket.on("connect", () => {
     console.log("📡 Conectado ao servidor WebSocket");

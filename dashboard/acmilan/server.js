@@ -96,27 +96,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// === ROTA DE ANÁLISE DE IA ===
-app.post("/ai/analyze", async (req, res) => {
-  try {
-    const { green, ball } = req.body;
-
-    // Exemplo básico de resposta mockada (você pode integrar OpenRouter/OpenAI aqui)
-    const response = {
-      detectedFormation: "4-4-2",
-      phase: "defensiva",
-      red: green.map(p => ({ id: p.id, left: p.left + 10, top: p.top + 10 })), // só move um pouco pra ilustrar
-      coachComment: "O adversário está bem postado, precisamos abrir pelos flancos!"
-    };
-
-    res.json(response);
-  } catch (err) {
-    console.error("Erro na análise IA:", err);
-    res.status(500).json({ error: "Erro interno na IA" });
-  }
-});
-
-
 // === Inicialização do Servidor ===
 const PORT = process.env.PORT || 10000;
 httpServer.listen(PORT, () => {
