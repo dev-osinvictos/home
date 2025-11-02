@@ -14,8 +14,8 @@
     { "source": "/dashboard/ai/analyze", "destination": "/dashboard/server.js" },
     { "source": "/dashboard/api/chat", "destination": "/dashboard/server.js" },
 
-    { "source": "/dashboard", "destination": "/dashboard/index.html" },
-    { "source": "/dashboard/", "destination": "/dashboard/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/dashboard/", "destination": "/dashboard.html" },
 
     { "source": "/dashboard/acmilan", "destination": "/dashboard/acmilan/index.html" },
     { "source": "/dashboard/guaranifc", "destination": "/dashboard/guaranifc/index.html" },
