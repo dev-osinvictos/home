@@ -308,6 +308,10 @@ socket.on("update_circle", (data) => {
   }
 });
 
+
+const canvas = document.getElementById("trace-canvas");
+const ctx = canvas?.getContext("2d", { willReadFrequently: true });
+
   // === RECEBE DESENHOS DE OUTROS USUÁRIOS ===
   if (window.socket) {
     socket.on("path_draw", (data) => {
@@ -359,7 +363,6 @@ socket.on("update_circle", (data) => {
       }, 5000);
     });
   }
-})();
 </script>
 
 <script>
