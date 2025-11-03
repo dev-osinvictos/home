@@ -138,6 +138,87 @@ for (let i = 1; i <= 24; i++) {
   }, { passive: false });
 }
 
+
+/* === eSpeak Always-On Engine (FIFA Speech Mode) === */
+let voicesReady = false;
+let selectedVoice = null;
+let speechQueue = [];
+
+// === Inicializa o mecanismo de voz ===
+function initSpeech() {
+  try {
+    // ativa contexto de áudio silenciosamente (sem gesto do usuário)
+    const dummy = new SpeechSynthesisUtterance("");
+    dummy.volume = 0;
+    speechSynthesis.speak(dummy);
+  } catch (err) {
+    console.warn("⚠️ Speech context ainda não ativo:", err);
+  }
+
+  // tenta carregar as vozes
+  const loadVoices = () => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      selectedVoice = voices.find(v =>
+        v.lang === "pt-BR" && v.name.toLowerCase().includes("google")
+      ) || voices.find(v => v.lang === "pt-BR") || voices[0];
+      voicesReady = true;
+      console.log("✅ Voz carregada:", selectedVoice.name);
+
+      // toca qualquer fala pendente
+      while (speechQueue.length > 0) speakNow(speechQueue.shift());
+    } else {
+      setTimeout(loadVoices, 500);
+    }
+  };
+
+  loadVoices();
+}
+
+// garante inicialização automática (sem depender de clique)
+window.addEventListener("DOMContentLoaded", () => {
+  initSpeech();
+
+  // fallback: re-tenta até liberar áudio no desktop
+  const ensureVoices = setInterval(() => {
+    if (!voicesReady) initSpeech();
+    else clearInterval(ensureVoices);
+  }, 1500);
+});
+
+// também ativa no clique (pra browsers mais rígidos)
+["click", "touchstart"].forEach(evt =>
+  window.addEventListener(evt, initSpeech, { once: true })
+);
+
+// === Função pública para falar ===
+function speakPlayerNumber(playerId) {
+  const number = playerId.replace("circle", "");
+  const text = "Jogador " + number;
+
+  if (!voicesReady) {
+    console.warn("🕐 Voz ainda não disponível — fila:", text);
+    speechQueue.push(text);
+    return;
+  }
+
+  speakNow(text);
+}
+
+// === Fala imediata ===
+function speakNow(text) {
+  try {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "pt-BR";
+    utter.rate = 1.0;
+    if (selectedVoice) utter.voice = selectedVoice;
+    speechSynthesis.speak(utter);
+  } catch (err) {
+    console.error("❌ Erro ao falar:", err);
+  }
+}
+
+
 // === Física da bola ===
 const emitBallMove = throttle((id, left, top) => {
   socket.emit("ball-move", { id, left, top });
