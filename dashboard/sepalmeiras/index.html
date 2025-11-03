@@ -734,8 +734,7 @@ socket.on("ball-move", (data) => {
 <script>
 /* === Pen Mode Pro 2.3 - Desktop + Mobile Sync === */
 const penBtn = document.getElementById("pen-path-btn");
-const canvas = document.getElementById("trace-canvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+let ctx = document.getElementById("trace-canvas").getContext("2d", { willReadFrequently: true });
 
 let penMode = false;
 let drawing = false;
