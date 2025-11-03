@@ -734,8 +734,8 @@ socket.on("ball-move", (data) => {
 <script>
 /* === Pen Mode Pro 2.3 - Desktop + Mobile Sync === */
 const penBtn = document.getElementById("pen-path-btn");
-const canvas = document.getElementById("trace-canvas");
-const ctx2 = canvas.getContext("2d", { willReadFrequently: true });
+const penCanvas = document.getElementById("trace-canvas");
+const ctx2 = penCanvas.getContext("2d", { willReadFrequently: true });
 
 let penMode = false;
 let drawing = false;
@@ -745,9 +745,9 @@ let pointerId = null;
 // === Corrige DPI ===
 function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * ratio;
-  canvas.height = rect.height * ratio;
+  const rect = penCanvas.getBoundingClientRect();
+  penCanvas.width = rect.width * ratio;
+  penCanvas.height = rect.height * ratio;
   ctx2.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx2.lineCap = "round";
   ctx2.lineJoin = "round";
@@ -767,7 +767,7 @@ penBtn.addEventListener("click", () => {
 
 // === Coordenadas corretas ===
 function getCoord(e) {
-  const rect = canvas.getBoundingClientRect();
+  const rect = penCanvas.getBoundingClientRect();
   const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
   const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
   return { x, y };
@@ -779,7 +779,7 @@ function drawLineTo(x, y) {
   ctx2.stroke();
 }
 
-canvas.addEventListener("pointerdown", (e) => {
+penCanvas.addEventListener("pointerdown", (e) => {
   if (!penMode) return;
   drawing = true;
   pointerId = e.pointerId;
@@ -788,22 +788,22 @@ canvas.addEventListener("pointerdown", (e) => {
   ctx2.beginPath();
   ctx2.moveTo(x, y);
   currentPath.push([x, y]);
-  try { canvas.setPointerCapture(pointerId); } catch {}
+  try { penCanvas.setPointerCapture(pointerId); } catch {}
 });
 
-canvas.addEventListener("pointermove", (e) => {
+penCanvas.addEventListener("pointermove", (e) => {
   if (!penMode || !drawing || e.pointerId !== pointerId) return;
   const { x, y } = getCoord(e);
   drawLineTo(x, y);
   currentPath.push([x, y]);
 });
 
-canvas.addEventListener("pointerup", () => {
+penCanvas.addEventListener("pointerup", () => {
   if (!drawing) return;
   drawing = false;
   ctx2.closePath();
 
-  const rect = canvas.getBoundingClientRect();
+  const rect = penCanvas.getBoundingClientRect();
   const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
 
   if (window.socket) socket.emit("path_draw", { path: normPath });
@@ -829,7 +829,7 @@ canvas.addEventListener("pointerup", () => {
 if (window.socket) {
   socket.on("path_draw", (data) => {
     if (!data || !Array.isArray(data.path)) return;
-    const rect = canvas.getBoundingClientRect();
+    const rect = penCanvas.getBoundingClientRect();
     const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
     ctx2.beginPath();
     ctx2.moveTo(scaled[0][0], scaled[0][1]);
