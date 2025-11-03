@@ -713,7 +713,16 @@ document.addEventListener("fullscreenchange", () => {
     e.preventDefault();
     drawing = false;
     ctx.closePath();
+
     if (socket && currentPath.length > 1) socket.emit('path_draw', { path: currentPath });
+    setTimeout(() => {
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.globalAlpha = 1.0;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }, 4000);
+
     currentPath = [];
   }, { passive: false });
 
@@ -730,6 +739,13 @@ document.addEventListener("fullscreenchange", () => {
       ctx.lineWidth = 4;
       ctx.stroke();
       ctx.closePath();
+      setTimeout(() => {
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.globalAlpha = 1.0;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }, 4000);
     });
   }
 })();
