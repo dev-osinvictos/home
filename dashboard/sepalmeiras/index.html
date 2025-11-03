@@ -732,19 +732,19 @@ socket.on("ball-move", (data) => {
   transition:opacity 0.3s ease;
 "></div>
 <script>
-/* === Pen Mode Pro 2.4 - Feather Stroke + Auto Fade (5s) === */
+/* === Pen Mode Pro 2.5 - CrossDevice Precision + Auto Fade === */
 const penBtn = document.getElementById("pen-path-btn");
 const penCanvas = document.getElementById("trace-canvas");
 const ctx2 = penCanvas.getContext("2d", { willReadFrequently: true });
 
 let penMode = false;
 let drawing = false;
-let currentPath = [];
 let pointerId = null;
+let currentPath = [];
 let lastPoint = null;
 
-// === Ajuste automático de DPI e estilo ===
-function resizeCanvas() {
+/* === Ajuste de DPI + Tamanho canvas === */
+function resizePenCanvas() {
   const ratio = window.devicePixelRatio || 1;
   const rect = penCanvas.getBoundingClientRect();
   penCanvas.width = rect.width * ratio;
@@ -753,10 +753,10 @@ function resizeCanvas() {
   ctx2.lineCap = "round";
   ctx2.lineJoin = "round";
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+resizePenCanvas();
+window.addEventListener("resize", resizePenCanvas);
 
-// === Ativar/desativar modo caneta ===
+/* === Toggle do modo desenho === */
 penBtn.addEventListener("click", () => {
   penMode = !penMode;
   penBtn.style.background = penMode ? "#ff3333" : "";
@@ -764,57 +764,62 @@ penBtn.addEventListener("click", () => {
   penBtn.textContent = penMode ? "🖊️ Desenhando..." : "✎ Desenho Tático";
 });
 
-// === Coordenadas exatas ===
+/* === Captura coordenadas normalizadas === */
 function getCoord(e) {
   const rect = penCanvas.getBoundingClientRect();
-  const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
-  const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
-  return { x, y };
+  const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+  const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  return { x, y, normX: (clientX - rect.left) / rect.width, normY: (clientY - rect.top) / rect.height };
 }
 
-// === Função de desenho com espessura dinâmica ===
-function drawFeatherLine(x, y) {
+/* === Desenho suave e contínuo (curvas) === */
+function drawSmoothLine(x, y) {
   if (!lastPoint) {
-    lastPoint = { x, y, time: Date.now() };
+    lastPoint = { x, y, t: Date.now() };
     ctx2.beginPath();
     ctx2.moveTo(x, y);
     return;
   }
 
   const now = Date.now();
-  const delta = now - lastPoint.time;
+  const dt = now - lastPoint.t;
   const dist = Math.hypot(x - lastPoint.x, y - lastPoint.y);
-  const speed = dist / (delta || 1);
-  const width = Math.max(2, Math.min(8, 30 / (speed + 1))); // feather
+  const speed = dist / (dt || 1);
+  const width = Math.max(2, Math.min(8, 28 / (speed + 1))); // feather brush
 
-  ctx2.lineWidth = ctx2.lineWidth * 0.6 + width * 0.4;
+  ctx2.lineWidth = ctx2.lineWidth * 0.7 + width * 0.3;
   ctx2.strokeStyle = "rgba(255,51,51,0.9)";
   ctx2.shadowColor = "rgba(255,51,51,0.3)";
   ctx2.shadowBlur = 6;
-  ctx2.lineTo(x, y);
+
+  const midX = (lastPoint.x + x) / 2;
+  const midY = (lastPoint.y + y) / 2;
+  ctx2.quadraticCurveTo(lastPoint.x, lastPoint.y, midX, midY);
   ctx2.stroke();
 
-  lastPoint = { x, y, time: now };
+  lastPoint = { x, y, t: now };
 }
 
-// === Eventos pointer ===
+/* === Pointer Events (desktop + mobile) === */
 penCanvas.addEventListener("pointerdown", (e) => {
   if (!penMode) return;
   drawing = true;
   pointerId = e.pointerId;
   currentPath = [];
   lastPoint = null;
-  const { x, y } = getCoord(e);
-  drawFeatherLine(x, y);
-  currentPath.push([x, y]);
+  const { x, y, normX, normY } = getCoord(e);
+  drawSmoothLine(x, y);
+  currentPath.push([normX, normY]);
   try { penCanvas.setPointerCapture(pointerId); } catch {}
 });
 
 penCanvas.addEventListener("pointermove", (e) => {
   if (!penMode || !drawing || e.pointerId !== pointerId) return;
-  const { x, y } = getCoord(e);
-  drawFeatherLine(x, y);
-  currentPath.push([x, y]);
+  const { x, y, normX, normY } = getCoord(e);
+  drawSmoothLine(x, y);
+  currentPath.push([normX, normY]);
 });
 
 penCanvas.addEventListener("pointerup", () => {
@@ -823,46 +828,47 @@ penCanvas.addEventListener("pointerup", () => {
   ctx2.closePath();
   lastPoint = null;
 
-  const rect = penCanvas.getBoundingClientRect();
-  const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-  if (window.socket) socket.emit("path_draw", { path: normPath });
+  if (window.socket && currentPath.length > 2)
+    socket.emit("path_draw", { path: currentPath });
 
-  // 🕒 Apaga completamente após 5s
+  // 🕒 Limpa canvas após 5s
   setTimeout(() => {
     ctx2.save();
     ctx2.globalCompositeOperation = "destination-out";
-    ctx2.globalAlpha = 1.0;
+    ctx2.globalAlpha = 1;
     ctx2.fillRect(0, 0, penCanvas.width, penCanvas.height);
     ctx2.restore();
   }, 5000);
-  currentPath = [];
 });
 
-// === Recebe desenho remoto ===
+/* === Recebe desenhos remotos (sync perfeito) === */
 if (window.socket) {
   socket.on("path_draw", (data) => {
     if (!data || !Array.isArray(data.path)) return;
     const rect = penCanvas.getBoundingClientRect();
+
     const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
 
     ctx2.beginPath();
     ctx2.moveTo(scaled[0][0], scaled[0][1]);
-    for (let i = 1; i < scaled.length; i++) {
-      const [x, y] = scaled[i];
-      ctx2.lineTo(x, y);
+    for (let i = 1; i < scaled.length - 1; i++) {
+      const xc = (scaled[i][0] + scaled[i + 1][0]) / 2;
+      const yc = (scaled[i][1] + scaled[i + 1][1]) / 2;
+      ctx2.quadraticCurveTo(scaled[i][0], scaled[i][1], xc, yc);
     }
-    ctx2.lineWidth = 4;
+    ctx2.lineTo(scaled[scaled.length - 1][0], scaled[scaled.length - 1][1]);
     ctx2.strokeStyle = "rgba(255,51,51,0.9)";
     ctx2.shadowColor = "rgba(255,51,51,0.3)";
     ctx2.shadowBlur = 6;
+    ctx2.lineWidth = 4;
     ctx2.stroke();
     ctx2.closePath();
 
-    // 🕒 Apaga completamente após 5s (também para traços remotos)
+    // 🕒 Remove o traço remoto após 5s
     setTimeout(() => {
       ctx2.save();
       ctx2.globalCompositeOperation = "destination-out";
-      ctx2.globalAlpha = 1.0;
+      ctx2.globalAlpha = 1;
       ctx2.fillRect(0, 0, penCanvas.width, penCanvas.height);
       ctx2.restore();
     }, 5000);
