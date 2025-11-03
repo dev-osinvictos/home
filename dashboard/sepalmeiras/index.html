@@ -732,7 +732,7 @@ socket.on("ball-move", (data) => {
   transition:opacity 0.3s ease;
 "></div>
 <script>
-/* === Pen Mode Pro 2.3 - Desktop + Mobile Sync === */
+/* === Pen Mode Pro 2.4 - Feather Stroke + Auto Fade (5s) === */
 const penBtn = document.getElementById("pen-path-btn");
 const penCanvas = document.getElementById("trace-canvas");
 const ctx2 = penCanvas.getContext("2d", { willReadFrequently: true });
@@ -741,8 +741,9 @@ let penMode = false;
 let drawing = false;
 let currentPath = [];
 let pointerId = null;
+let lastPoint = null;
 
-// === Corrige DPI ===
+// === Ajuste automático de DPI e estilo ===
 function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
   const rect = penCanvas.getBoundingClientRect();
@@ -751,21 +752,19 @@ function resizeCanvas() {
   ctx2.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx2.lineCap = "round";
   ctx2.lineJoin = "round";
-  ctx2.lineWidth = 5;
-  ctx2.shadowColor = "rgba(255,51,51,0.4)";
-  ctx2.shadowBlur = 6;
-  ctx2.strokeStyle = "rgba(255,51,51,0.9)";
 }
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
+// === Ativar/desativar modo caneta ===
 penBtn.addEventListener("click", () => {
   penMode = !penMode;
   penBtn.style.background = penMode ? "#ff3333" : "";
   penBtn.style.color = penMode ? "#fff" : "";
+  penBtn.textContent = penMode ? "🖊️ Desenhando..." : "✎ Desenho Tático";
 });
 
-// === Coordenadas corretas ===
+// === Coordenadas exatas ===
 function getCoord(e) {
   const rect = penCanvas.getBoundingClientRect();
   const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
@@ -773,20 +772,40 @@ function getCoord(e) {
   return { x, y };
 }
 
-// === Desenho ===
-function drawLineTo(x, y) {
+// === Função de desenho com espessura dinâmica ===
+function drawFeatherLine(x, y) {
+  if (!lastPoint) {
+    lastPoint = { x, y, time: Date.now() };
+    ctx2.beginPath();
+    ctx2.moveTo(x, y);
+    return;
+  }
+
+  const now = Date.now();
+  const delta = now - lastPoint.time;
+  const dist = Math.hypot(x - lastPoint.x, y - lastPoint.y);
+  const speed = dist / (delta || 1);
+  const width = Math.max(2, Math.min(8, 30 / (speed + 1))); // feather
+
+  ctx2.lineWidth = ctx2.lineWidth * 0.6 + width * 0.4;
+  ctx2.strokeStyle = "rgba(255,51,51,0.9)";
+  ctx2.shadowColor = "rgba(255,51,51,0.3)";
+  ctx2.shadowBlur = 6;
   ctx2.lineTo(x, y);
   ctx2.stroke();
+
+  lastPoint = { x, y, time: now };
 }
 
+// === Eventos pointer ===
 penCanvas.addEventListener("pointerdown", (e) => {
   if (!penMode) return;
   drawing = true;
   pointerId = e.pointerId;
   currentPath = [];
+  lastPoint = null;
   const { x, y } = getCoord(e);
-  ctx2.beginPath();
-  ctx2.moveTo(x, y);
+  drawFeatherLine(x, y);
   currentPath.push([x, y]);
   try { penCanvas.setPointerCapture(pointerId); } catch {}
 });
@@ -794,7 +813,7 @@ penCanvas.addEventListener("pointerdown", (e) => {
 penCanvas.addEventListener("pointermove", (e) => {
   if (!penMode || !drawing || e.pointerId !== pointerId) return;
   const { x, y } = getCoord(e);
-  drawLineTo(x, y);
+  drawFeatherLine(x, y);
   currentPath.push([x, y]);
 });
 
@@ -802,51 +821,49 @@ penCanvas.addEventListener("pointerup", () => {
   if (!drawing) return;
   drawing = false;
   ctx2.closePath();
+  lastPoint = null;
 
   const rect = penCanvas.getBoundingClientRect();
   const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-
   if (window.socket) socket.emit("path_draw", { path: normPath });
-  currentPath = [];
 
-  // Fade automático local
+  // 🕒 Apaga completamente após 5s
   setTimeout(() => {
     ctx2.save();
     ctx2.globalCompositeOperation = "destination-out";
-    ctx2.globalAlpha = 0.15;
-    ctx2.beginPath();
-    ctx2.moveTo(normPath[0][0] * rect.width, normPath[0][1] * rect.height);
-    for (let i = 1; i < normPath.length; i++) {
-      ctx2.lineTo(normPath[i][0] * rect.width, normPath[i][1] * rect.height);
-    }
-    ctx2.stroke();
-    ctx2.closePath();
+    ctx2.globalAlpha = 1.0;
+    ctx2.fillRect(0, 0, penCanvas.width, penCanvas.height);
     ctx2.restore();
   }, 5000);
+  currentPath = [];
 });
 
-// === Recebe traços dos outros clientes ===
+// === Recebe desenho remoto ===
 if (window.socket) {
   socket.on("path_draw", (data) => {
     if (!data || !Array.isArray(data.path)) return;
     const rect = penCanvas.getBoundingClientRect();
     const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
+
     ctx2.beginPath();
     ctx2.moveTo(scaled[0][0], scaled[0][1]);
-    for (let i = 1; i < scaled.length; i++) ctx2.lineTo(scaled[i][0], scaled[i][1]);
+    for (let i = 1; i < scaled.length; i++) {
+      const [x, y] = scaled[i];
+      ctx2.lineTo(x, y);
+    }
+    ctx2.lineWidth = 4;
+    ctx2.strokeStyle = "rgba(255,51,51,0.9)";
+    ctx2.shadowColor = "rgba(255,51,51,0.3)";
+    ctx2.shadowBlur = 6;
     ctx2.stroke();
     ctx2.closePath();
 
-    // Fade remoto
+    // 🕒 Apaga completamente após 5s (também para traços remotos)
     setTimeout(() => {
       ctx2.save();
       ctx2.globalCompositeOperation = "destination-out";
-      ctx2.globalAlpha = 0.15;
-      ctx2.beginPath();
-      ctx2.moveTo(scaled[0][0], scaled[0][1]);
-      for (let i = 1; i < scaled.length; i++) ctx2.lineTo(scaled[i][0], scaled[i][1]);
-      ctx2.stroke();
-      ctx2.closePath();
+      ctx2.globalAlpha = 1.0;
+      ctx2.fillRect(0, 0, penCanvas.width, penCanvas.height);
       ctx2.restore();
     }, 5000);
   });
