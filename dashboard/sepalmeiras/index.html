@@ -734,7 +734,8 @@ socket.on("ball-move", (data) => {
 <script>
 /* === Pen Mode Pro 2.3 - Desktop + Mobile Sync === */
 const penBtn = document.getElementById("pen-path-btn");
-let ctx = document.getElementById("trace-canvas").getContext("2d", { willReadFrequently: true });
+const canvas = document.getElementById("trace-canvas");
+const ctx2 = canvas.getContext("2d", { willReadFrequently: true });
 
 let penMode = false;
 let drawing = false;
@@ -747,13 +748,13 @@ function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * ratio;
   canvas.height = rect.height * ratio;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 5;
-  ctx.shadowColor = "rgba(255,51,51,0.4)";
-  ctx.shadowBlur = 6;
-  ctx.strokeStyle = "rgba(255,51,51,0.9)";
+  ctx2.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx2.lineCap = "round";
+  ctx2.lineJoin = "round";
+  ctx2.lineWidth = 5;
+  ctx2.shadowColor = "rgba(255,51,51,0.4)";
+  ctx2.shadowBlur = 6;
+  ctx2.strokeStyle = "rgba(255,51,51,0.9)";
 }
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
@@ -774,8 +775,8 @@ function getCoord(e) {
 
 // === Desenho ===
 function drawLineTo(x, y) {
-  ctx.lineTo(x, y);
-  ctx.stroke();
+  ctx2.lineTo(x, y);
+  ctx2.stroke();
 }
 
 canvas.addEventListener("pointerdown", (e) => {
@@ -784,8 +785,8 @@ canvas.addEventListener("pointerdown", (e) => {
   pointerId = e.pointerId;
   currentPath = [];
   const { x, y } = getCoord(e);
-  ctx.beginPath();
-  ctx.moveTo(x, y);
+  ctx2.beginPath();
+  ctx2.moveTo(x, y);
   currentPath.push([x, y]);
   try { canvas.setPointerCapture(pointerId); } catch {}
 });
@@ -800,7 +801,7 @@ canvas.addEventListener("pointermove", (e) => {
 canvas.addEventListener("pointerup", () => {
   if (!drawing) return;
   drawing = false;
-  ctx.closePath();
+  ctx2.closePath();
 
   const rect = canvas.getBoundingClientRect();
   const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
@@ -810,17 +811,17 @@ canvas.addEventListener("pointerup", () => {
 
   // Fade automático local
   setTimeout(() => {
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.globalAlpha = 0.15;
-    ctx.beginPath();
-    ctx.moveTo(normPath[0][0] * rect.width, normPath[0][1] * rect.height);
+    ctx2.save();
+    ctx2.globalCompositeOperation = "destination-out";
+    ctx2.globalAlpha = 0.15;
+    ctx2.beginPath();
+    ctx2.moveTo(normPath[0][0] * rect.width, normPath[0][1] * rect.height);
     for (let i = 1; i < normPath.length; i++) {
-      ctx.lineTo(normPath[i][0] * rect.width, normPath[i][1] * rect.height);
+      ctx2.lineTo(normPath[i][0] * rect.width, normPath[i][1] * rect.height);
     }
-    ctx.stroke();
-    ctx.closePath();
-    ctx.restore();
+    ctx2.stroke();
+    ctx2.closePath();
+    ctx2.restore();
   }, 5000);
 });
 
@@ -830,23 +831,23 @@ if (window.socket) {
     if (!data || !Array.isArray(data.path)) return;
     const rect = canvas.getBoundingClientRect();
     const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
-    ctx.beginPath();
-    ctx.moveTo(scaled[0][0], scaled[0][1]);
-    for (let i = 1; i < scaled.length; i++) ctx.lineTo(scaled[i][0], scaled[i][1]);
-    ctx.stroke();
-    ctx.closePath();
+    ctx2.beginPath();
+    ctx2.moveTo(scaled[0][0], scaled[0][1]);
+    for (let i = 1; i < scaled.length; i++) ctx2.lineTo(scaled[i][0], scaled[i][1]);
+    ctx2.stroke();
+    ctx2.closePath();
 
     // Fade remoto
     setTimeout(() => {
-      ctx.save();
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.globalAlpha = 0.15;
-      ctx.beginPath();
-      ctx.moveTo(scaled[0][0], scaled[0][1]);
+      ctx2.save();
+      ctx2.globalCompositeOperation = "destination-out";
+      ctx2.globalAlpha = 0.15;
+      ctx2.beginPath();
+      ctx2.moveTo(scaled[0][0], scaled[0][1]);
       for (let i = 1; i < scaled.length; i++) ctx.lineTo(scaled[i][0], scaled[i][1]);
-      ctx.stroke();
-      ctx.closePath();
-      ctx.restore();
+      ctx2.stroke();
+      ctx2.closePath();
+      ctx2.restore();
     }, 5000);
   });
 }
