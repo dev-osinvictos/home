@@ -308,362 +308,58 @@ socket.on("update_circle", (data) => {
   }
 });
 
-// === PEN MODE PRO 2.3.1 — Mobile Sync + Silent Fix ===
-(function () {
-  const penBtn = document.getElementById("pen-path-btn");
-  const canvas = document.getElementById("trace-canvas") || (() => {
-    const c = document.createElement("canvas");
-    c.id = "trace-canvas";
-    Object.assign(c.style, {
-      position: "absolute",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      zIndex: "1",
-      pointerEvents: "none",
-      touchAction: "none"
-    });
-    document.body.appendChild(c);
-    return c;
-  })();
-
-  // === Contexto 2D otimizado ===
-  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
-
-  let penMode = false, drawing = false, pointerId = null;
-  let currentPath = [], lastPoint = null;
-
-  // === Camadas táticas ===
-  let tacticalLayer = "ataque";
-  const colors = {
-    ataque: "rgba(255,51,51,0.9)",
-    defesa: "rgba(51,153,255,0.9)",
-    bolaparada: "rgba(255,215,0,0.9)"
-  };
-
-  // === Botão de camada ===
-  const layerBtn = document.createElement("button");
-  layerBtn.id = "layer-btn";
-  layerBtn.textContent = "⚽ Ataque";
-  Object.assign(layerBtn.style, {
-    position: "fixed",
-    top: "370px",
-    left: "302px",
-    zIndex: "10000",
-    background: "#222",
-    color: "#fff",
-    border: "1px solid #555",
-    borderRadius: "8px",
-    padding: "6px 10px",
-    cursor: "pointer",
-    fontFamily: "Segoe UI, sans-serif",
-    fontSize: "12px",
-  });
-  document.body.appendChild(layerBtn);
-
-  layerBtn.addEventListener("click", () => {
-    if (tacticalLayer === "ataque") {
-      tacticalLayer = "defesa";
-      layerBtn.textContent = "🧱 Defesa";
-    } else if (tacticalLayer === "defesa") {
-      tacticalLayer = "bolaparada";
-      layerBtn.textContent = "🎯 Bola Parada";
-    } else {
-      tacticalLayer = "ataque";
-      layerBtn.textContent = "⚽ Ataque";
-    }
-  });
-
-  // === Resize Canvas (sem getImageData, zero warning)
-  function resizeCanvasForDisplay() {
-    const ratio = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * ratio;
-    canvas.height = rect.height * ratio;
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.shadowBlur = 6;
-    ctx.lineWidth = 4;
-  }
-
-  resizeCanvasForDisplay();
-  window.addEventListener("resize", () => {
-    resizeCanvasForDisplay();
-  });
-
-  // === Botão principal
-  penBtn.addEventListener("click", () => {
-    penMode = !penMode;
-    penBtn.style.background = penMode ? "#33aaff" : "#222";
-    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
-    canvas.style.pointerEvents = penMode ? "auto" : "none";
-    canvas.style.zIndex = penMode ? "1000" : "1";
-  });
-
-  // === Coordenadas ajustadas (Mobile Precision)
-  function getCoord(evt) {
-    const rect = canvas.getBoundingClientRect();
-    const ratio = canvas.width / rect.width;
-    if (evt.touches && evt.touches[0]) {
-      return {
-        x: (evt.touches[0].clientX - rect.left) * ratio,
-        y: (evt.touches[0].clientY - rect.top + window.scrollY) * ratio,
-      };
-    }
-    return {
-      x: (evt.clientX - rect.left) * ratio,
-      y: (evt.clientY - rect.top + window.scrollY) * ratio,
-    };
-  }
-
-  function drawLineSegment(path, color) {
-    if (path.length < 2) return;
-    ctx.beginPath();
-    ctx.moveTo(path[0][0], path[0][1]);
-    for (let i = 1; i < path.length - 1; i++) {
-      const xc = (path[i][0] + path[i + 1][0]) / 2;
-      const yc = (path[i][1] + path[i + 1][1]) / 2;
-      ctx.quadraticCurveTo(path[i][0], path[i][1], xc, yc);
-    }
-    ctx.lineTo(path[path.length - 1][0], path[path.length - 1][1]);
-    ctx.strokeStyle = color;
-    ctx.shadowColor = color.replace("0.9", "0.3");
-    ctx.stroke();
-    ctx.closePath();
-
-    // 🕒 Fade após 5s
-    setTimeout(() => {
-      ctx.save();
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.globalAlpha = 0.15;
-      drawLineSegment(path, "rgba(0,0,0,1)");
-      ctx.restore();
-    }, 5000);
-  }
-
-  function drawLineTo(x, y, color) {
-    if (!lastPoint) {
-      lastPoint = { x, y, t: Date.now() };
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      return;
-    }
-    const now = Date.now();
-    const dx = x - lastPoint.x;
-    const dy = y - lastPoint.y;
-    const dt = now - lastPoint.t || 1;
-    const velocity = Math.sqrt(dx * dx + dy * dy) / dt;
-    const targetWidth = Math.max(2, Math.min(8, 10 / (velocity + 0.2)));
-    ctx.lineWidth = ctx.lineWidth * 0.7 + targetWidth * 0.3;
-    ctx.shadowColor = color.replace("0.9", "0.4");
-    ctx.strokeStyle = color;
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    lastPoint = { x, y, t: now };
-  }
-
-  // === POINTER + TOUCH unificados ===
-  canvas.addEventListener("pointerdown", (e) => {
-    if (!penMode) return;
-    drawing = true;
-    pointerId = e.pointerId;
-    currentPath = [];
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y, colors[tacticalLayer]);
-    currentPath.push([x, y]);
-  });
-
-  canvas.addEventListener("pointermove", (e) => {
-    if (!penMode || !drawing) return;
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y, colors[tacticalLayer]);
-    currentPath.push([x, y]);
-  });
-
-  canvas.addEventListener("pointerup", () => {
-    if (!penMode) return;
-    drawing = false;
-    ctx.closePath();
-
-    if (window.socket) {
-      const rect = canvas.getBoundingClientRect();
-      const norm = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-      socket.emit("path_draw", { path: norm, layer: tacticalLayer });
-    }
-
-    drawLineSegment(currentPath, colors[tacticalLayer]);
-    currentPath = [];
-    lastPoint = null;
-  });
-
-  // === RECEBE DESENHOS (SYNC) ===
-  if (window.socket) {
-    socket.on("path_draw", (data) => {
-      if (!data || !Array.isArray(data.path)) return;
-      const rect = canvas.getBoundingClientRect();
-      const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
-      const color = colors[data.layer] || colors.defesa;
-      drawLineSegment(scaled, color);
-    });
-  }
-})();
-
-
-
-  // === botão ===
-  penBtn.addEventListener("click", () => {
-    penMode = !penMode;
-    penBtn.style.background = penMode ? "#33aaff" : "#222";
-    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
-    canvas.style.pointerEvents = penMode ? "auto" : "none";
-    canvas.style.zIndex = penMode ? "1000" : "1";
-  });
-
-  // === coordenadas ===
-  function getCoord(evt) {
-    const rect = canvas.getBoundingClientRect();
-    if (evt.touches && evt.touches[0]) {
-      return {
-        x: evt.touches[0].clientX - rect.left,
-        y: evt.touches[0].clientY - rect.top
-      };
-    } else {
-      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
-    }
-  }
-
-  // === feather (largura variável com suavização) ===
-  function drawLineTo(x, y, color = "rgba(255,51,51,0.9)") {
-    if (!lastPoint) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      lastPoint = { x, y, t: Date.now() };
-      return;
-    }
-
-    const now = Date.now();
-    const dx = x - lastPoint.x;
-    const dy = y - lastPoint.y;
-    const dt = now - lastPoint.t || 1;
-    const velocity = Math.sqrt(dx * dx + dy * dy) / dt;
-    const targetWidth = Math.max(3, Math.min(10, 12 / (velocity + 0.2)));
-
-    ctx.lineWidth = ctx.lineWidth * 0.7 + targetWidth * 0.3;
-    ctx.shadowColor = color.replace("0.9", "0.4");
-    ctx.shadowBlur = 6;
-    ctx.strokeStyle = color;
-
-    ctx.lineTo(x, y);
-    ctx.stroke();
-
-    lastPoint = { x, y, t: now };
-  }
-
-  // === desenha um caminho recebido de outro usuário ===
-  function drawRemotePath(path, color = "rgba(51,153,255,0.9)") {
-    if (!Array.isArray(path) || path.length < 2) return;
-    ctx.beginPath();
-    ctx.moveTo(path[0][0], path[0][1]);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i][0], path[i][1]);
-    }
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 4;
-    ctx.shadowColor = color.replace("0.9", "0.3");
-    ctx.shadowBlur = 4;
-    ctx.stroke();
-    ctx.closePath();
-  }
-
-  // === POINTER EVENTS ===
-  canvas.addEventListener("pointerdown", (e) => {
-    if (!penMode) return;
-    drawing = true;
-    pointerId = e.pointerId;
-    lastPoint = null;
-    currentPath = [];
-    try { canvas.setPointerCapture(pointerId); } catch {}
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y);
-    currentPath.push([x, y]);
-  });
-
-  canvas.addEventListener("pointermove", (e) => {
-    if (!penMode || !drawing || e.pointerId !== pointerId) return;
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y);
-    currentPath.push([x, y]);
-  });
-
-  canvas.addEventListener("pointerup", () => {
-    if (!penMode) return;
-    drawing = false;
-    ctx.closePath();
-
-    // envia o traço para o servidor (SYNC)
-    if (window.socket) {
-      const rect = canvas.getBoundingClientRect();
-      // Normaliza coordenadas entre 0 e 1
-      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-      socket.emit("path_draw", { path: normPath });
-    }
-
-    lastPoint = null;
-    currentPath = [];
-  });
-
-  // === TOUCH ===
-  canvas.style.touchAction = "none";
-  canvas.addEventListener("touchstart", (e) => {
-    if (!penMode) return;
-    drawing = true;
-    lastPoint = null;
-    currentPath = [];
-    const { x, y } = getCoord(e);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    currentPath.push([x, y]);
-    e.preventDefault();
-  }, { passive: false });
-
-  canvas.addEventListener("touchmove", (e) => {
-    if (!penMode || !drawing) return;
-    const { x, y } = getCoord(e);
-    drawLineTo(x, y);
-    currentPath.push([x, y]);
-    e.preventDefault();
-  }, { passive: false });
-
-  canvas.addEventListener("touchend", () => {
-    drawing = false;
-    ctx.closePath();
-
-    if (window.socket) {
-      const rect = canvas.getBoundingClientRect();
-      // Normaliza coordenadas entre 0 e 1
-      const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
-      socket.emit("path_draw", { path: normPath });
-    }
-
-    lastPoint = null;
-    currentPath = [];
-  }, { passive: false });
-
   // === RECEBE DESENHOS DE OUTROS USUÁRIOS ===
   if (window.socket) {
     socket.on("path_draw", (data) => {
       if (!data || !Array.isArray(data.path)) return;
       const rect = canvas.getBoundingClientRect();
 
-      // Reconstrói coordenadas reais conforme tamanho local
-      const scaledPath = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
-      drawRemotePath(scaledPath);
+      // Reconstrói coordenadas reais conforme o tamanho do canvas local
+      const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
+
+      // Cor por camada tática
+      const color = data.layer === "defesa" 
+        ? "rgba(51,153,255,0.9)"
+        : data.layer === "bolaparada"
+        ? "rgba(255,215,0,0.9)"
+        : "rgba(255,51,51,0.9)"; // ataque padrão
+
+      // Desenha suavizado e aplica fade local
+      ctx.beginPath();
+      ctx.moveTo(scaled[0][0], scaled[0][1]);
+      for (let i = 1; i < scaled.length - 1; i++) {
+        const xc = (scaled[i][0] + scaled[i + 1][0]) / 2;
+        const yc = (scaled[i][1] + scaled[i + 1][1]) / 2;
+        ctx.quadraticCurveTo(scaled[i][0], scaled[i][1], xc, yc);
+      }
+      ctx.lineTo(scaled[scaled.length - 1][0], scaled[scaled.length - 1][1]);
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color.replace("0.9", "0.3");
+      ctx.shadowBlur = 6;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.closePath();
+
+      // 🔥 fade automático em 5s (sincronizado visualmente)
+      setTimeout(() => {
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.globalAlpha = 0.15;
+        ctx.beginPath();
+        ctx.moveTo(scaled[0][0], scaled[0][1]);
+        for (let i = 1; i < scaled.length - 1; i++) {
+          const xc = (scaled[i][0] + scaled[i + 1][0]) / 2;
+          const yc = (scaled[i][1] + scaled[i + 1][1]) / 2;
+          ctx.quadraticCurveTo(scaled[i][0], scaled[i][1], xc, yc);
+        }
+        ctx.lineTo(scaled[scaled.length - 1][0], scaled[scaled.length - 1][1]);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+      }, 5000);
     });
   }
 })();
-
 </script>
 
 <script>
