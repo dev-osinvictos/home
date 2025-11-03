@@ -844,7 +844,7 @@ if (window.socket) {
       ctx2.globalAlpha = 0.15;
       ctx2.beginPath();
       ctx2.moveTo(scaled[0][0], scaled[0][1]);
-      for (let i = 1; i < scaled.length; i++) ctx.lineTo(scaled[i][0], scaled[i][1]);
+      for (let i = 1; i < scaled.length; i++) ctx2.lineTo(scaled[i][0], scaled[i][1]);
       ctx2.stroke();
       ctx2.closePath();
       ctx2.restore();
