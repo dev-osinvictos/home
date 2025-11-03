@@ -731,5 +731,134 @@ socket.on("ball-move", (data) => {
   display:none;
   transition:opacity 0.3s ease;
 "></div>
+<script>
+/* === Pen Mode Pro 2.3 - Desktop + Mobile Sync === */
+const penBtn = document.getElementById("pen-path-btn");
+const canvas = document.getElementById("trace-canvas");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+let penMode = false;
+let drawing = false;
+let currentPath = [];
+let pointerId = null;
+
+// === Corrige DPI ===
+function resizeCanvas() {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 5;
+  ctx.shadowColor = "rgba(255,51,51,0.4)";
+  ctx.shadowBlur = 6;
+  ctx.strokeStyle = "rgba(255,51,51,0.9)";
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+penBtn.addEventListener("click", () => {
+  penMode = !penMode;
+  penBtn.style.background = penMode ? "#ff3333" : "";
+  penBtn.style.color = penMode ? "#fff" : "";
+});
+
+// === Coordenadas corretas ===
+function getCoord(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+  const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+  return { x, y };
+}
+
+// === Desenho ===
+function drawLineTo(x, y) {
+  ctx.lineTo(x, y);
+  ctx.stroke();
+}
+
+canvas.addEventListener("pointerdown", (e) => {
+  if (!penMode) return;
+  drawing = true;
+  pointerId = e.pointerId;
+  currentPath = [];
+  const { x, y } = getCoord(e);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  currentPath.push([x, y]);
+  try { canvas.setPointerCapture(pointerId); } catch {}
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  if (!penMode || !drawing || e.pointerId !== pointerId) return;
+  const { x, y } = getCoord(e);
+  drawLineTo(x, y);
+  currentPath.push([x, y]);
+});
+
+canvas.addEventListener("pointerup", () => {
+  if (!drawing) return;
+  drawing = false;
+  ctx.closePath();
+
+  const rect = canvas.getBoundingClientRect();
+  const normPath = currentPath.map(([x, y]) => [x / rect.width, y / rect.height]);
+
+  if (window.socket) socket.emit("path_draw", { path: normPath });
+  currentPath = [];
+
+  // Fade automático local
+  setTimeout(() => {
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.globalAlpha = 0.15;
+    ctx.beginPath();
+    ctx.moveTo(normPath[0][0] * rect.width, normPath[0][1] * rect.height);
+    for (let i = 1; i < normPath.length; i++) {
+      ctx.lineTo(normPath[i][0] * rect.width, normPath[i][1] * rect.height);
+    }
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+  }, 5000);
+});
+
+// === Recebe traços dos outros clientes ===
+if (window.socket) {
+  socket.on("path_draw", (data) => {
+    if (!data || !Array.isArray(data.path)) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaled = data.path.map(([nx, ny]) => [nx * rect.width, ny * rect.height]);
+    ctx.beginPath();
+    ctx.moveTo(scaled[0][0], scaled[0][1]);
+    for (let i = 1; i < scaled.length; i++) ctx.lineTo(scaled[i][0], scaled[i][1]);
+    ctx.stroke();
+    ctx.closePath();
+
+    // Fade remoto
+    setTimeout(() => {
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.globalAlpha = 0.15;
+      ctx.beginPath();
+      ctx.moveTo(scaled[0][0], scaled[0][1]);
+      for (let i = 1; i < scaled.length; i++) ctx.lineTo(scaled[i][0], scaled[i][1]);
+      ctx.stroke();
+      ctx.closePath();
+      ctx.restore();
+    }, 5000);
+  });
+}
+
+/* === Speech fix === */
+function prepareSpeechVoices() {
+  const utter = new SpeechSynthesisUtterance("");
+  window.speechSynthesis.speak(utter); // ativa contexto
+}
+window.addEventListener("click", prepareSpeechVoices, { once: true });
+</script>
+
 </body>
 </html>
