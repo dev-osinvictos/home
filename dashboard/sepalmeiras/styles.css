@@ -345,7 +345,7 @@
 #ai-notification {
   transition: opacity 0.8s ease;
   font-family: 'Segoe UI', sans-serif;
-  font-size: 1.2em;
+  font-size: 1.5em;
 }
 #tactical-hud {
   transition: opacity 0.8s ease, background 0.4s ease, z-index: 5;
@@ -443,7 +443,7 @@
 .popup-link:hover {
   background: #2288ff;
 }
-/* ==== Ícone de trigger do popup Invicto ==== */
+/* ==== Ícone de trsigger do popup Invicto ==== */
 #invicto-icon {
   position: fixed;
   bottom: 15px;
@@ -468,4 +468,56 @@
   transform: scale(1.12);
   background: rgba(0, 150, 255, 0.9);
 }
+/* ===== POPUP DO TREINADOR (IA) ===== */
+#coach-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 350px;
+  padding: 18px;
+  background: rgba(0,0,0,0.90);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 16px;
+  text-align: center;
+
+  z-index: 99999; /* FICA NA FRENTE DE TUDO */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+#coach-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#chat-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#chat-input-area {
+  display: flex;
+  border-top: 1px solid #333;
+  padding: 6px;
+  gap: 4px;
+  background: #111;
+}
+
+@supports (-webkit-touch-callout: none) {
+  #chat-container {
+    bottom: env(keyboard-inset-height, 0);
+  }
+}
+
 
