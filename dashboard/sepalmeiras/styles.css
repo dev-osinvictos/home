@@ -441,8 +441,8 @@
 /* ==== Ícone de trigger do popup Invicto ==== */
 #invicto-icon {
   position: fixed;
-  bottom: 15px;
-  left: 15px;
+  top: 15px;
+  right: 15px;
   width: 55px;
   height: 55px;
   background: rgba(0,0,0,0.85);
@@ -454,7 +454,7 @@
   color: #fff;
   font-size: 26px;
   cursor: pointer;
-  z-index: 10060;
+  z-index: 5;
   transition: transform 0.3s, background 0.3s;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
