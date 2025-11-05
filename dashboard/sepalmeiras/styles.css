@@ -499,6 +499,7 @@
 #chat-container {
   display: flex;
   flex-direction: column;
+  height: 70vh;
 }
 
 #chat-body {
