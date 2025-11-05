@@ -6,32 +6,26 @@ const chatInput     = document.getElementById('chat-input');
 const chatSend      = document.getElementById('chat-send');
 let chatOpen = false;
 
-// garante scroll ao abrir teclado no mobile
-chatInput.addEventListener("focus", () => {
-  setTimeout(() => {
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }, 300);
-});
-
 function openChat() {
-  coachChat.style.display = "flex";   // container permanece visível
-  chatBody.style.display = "block";   // mostra mensagens
+  coachChat.style.display = "flex";     // container visível
+  chatBody.style.display = "block";     // mostra mensagens
   chatInputArea.style.display = "flex"; // mostra input
   chatOpen = true;
 }
 
 function minimizeChat() {
-  coachChat.style.display = "flex";   // continua visível (⚠️ não some)
-  chatBody.style.display = "none";    // esconde mensagens
+  coachChat.style.display = "flex";     // ⛔ não some, só minimiza
+  chatBody.style.display = "none";      // esconde histórico
   chatInputArea.style.display = "none"; // esconde input
   chatOpen = false;
 }
 
-// começa minimizado
+// ✅ inicia minimizado
 minimizeChat();
 
 chatHeader.addEventListener("click", () => {
-  if (chatOpen) minimizeChat(); else openChat();
+  if (chatOpen) minimizeChat();
+  else openChat();
 });
 
 
