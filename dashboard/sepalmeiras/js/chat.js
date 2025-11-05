@@ -6,9 +6,7 @@ const chatInput     = document.getElementById('chat-input');
 const chatSend      = document.getElementById('chat-send');
 let chatOpen = false;
 
-const chatInput = document.getElementById("chat-input");
-const chatBody  = document.getElementById("chat-body");
-
+// garante scroll ao abrir teclado no mobile
 chatInput.addEventListener("focus", () => {
   setTimeout(() => {
     chatBody.scrollTop = chatBody.scrollHeight;
