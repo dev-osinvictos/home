@@ -319,7 +319,7 @@ async function sendVisionTactic() {
     const data = await res.json();
     console.log("📊 Visão Tática (backend):", data);
 
-    // ✅ Move o Palmeiras pela visão da IA
+    // ✅ Move o Verde pela visão da IA
     if (Array.isArray(data.green) && data.green.length > 0) {
       animateTeam("circle", data.green);
 

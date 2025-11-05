@@ -38,7 +38,7 @@ function makeVisionSnapshot() {
   g.stroke();
 }
 
-  // === Desenha PALMEIRAS (verde claro) ===
+  // === Desenha (verde claro) ===
   g.fillStyle = "#33FFCC";
   for (const p of green) {
     g.beginPath(); g.arc(p.left - 20, p.top - 20, 13, 0, Math.PI*2); g.fill();
@@ -182,7 +182,7 @@ function detectBallPossession(green, black, ball) {
   const dGreen = Math.min(...green.map(p => Math.hypot(p.left - ball.left, p.top - ball.top)));
   const dBlack = Math.min(...black.map(p => Math.hypot(p.left - ball.left, p.top - ball.top)));
 
-  // Peso leve pelo lado do campo (Palmeiras ataca da direita->esquerda)
+  // Peso leve pelo lado do campo (Verde ataca da direita->esquerda)
   const sideBias = bx > cx ? -8 : +8; // negativo favorece "verde" à esquerda
 
   return (dGreen + sideBias) < dBlack ? "verde" : "preto";
@@ -251,7 +251,7 @@ function getCurrentPossession() {
     hudBox.style.borderColor = possession === "verde" ? "#00ff66" : "#999";
     hudBox.style.opacity = "1";
 
-    // === Movimenta o Palmeiras para a nova formação sugerida pela IA Vision ===
+    // === Movimenta o para a nova formação sugerida pela IA Vision ===
 if (data.green) {
   animateTeam("circle", data.green, () => {
     if (data.phase && data.opponentFormation) {
@@ -265,7 +265,7 @@ if (data.green) {
       setTimeout(() => showAbelCommentPopup(data.coachComment), 5000);
     }
 
-    // ✅ Só mostra uma mensagem do Abel
+    // ✅ Só mostra uma mensagem
     const comment = data.coachComment || data.visionReply;
     if (comment && typeof showAbelCommentPopup === "function") {
       showAbelCommentPopup(comment);

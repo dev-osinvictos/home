@@ -40,7 +40,7 @@ socket.on("ball-move", (data) => {
     el.style.left = data.left + "px";
     el.style.top = data.top + "px";
   }
-  // ✅ GOLEIRO DO PALMEIRAS SEGUE A BOLA NO EIXO Y
+  // ✅ GOLEIRO / BOLA NO EIXO Y
   const gk = document.getElementById("circle23");
   if (gk) {
     const targetY = data.top - 20; // ajusta centralização visual
