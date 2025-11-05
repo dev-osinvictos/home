@@ -392,11 +392,13 @@
   opacity: 0;
   transform: translateY(20px);
   transition: opacity .4s ease, transform .4s ease;
+  pointer-events: none;
 }
 
 #popup-invicto.show {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 #close-popup-invicto {
