@@ -7,18 +7,20 @@ const chatSend      = document.getElementById('chat-send');
 let chatOpen = false;
 
 function openChat() {
-  coachChat.style.display = "flex";     // container visível
-  chatBody.style.display = "block";     // mostra mensagens
-  chatInputArea.style.display = "flex"; // mostra input
+  coachChat.style.height = "70vh";       // ✅ maximiza ao abrir
+  chatBody.style.display = "block";      // mostra mensagens
+  chatInputArea.style.display = "flex";  // mostra input
   chatOpen = true;
 }
 
 function minimizeChat() {
-  coachChat.style.display = "flex";     // ⛔ não some, só minimiza
+  // diminui o container (visual do header apenas)
+  coachChat.style.height = "48px";     // ✅ só cabeçalho
   chatBody.style.display = "none";      // esconde histórico
   chatInputArea.style.display = "none"; // esconde input
   chatOpen = false;
 }
+
 
 // ✅ inicia minimizado
 minimizeChat();
@@ -67,5 +69,16 @@ chatSend.addEventListener("click", async ()=>{
 });
 
 chatInput.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"){ chatSend.click(); }
+  if(e.key === "Enter"){
+    chatSend.click();
+  }
 });
+
+// expande o chat quando o teclado aparece (mobile)
+chatInput.addEventListener("focus", () => {
+  openChat();
+  setTimeout(() => {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 350);
+});
+
