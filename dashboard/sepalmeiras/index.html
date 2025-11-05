@@ -15,6 +15,7 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script src="invicto1960.js" defer></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -1214,18 +1215,31 @@ function speakPlayerNumber(playerId) {
 </div>
 
 <!-- ===== POPUP INVICTO ===== -->
-<script src="invicto1960.js"></script>
 <div id="popup-invicto">
   <button id="close-popup-invicto">×</button>
 
-  <img src="img/invicto1960-verdebranco.png" alt="Camisa Invicto 1960" class="popup-img">
+  <img src="img/invicto-verdebranco.png" alt="Camisa Invicto" class="popup-img">
 
   <h3 class="popup-title">Camisa Invicto</h3>
-  <p class="popup-price">R$99 / $25</p>
+  <p class="popup-price">R$ 99 / $25</p>
 
-  <a class="popup-link" href="mailto:prod@osinvictos.com.br?subject=Pedido%20Camisa%20Invicto">
-    Faça seu pedido!
-  </a>
+  <div class="popup-actions">
+      <a class="popup-link email"
+        href="mailto:prod@osinvictos.com.br?subject=Pedido%20Camisa%20Invicto">
+        ✉️ Enviar por e-mail
+      </a>
+
+      <a class="popup-link whatsapp"
+        href="https://wa.me/5511987654321?text=Quero%20comprar%20a%20Camisa%20Invicto!" target="_blank">
+        🟢 Comprar via WhatsApp
+      </a>
+  </div>
+</div>
+
+<!-- Ícone flutuante com notificação -->
+<div id="invicto-icon">
+  👕
+  <span id="invicto-notify"></span>
 </div>
 
 
