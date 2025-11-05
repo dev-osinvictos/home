@@ -354,7 +354,7 @@
     /* --- LOGO CENTRAL --- */
 #logo-container {
   position: fixed;
-  bottom: 20px;
+  bottom: 3px;
   right: 20px;
   width: 180px;
   height: 180px;
