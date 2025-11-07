@@ -264,7 +264,6 @@
         html, body {
           margin: 0;
           overflow: auto; /* iOS bloqueia fullscreen se overflow:hidden */
-          background-color: green;
         }
 
 /* === Botão IA com spinner === */
