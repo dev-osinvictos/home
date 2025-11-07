@@ -260,7 +260,12 @@
         #circle11 { left: 320px; top: 40px; background: #000000; }
         #circle23 { left: 620px; top: 150px; background: #660000; }
         #circle24 { left: 420px; top: 40px; background: #ffffff; }
-        body { margin: 0; overflow: hidden; background-color: green; }
+
+        html, body {
+          margin: 0;
+          overflow: auto; /* iOS bloqueia fullscreen se overflow:hidden */
+          background-color: green;
+        }
 
 /* === Botão IA com spinner === */
 .ai-button {
