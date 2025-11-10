@@ -53,8 +53,6 @@ chatSend.addEventListener("click", async ()=>{
 
   appendMessage("user", message);
   chatInput.value = "";
-  
-  minimizeChat();
 
   try {
 
@@ -66,6 +64,8 @@ chatSend.addEventListener("click", async ()=>{
 
     const data = await res.json();
     appendMessage("bot", data.reply || "O Careca, ficou em silêncio...");
+    
+    minimizeChat();
 
     // ✅ Se o Careca, retornou uma formação, aciona IA Tática
     if (data.formationRequested){
