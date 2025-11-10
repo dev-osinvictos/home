@@ -255,9 +255,8 @@ $rankingClose?.addEventListener("click", () => {
   $rankingModal.style.display = "none";
 });
 
-// Salvar score + auth
+// Salvar score no Supabase (login + cadastro + upsert)
 $rkSave?.addEventListener("click", async () => {
-
   const name  = ($rkName.value  || "").trim();
   const email = ($rkEmail.value || "").trim();
   const pass  = ($rkPass.value  || "").trim();
@@ -267,49 +266,53 @@ $rkSave?.addEventListener("click", async () => {
     return;
   }
 
-  // 1 — login / signup (automático)
-// 1 — tenta login
-let { data: authUser, error: authError } = await supabase.auth.signInWithPassword({
-  email,
-  password: pass,
-});
+  if (pass.length < 6) {
+    notifyTop("Senha deve ter no mínimo 6 caracteres.");
+    return;
+  }
 
-// 2 — se não existir, cria o usuário
-if (authError) {
-  let { data: newUser, error: signupError } = await supabase.auth.signUp({
+  // 1) tenta login
+  let { data: authUser, error: authError } = await supabase.auth.signInWithPassword({
     email,
     password: pass,
   });
 
-  if (signupError) {
-    notifyTop("Erro na autenticação (cadastro).");
-    console.error(signupError);
+  // 2) se não existir, cria
+  if (authError?.message === "Invalid login credentials") {
+    let { data: newUser, error: signupError } = await supabase.auth.signUp({
+      email,
+      password: pass,
+    });
+
+    if (signupError) {
+      notifyTop("Erro ao criar conta.");
+      console.error(signupError);
+      return;
+    }
+
+    authUser = newUser;
+  }
+
+  // 3) grava score no ranking
+  const { error: insertError } = await supabase
+    .from("ranking")
+    .upsert({
+      name,
+      email,
+      points: state.points,
+      goals: state.goals
+    });
+
+  if (insertError) {
+    notifyTop("Erro ao salvar no ranking.");
+    console.error(insertError);
     return;
   }
 
-  authUser = newUser;
-}
+  notifyTop("Pontuação salva no ranking! ✅");
+  fetchRanking();
+});
 
-
-// 2 — grava score no banco (ranking table)
-const { error: insertError } = await supabase
-  .from("ranking")
-  .upsert({
-    name,
-    email,
-    points: state.points,
-    goals: state.goals,
-    ts: new Date().toISOString()
-  });
-
-if (insertError) {
-  notifyTop("Erro ao salvar no ranking.");
-  console.error(insertError);
-  return;
-}
-
-notifyTop("Pontuação salva no ranking! ✅");
-fetchRanking();
 
 })();
 

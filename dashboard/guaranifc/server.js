@@ -8,6 +8,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import Groq from "groq-sdk";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
@@ -19,11 +21,17 @@ const io = new Server(httpServer, {
       "https://www.osinvictos.com.br",
       "https://osinvictos.com.br",
       "https://guaranifc.onrender.com",
+      "localhost:10000",
       "*"
     ],
     methods: ["GET", "POST"]
   }
 });
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 // === Configuração de diretórios ===
 const __filename = fileURLToPath(import.meta.url);
@@ -930,49 +938,50 @@ socket.on("disconnect", async () => {
 });// ✅ Socket real-time para aprimoramento esportivo
 
 // === Endpoint de chat do Careca (usando OpenAI) ===
-import OpenAI from "openai"; // ⬅️ adicione no topo do arquivo server.js
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // coloque no .env no Render
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
 });
 
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    if (!client.apiKey) {
-      return res.status(500).json({ error: "OPENAI_API_KEY ausente no servidor" });
+    if (!groq.apiKey) {
+      return res.status(500).json({ error: "GROQ_API_KEY ausente no servidor" });
     }
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-5",        // 🚀 modelo mais novo
-      max_tokens: 180,
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile", // 🔥 rápido e gratuito
       temperature: 0.8,
+      max_tokens: 200,
       messages: [
         {
           role: "system",
           content: `
-Você é **CARECA**, ex-centroavante camisa 9 do Guarani.
-Fala com mentalidade de artilheiro, direto, simples e confiante.
-Fala como boleiro inteligente: posicionamento, atacar espaço, antecipação.
-Quando orientar, diga o motivo tático. 
-Mantenha sempre: CALMA, EFICIÊNCIA, DECISÃO CERTA.
-          `
+Você é CARECA, ex-centroavante do Guarani, camisa 9.
+Mentalidade de artilheiro: simples, direto e eficaz.
+Pensa como finalizador: atacar espaço, antecipar, decidir rápido.
+Explica o porquê das escolhas táticas.
+Use linguagem de boleiro, mas com inteligência.
+`
         },
         {
           role: "user",
           content: message
         }
-      ],
+      ]
     });
 
-    const reply = completion.choices[0].message.content;
+    const reply =
+      completion.choices?.[0]?.message?.content ||
+      "O Careca ficou em silêncio...";
 
     // Detecta formação no texto do usuário
     function extractFormation(text) {
       const regex = /\b(4-4-2|4-3-3|4-2-3-1|3-5-2|5-4-1|4-5-1|4-2-4|3-4-3|5-3-2)\b/gi;
-      const match = text.match(regex);
-      return match ? match[0] : null;
+      return text.match(regex)?.[0] ?? null;
     }
 
     res.json({
@@ -983,11 +992,14 @@ Mantenha sempre: CALMA, EFICIÊNCIA, DECISÃO CERTA.
   } catch (err) {
     console.error("Erro no /api/chat:", err);
     res.status(500).json({
-      error: "Falha na comunicação com OpenAI",
+      error: "Falha na comunicação com o Groq",
       details: err.message
     });
   }
 });
+
+
+
 
 // ===============================================
 // ✅ SISTEMA DE RANKING (em memória por enquanto)
