@@ -4,13 +4,29 @@ const chatBody      = document.getElementById('chat-body');
 const chatInputArea = document.getElementById('chat-input-area');
 const chatInput     = document.getElementById('chat-input');
 const chatSend      = document.getElementById('chat-send');
+
+// === Layout padrão do chat (dock no canto inferior direito) ===
+const DEFAULT_CHAT_STYLE = {
+  position: "fixed",
+  bottom: "20px",
+  right: "50px",
+  left: "",
+  top: "",
+  width: "300px",
+  height: "70vh"
+};
+
+function dockChat() {
+  Object.assign(coachChat.style, DEFAULT_CHAT_STYLE);
+  chatBody.style.display = "block";
+  chatInputArea.style.display = "flex";
+  chatOpen = true;
+}
+
 let chatOpen = false;
 
 function openChat() {
-  coachChat.style.height = "70vh";       // ✅ maximiza ao abrir
-  chatBody.style.display = "block";      // mostra mensagens
-  chatInputArea.style.display = "flex";  // mostra input
-  chatOpen = true;
+  dockChat();
 }
 
 function minimizeChat() {
@@ -65,8 +81,10 @@ chatSend.addEventListener("click", async ()=>{
     const data = await res.json();
     appendMessage("bot", data.reply || "O Careca, ficou em silêncio...");
     
-    minimizeChat();
-
+    // ✅ Depois da resposta: volta ao estado original (aberto e dockado)
+    dockChat();
+    chatBody.scrollTop = chatBody.scrollHeight;
+    
     // ✅ Se o Careca, retornou uma formação, aciona IA Tática
     if (data.formationRequested){
       console.log("⚽ Comando tático do chat:", data.formationRequested);
@@ -129,38 +147,35 @@ chatInput.addEventListener("focus", () => {
   }, 350);
 });
 
-// ✅ Ajuste automático para teclado Mobile (iOS e Android)
+let keyboardMode = false;
+
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", () => {
     if (!chatOpen) return;
 
-    const viewportHeight = window.visualViewport.height;
-    const totalHeight = window.innerHeight;
-    const keyboardHeight = totalHeight - viewportHeight;
+    const viewportH = window.visualViewport.height;
+    const totalH = window.innerHeight;
+    const kbHeight = totalH - viewportH;
+    const keyboardOpen = kbHeight > 120; // limiar típico
 
-    // força o chat ocupar o espaço útil acima do teclado
-    coachChat.style.position = "fixed";
-    coachChat.style.bottom = keyboardHeight + "px";
-    coachChat.style.top = "0px";
-    coachChat.style.left = "0px";
-    coachChat.style.width = "100vw";
-    coachChat.style.height = (viewportHeight - 10) + "px"; // evita overflow
-
-    chatBody.style.height = (viewportHeight - 90) + "px"; // espaço restante
+    if (keyboardOpen) {
+      keyboardMode = true;
+      // ocupa área útil acima do teclado
+      Object.assign(coachChat.style, {
+        position: "fixed",
+        left: "0px",
+        right: "0px",
+        top: "0px",
+        bottom: kbHeight + "px",
+        width: "100vw",
+        height: viewportH + "px"
+      });
+      chatBody.style.height = (viewportH - 90) + "px";
+    } else if (keyboardMode) {
+      keyboardMode = false;
+      // ✅ teclado fechou → volta ao dock padrão
+      dockChat();
+    }
   });
 }
-
-// Quando o input recebe foco → força maximizar e reposicionar
-chatInput.addEventListener("focus", () => {
-  openChat();
-
-  coachChat.style.position = "fixed";
-  coachChat.style.left = "0px";
-  coachChat.style.width = "100vw";
-
-  setTimeout(() => {
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }, 200);
-});
-
 
