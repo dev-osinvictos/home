@@ -5,7 +5,7 @@ const chatInputArea = document.getElementById('chat-input-area');
 const chatInput     = document.getElementById('chat-input');
 const chatSend      = document.getElementById('chat-send');
 
-// === Layout padrão do chat (dock no canto inferior direito) ===
+// === Layout padrão do chat (conversa para aprimoramento esportivo) ===
 const DEFAULT_CHAT_STYLE = {
   position: "fixed",
   bottom: "20px",

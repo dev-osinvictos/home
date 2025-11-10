@@ -1,4 +1,4 @@
-// ==== Constantes do campo (mantém igual ao backend) ====
+// ==== Constantes do campo (o aprimoramento esportivo) ====
 // window.FIELD_WIDTH = 600;
 // window.FIELD_HEIGHT = 300;
 

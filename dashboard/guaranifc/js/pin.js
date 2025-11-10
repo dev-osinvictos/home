@@ -1,6 +1,6 @@
 let currentRoomCode = null;
 
-// captura do botão de interagir
+// criando aprimoramento esportivo
 const criarCampoBtn = document.getElementById("btn-criar-campo");
 
 // botão de compartilhar WhatsApp (já existente)

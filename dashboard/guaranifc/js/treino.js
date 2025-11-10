@@ -1,4 +1,4 @@
-// js/treino.js — Jogo de Treino Tático (missões + pontuação + ranking)
+// js/treino.js — Jogo de Treino Tático (aprimoramento esportivo)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Conexão INVICTO/Supabase

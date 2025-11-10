@@ -1,4 +1,4 @@
-// server.js — AI Tática v12.1.2 (Render + Realtime WebSocket)
+// server.js — AI Tática v13 (Render + Realtime WebSocket)
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -1107,4 +1107,4 @@ app.get("/ranking", (req, res) => {
 
 // === Inicializa Render ===
 const PORT = process.env.PORT || 10000;
-httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v12.1.2 + Realtime rodando na porta ${PORT}`));
+httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v13 + Realtime rodando na porta ${PORT}`));

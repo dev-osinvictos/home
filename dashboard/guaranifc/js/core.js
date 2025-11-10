@@ -1,4 +1,4 @@
-/* ===== CORE: movimento, socket, física e AI analyze ===== */
+/* ===== CORE de aprimoramento esportivo: movimento, socket, física e AI analyze ===== */
 
 
 // === Utilitário: throttle ===

@@ -1,4 +1,4 @@
-/* ===== Desenho Tático: correção para offset mobile (HiDPI + CSS size sync) ===== */
+/* ===== Desenho Tático p/ aprimoramento esportivo ===== */
 (function(){
   const canvas = document.getElementById("trace-canvas");
   const penBtn = document.getElementById("pen-path-btn");
