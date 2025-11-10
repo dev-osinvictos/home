@@ -127,3 +127,38 @@ chatInput.addEventListener("focus", () => {
   }, 350);
 });
 
+// ✅ Ajuste automático para teclado Mobile (iOS e Android)
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    if (!chatOpen) return;
+
+    const viewportHeight = window.visualViewport.height;
+    const totalHeight = window.innerHeight;
+    const keyboardHeight = totalHeight - viewportHeight;
+
+    // força o chat ocupar o espaço útil acima do teclado
+    coachChat.style.position = "fixed";
+    coachChat.style.bottom = keyboardHeight + "px";
+    coachChat.style.top = "0px";
+    coachChat.style.left = "0px";
+    coachChat.style.width = "100vw";
+    coachChat.style.height = (viewportHeight - 10) + "px"; // evita overflow
+
+    chatBody.style.height = (viewportHeight - 90) + "px"; // espaço restante
+  });
+}
+
+// Quando o input recebe foco → força maximizar e reposicionar
+chatInput.addEventListener("focus", () => {
+  openChat();
+
+  coachChat.style.position = "fixed";
+  coachChat.style.left = "0px";
+  coachChat.style.width = "100vw";
+
+  setTimeout(() => {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 200);
+});
+
+
