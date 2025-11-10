@@ -53,6 +53,8 @@ chatSend.addEventListener("click", async ()=>{
 
   appendMessage("user", message);
   chatInput.value = "";
+  
+  minimizeChat();
 
   try {
 
