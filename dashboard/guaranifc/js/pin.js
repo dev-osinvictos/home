@@ -24,6 +24,11 @@ criarCampoBtn.addEventListener("click", (e) => {
   modal.style.display = "flex";
 });
 
+// CANCELAR PIN — fecha o modal
+document.getElementById("rt-room-cancel").onclick = () => {
+  modal.style.display = "none";
+};
+
 shareBtn.addEventListener("click", (e) => {
   if (!window.currentRoomCode) {
     e.preventDefault();
