@@ -268,28 +268,48 @@ $rkSave?.addEventListener("click", async () => {
   }
 
   // 1 — login / signup (automático)
-  const { data: authUser, error: authError } = await supabase.auth.signInWithPassword({
+// 1 — tenta login
+let { data: authUser, error: authError } = await supabase.auth.signInWithPassword({
+  email,
+  password: pass,
+});
+
+// 2 — se não existir, cria o usuário
+if (authError) {
+  let { data: newUser, error: signupError } = await supabase.auth.signUp({
     email,
     password: pass,
-  }).catch(async () => {
-    return supabase.auth.signUp({ email, password: pass });
   });
 
-  if (authError) {
-    notifyTop("Erro na autenticação.");
-    console.error(authError);
+  if (signupError) {
+    notifyTop("Erro na autenticação (cadastro).");
+    console.error(signupError);
     return;
   }
 
-  // 2 — grava score no banco
-  if (error){
-    notifyTop("Erro ao salvar no ranking.");
-    console.error(error);
-  } else {
-    notifyTop("Pontuação salva no ranking! ✅");
-    fetchRanking();
-  }
-});
+  authUser = newUser;
+}
+
+
+// 2 — grava score no banco (ranking table)
+const { error: insertError } = await supabase
+  .from("ranking")
+  .upsert({
+    name,
+    email,
+    points: state.points,
+    goals: state.goals,
+    ts: new Date().toISOString()
+  });
+
+if (insertError) {
+  notifyTop("Erro ao salvar no ranking.");
+  console.error(insertError);
+  return;
+}
+
+notifyTop("Pontuação salva no ranking! ✅");
+fetchRanking();
 
 })();
 
