@@ -235,13 +235,15 @@ const canvas = document.getElementById("trace-canvas");
 const ctx = canvas?.getContext("2d", { willReadFrequently: true });
 
    function animateTeam(prefix, positions) {
+	const fieldRect = document.getElementById("background-square").getBoundingClientRect();
+    
     for (const p of positions) {
       if (p.id === 23) continue;
       const el = document.getElementById(prefix + p.id);
       if (el) {
         el.style.transition = 'left 1s ease, top 1s ease';
-        el.style.left = p.left + 'px';
-        el.style.top = p.top + 'px';
+        el.style.left = (fieldRect.left + p.left) + 'px';
+        el.style.top  = (fieldRect.top + p.top) + 'px';
       }
     }
   }
@@ -263,8 +265,9 @@ function applyDynamicBlocks(greenPlayers, phase, opponentFormation) {
     const el = document.getElementById(`circle${p.id}`);
     if (!el) return;
     const newX = p.left + blockOffsetX;
-    el.style.left = `${Math.max(20, Math.min(580, newX))}px`;
-    el.style.top  = `${p.top}px`;
+	const fieldRect = document.getElementById("background-square").getBoundingClientRect();
+	el.style.left = (fieldRect.left + p.left) + "px";
+	el.style.top  = (fieldRect.top + p.top) + "px";
     p.left = Math.max(20, Math.min(580, newX));
   });
 }
