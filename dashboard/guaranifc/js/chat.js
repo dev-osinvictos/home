@@ -107,29 +107,47 @@ fetch(`${url_render}/ai/analyze`, {
 if (result.green) {
     console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
 
-    // 1. Atualiza a formação ativa do Guarani no sistema global
+    // 1) Resolve a chave da formação e dados da formação (base)
     const formationKey = data.formationRequested || result.detectedFormation || "4-4-2";
-    const formationData = window.FORMATIONS?.[formationKey];
+    const formationBase = window.FORMATIONS?.[formationKey];
 
-    // 2. Se a formação for reconhecida, reconstrói o bloco base
-    if (formationData) {
-        console.log("📐 Recriando formação base:", formationKey);
-        animateTeam("circle", formationData);
+    // 2) Converte a formação (prefferedZone) para o formato {id,left,top} esperado
+    const formationPositions = (formationBase || []).map(p => ({
+      id: p.id,
+      left: (p.prefferedZone && p.prefferedZone[0]) || (p.left ?? 300),
+      top:  (p.prefferedZone && p.prefferedZone[1]) || (p.top  ?? 150)
+    }));
 
-        // 3. Aplica blocos táticos (zona, fase e análise IA)
-        const phase = (result.phase || "transicao").toLowerCase();
-        applyDynamicBlocks(formationData, phase, result.opponentFormation || "4-4-2");
-    } 
-    else {
-        // fallback: só move os jogadores detectados
-        animateTeam("circle", result.green);
+    // 3) Se houver uma formação anterior registrada, anima a transição (Sheen->Ghain->Diagonal)
+    const prevKey = window.lastFormation || null;
+    if (prevKey && window.FORMATIONS && window.FORMATIONS[prevKey]) {
+      // usa a função de transição (ela trabalha com FORMATIONS originais que têm prefferedZone)
+      try {
+        animateFormationTransition(
+          "circle",
+          window.FORMATIONS[prevKey],
+          window.FORMATIONS[formationKey],
+          (result.phase || "transicao").toLowerCase()
+        );
+      } catch (err) {
+        console.warn("animateFormationTransition falhou, fallback para animateTeam:", err);
+        // fallback visual simples
+        animateTeam("circle", formationPositions);
+      }
+    } else {
+      // Sem formação anterior: posiciona direto
+      animateTeam("circle", formationPositions);
     }
 
-    // 4. Atualiza HUD com formações
-    const hud = document.getElementById("hud-formations");
-    hud.innerText = `Adversário: ${result.opponentFormation} | Guarani FC: ${formationKey}`;
-}
+    // 4) Aplica blocos dinâmicos (applyDynamicBlocks espera left/top)
+    const phase = (result.phase || "transicao").toLowerCase();
+    applyDynamicBlocks(formationPositions, phase, result.opponentFormation || "4-4-2");
 
+    // 5) Atualiza HUD e última formação
+    const hud = document.getElementById("hud-formations");
+    if (hud) hud.innerText = `Adversário: ${result.opponentFormation || "?"} | Guarani FC: ${formationKey}`;
+    window.lastFormation = formationKey;
+}
 });
 
     }
