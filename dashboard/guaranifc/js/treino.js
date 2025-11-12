@@ -97,7 +97,7 @@ const supabase = createClient(
     state.solved = false;
     notifyTop(`🎯 Missão: faça a IA montar ${state.mission}. Mova o time de treino Branco e aperte "Análise IA".`);
       clearTimeout(helpTimeout);
-  helpTimeout = setTimeout(() => {
+	  helpTimeout = setTimeout(() => {
     if (typeof showAskForTraineeToHelp === "function") {
       showAskForTraineeToHelp();
     }

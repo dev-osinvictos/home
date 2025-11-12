@@ -47,7 +47,7 @@
     penMode = !penMode;
     penBtn.style.background = penMode ? "#33aaff" : "#222";
     canvas.style.pointerEvents = penMode ? "auto" : "none";
-    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
+    penBtn.textContent = penMode ? "✎ Desenh..." : "✎ Desenho";
     if (penMode) {
       canvas.style.zIndex = "1000";
     } else {
