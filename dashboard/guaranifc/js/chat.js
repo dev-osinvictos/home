@@ -101,34 +101,27 @@ fetch(`${url_render}/ai/analyze`, {
 })
 .then(res => res.json())
 .then(result => {
-    console.table(result.green);
-    console.log("📦 IA retornou formação:", result);
-
-if (result.green) {
-    console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
-
-	  // === Bloqueia interações e aplica fade no campo enquanto a IA analisa ===
-    const field = document.getElementById("background-square");
-	if (field) {
+  // === Bloqueia interações e aplica fade no campo ===
+  const field = document.getElementById("background-square");
+  if (field) {
     document.body.style.pointerEvents = "none";
     field.style.transition = "opacity 0.3s ease";
     field.style.opacity = "0.8";
-	}
-    // 1) Resolve a chave da formação e dados da formação (base)
+  }
+
+  // === O bloco de formação (mantém seu código atual) ===
+  if (result.green) {
+    console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
     const formationKey = data.formationRequested || result.detectedFormation || "4-4-2";
     const formationBase = window.FORMATIONS?.[formationKey];
-
-    // 2) Converte a formação (prefferedZone) para o formato {id,left,top} esperado
     const formationPositions = (formationBase || []).map(p => ({
       id: p.id,
       left: (p.prefferedZone && p.prefferedZone[0]) || (p.left ?? 300),
-      top:  (p.prefferedZone && p.prefferedZone[1]) || (p.top  ?? 150)
+      top: (p.prefferedZone && p.prefferedZone[1]) || (p.top ?? 150)
     }));
 
-    // 3) Se houver uma formação anterior registrada, anima a transição (Sheen->Ghain->Diagonal)
     const prevKey = window.lastFormation || null;
     if (prevKey && window.FORMATIONS && window.FORMATIONS[prevKey]) {
-      // usa a função de transição (ela trabalha com FORMATIONS originais que têm prefferedZone)
       try {
         animateFormationTransition(
           "circle",
@@ -138,39 +131,31 @@ if (result.green) {
         );
       } catch (err) {
         console.warn("animateFormationTransition falhou, fallback para animateTeam:", err);
-        // fallback visual simples
         animateTeam("circle", formationPositions);
       }
     } else {
-      // Sem formação anterior: posiciona direto
       animateTeam("circle", formationPositions);
     }
 
-    // 4) Aplica blocos dinâmicos (applyDynamicBlocks espera left/top)
     const phase = (result.phase || "transicao").toLowerCase();
     applyDynamicBlocks(formationPositions, phase, result.opponentFormation || "4-4-2");
 
-    // 5) Atualiza HUD e última formação
     const hud = document.getElementById("hud-formations");
     if (hud) hud.innerText = `Adversário: ${result.opponentFormation || "?"} | Guarani FC: ${formationKey}`;
     window.lastFormation = formationKey;
-}
-  // === Libera o campo e restaura opacidade ===
-  setTimeout(() => {
-    if (field) {
-      field.style.opacity = "1";
-    }
-    document.body.style.pointerEvents = "auto";
-  }, 500); // ajuste conforme o tempo da animação
-});
-
-    }
-
-  } catch (e) {
-    appendMessage("bot","Erro de comunicação com o Careca,.");
-    console.error(e);
   }
+
+  // === Libera interações e restaura opacidade ===
+  setTimeout(() => {
+    if (field) field.style.opacity = "1";
+    document.body.style.pointerEvents = "auto";
+  }, 500);
+})
+.catch(e => {
+  appendMessage("bot", "Erro de comunicação com o Careca.");
+  console.error(e);
 });
+
 
 chatInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){
