@@ -83,8 +83,6 @@
   <canvas id="trace-canvas" width="600" height="300"
    style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;"></canvas>
 
-  <div id="ai-notification" style="display:none;position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#33aaff;color:#fff;padding:18px 32px;border-radius:8px;z-index:10001;font-size:1.1em;box-shadow:0 2px 10px rgba(0,0,0,0.18);"></div>
-
 <!-- Botões -->
 <div id="fullscreen-overlay"
   style="position:fixed;left:0;top:0;width:100vw;height:100vh;
@@ -187,7 +185,7 @@
 <div id="chat-container" style="
   position:fixed;bottom:20px;right:50px;width:300px;height:70vh;
   background:rgba(0,0,0,0.8);color:#fff;border-radius:10px;
-  flex-direction:column;overflow:hidden;z-index:10002;
+  flex-direction:column;overflow:hidden;z-index:4000;
   font-family:'Segoe UI',sans-serif;font-size:14px;">
 <div id="chat-header" style="background:#222;padding:10px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;color:#fff;">
   <img src="img/escudo-guaranifc.png" alt="Careca" style="width:24px;height:24px;border-radius:50%;">
@@ -240,7 +238,7 @@
 <!-- === HUD TÁTICO AVANÇADO === -->
 <div id="tactical-hud" style="
   position: absolute;
-  bottom: 335px;
+  top: 55px;
   right: 5px;
   width: 130px;
   background: rgba(0,0,0,0.7);
