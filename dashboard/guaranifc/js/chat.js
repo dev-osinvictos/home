@@ -1,5 +1,5 @@
 // =============================================
-// CHAT DO TREINADOR - INVISCOS / GUARANI FC
+// CHAT DO TREINADOR - INVICTOS / GUARANI FC
 // =============================================
 
 // Elementos principais
@@ -89,23 +89,46 @@ chatSend.addEventListener("click", async () => {
     dockChat();
     chatBody.scrollTop = chatBody.scrollHeight;
 
-    // Se o Careca retornou uma formação, aciona IA Tática
+    // ⚽ Se o Careca retornou uma formação, monta imediatamente (sem esperar IA)
     if (data.formationRequested) {
       console.log("⚽ Comando tático do chat:", data.formationRequested);
       window.dispatchEvent(new CustomEvent("coach:help-requested"));
 
+      // 🔧 Normaliza a formação
+      let formationKey = (data.formationRequested || "4-4-2")
+        .toString()
+        .replace(/[–—−]/g, "-")
+        .replace(/\s+/g, "");
+      console.log("✅ Formação normalizada:", formationKey);
+
+      const formationBase = window.FORMATIONS?.[formationKey];
+      if (formationBase && Array.isArray(formationBase)) {
+        const formationPositions = formationBase.map(p => ({
+          id: p.id,
+          left: (p.prefferedZone && p.prefferedZone[0]) || (p.left ?? 300),
+          top:  (p.prefferedZone && p.prefferedZone[1]) || (p.top  ?? 150)
+        }));
+
+        // Monta direto o time no campo, mesmo sem IA
+        console.log("🚀 Montando formação inicial (sem IA):", formationKey);
+        animateTeam("circle", formationPositions);
+        const hud = document.getElementById("hud-formations");
+        if (hud) hud.innerText = `Guarani FC: ${formationKey}`;
+        window.lastFormation = formationKey;
+      }
+
+      // 🔁 Agora chama a IA para refinar a tática (transições, blocos, etc.)
       fetch(`${url_render}/ai/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          manualFormation: data.formationRequested,
+          manualFormation: formationKey,
           possession: "vermelho",
           opponentFormationVision: null
         })
       })
-        .then(res => res.json())
+        .then(r => r.json())
         .then(result => {
-          // === Bloqueia interações e aplica fade no campo ===
           const field = document.getElementById("background-square");
           if (field) {
             document.body.style.pointerEvents = "none";
@@ -113,44 +136,45 @@ chatSend.addEventListener("click", async () => {
             field.style.opacity = "0.8";
           }
 
-          // === Bloco de formação ===
-          if (result.green) {
-            console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
-            const formationKey = data.formationRequested || result.detectedFormation || "4-4-2";
-            const formationBase = window.FORMATIONS?.[formationKey];
+          // Verifica formações válidas
+          const formationBaseAI = window.FORMATIONS?.[formationKey];
+          const formationPositionsAI = (formationBaseAI || []).map(p => ({
+            id: p.id,
+            left: (p.prefferedZone && p.prefferedZone[0]) || (p.left ?? 300),
+            top:  (p.prefferedZone && p.prefferedZone[1]) || (p.top  ?? 150)
+          }));
 
-            const formationPositions = (formationBase || []).map(p => ({
-              id: p.id,
-              left: (p.prefferedZone && p.prefferedZone[0]) || (p.left ?? 300),
-              top: (p.prefferedZone && p.prefferedZone[1]) || (p.top ?? 150)
-            }));
+          const prevKey = window.lastFormation || null;
+          const anyCircle = document.querySelector("#circle13, #circle14, #circle15, #circle16, #circle17, #circle18, #circle19, #circle20, #circle21, #circle22");
 
-            const prevKey = window.lastFormation || null;
-            if (prevKey && window.FORMATIONS && window.FORMATIONS[prevKey]) {
-              try {
-                animateFormationTransition(
-                  "circle",
-                  window.FORMATIONS[prevKey],
-                  window.FORMATIONS[formationKey],
-                  (result.phase || "transicao").toLowerCase()
-                );
-              } catch (err) {
-                console.warn("animateFormationTransition falhou, fallback para animateTeam:", err);
-                animateTeam("circle", formationPositions);
-              }
-            } else {
-              animateTeam("circle", formationPositions);
+          if (!anyCircle || !prevKey) {
+            console.log("🚀 Nenhum time ativo. IA montando:", formationKey);
+            animateTeam("circle", formationPositionsAI);
+          } else {
+            try {
+              console.log(`🔄 IA: ${prevKey} → ${formationKey}`);
+              animateFormationTransition(
+                "circle",
+                window.FORMATIONS[prevKey],
+                window.FORMATIONS[formationKey],
+                (result.phase || "transicao").toLowerCase()
+              );
+            } catch (err) {
+              console.warn("⚠️ animateFormationTransition falhou:", err);
+              animateTeam("circle", formationPositionsAI);
             }
-
-            const phase = (result.phase || "transicao").toLowerCase();
-            applyDynamicBlocks(formationPositions, phase, result.opponentFormation || "4-4-2");
-
-            const hud = document.getElementById("hud-formations");
-            if (hud) hud.innerText = `Adversário: ${result.opponentFormation || "?"} | Guarani FC: ${formationKey}`;
-            window.lastFormation = formationKey;
           }
 
-          // === Libera interações e restaura opacidade ===
+          // Aplica blocos dinâmicos
+          const phase = (result.phase || "transicao").toLowerCase();
+          applyDynamicBlocks(formationPositionsAI, phase, result.opponentFormation || "4-4-2");
+
+          // Atualiza HUD
+          const hud = document.getElementById("hud-formations");
+          if (hud) hud.innerText = `Adversário: ${result.opponentFormation || "?"} | Guarani FC: ${formationKey}`;
+          window.lastFormation = formationKey;
+
+          // Libera campo
           setTimeout(() => {
             if (field) field.style.opacity = "1";
             document.body.style.pointerEvents = "auto";
@@ -167,13 +191,12 @@ chatSend.addEventListener("click", async () => {
   }
 });
 
+
 // ----------------------------------------------------
 // Eventos extras (teclado, gols, mobile)
 // ----------------------------------------------------
 chatInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    chatSend.click();
-  }
+  if (e.key === "Enter") chatSend.click();
 });
 
 let lastGoalTime = 0;
