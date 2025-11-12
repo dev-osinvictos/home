@@ -107,6 +107,13 @@ fetch(`${url_render}/ai/analyze`, {
 if (result.green) {
     console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
 
+	  // === Bloqueia interações e aplica fade no campo enquanto a IA analisa ===
+    const field = document.getElementById("background-square");
+	if (field) {
+    document.body.style.pointerEvents = "none";
+    field.style.transition = "opacity 0.3s ease";
+    field.style.opacity = "0.8";
+	}
     // 1) Resolve a chave da formação e dados da formação (base)
     const formationKey = data.formationRequested || result.detectedFormation || "4-4-2";
     const formationBase = window.FORMATIONS?.[formationKey];
@@ -148,6 +155,13 @@ if (result.green) {
     if (hud) hud.innerText = `Adversário: ${result.opponentFormation || "?"} | Guarani FC: ${formationKey}`;
     window.lastFormation = formationKey;
 }
+  // === Libera o campo e restaura opacidade ===
+  setTimeout(() => {
+    if (field) {
+      field.style.opacity = "1";
+    }
+    document.body.style.pointerEvents = "auto";
+  }, 500); // ajuste conforme o tempo da animação
 });
 
     }
