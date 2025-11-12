@@ -104,14 +104,32 @@ fetch(`${url_render}/ai/analyze`, {
     console.table(result.green);
     console.log("📦 IA retornou formação:", result);
 
-    if (result.green) {
-        // ✅ Move imediatamente os jogadores no gramado
+if (result.green) {
+    console.log("🎯 Treinador solicitou nova formação:", data.formationRequested);
+
+    // 1. Atualiza a formação ativa do Guarani no sistema global
+    const formationKey = data.formationRequested || result.detectedFormation || "4-4-2";
+    const formationData = window.FORMATIONS?.[formationKey];
+
+    // 2. Se a formação for reconhecida, reconstrói o bloco base
+    if (formationData) {
+        console.log("📐 Recriando formação base:", formationKey);
+        animateTeam("circle", formationData);
+
+        // 3. Aplica blocos táticos (zona, fase e análise IA)
+        const phase = (result.phase || "transicao").toLowerCase();
+        applyDynamicBlocks(formationData, phase, result.opponentFormation || "4-4-2");
+    } 
+    else {
+        // fallback: só move os jogadores detectados
         animateTeam("circle", result.green);
     }
 
-    // ✅ Atualiza HUD
+    // 4. Atualiza HUD com formações
     const hud = document.getElementById("hud-formations");
-    hud.innerText = `Adversário: ${result.opponentFormation} | Guarani FC: ${result.detectedFormation}`;
+    hud.innerText = `Adversário: ${result.opponentFormation} | Guarani FC: ${formationKey}`;
+}
+
 });
 
     }
