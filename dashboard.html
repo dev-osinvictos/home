@@ -66,16 +66,16 @@
     }
 
     /* posições manuais (espalhadas ao redor do logo, iguais estilo do index) */
-    .orbit-1  { top: 8%;   left: 48%; transform: translate(-50%,-50%); background-image: url('/dashboard/racingclub/img/escudo-racingclub.svg'); }
-    .orbit-2  { top: 18%;  right: 22%; transform: translate(50%,0);   background-image: url('/dashboard/cabocajuniors/img/escudo-cabocajuniors.png'); }
-    .orbit-3  { top: 40%;  right: 5%;  transform: translate(0,-50%); background-image: url('/dashboard/cariverplate/img/escudo-cariverplate.png'); }
-    .orbit-4  { bottom: 30%; right: 10%; transform: translate(0,0);  background-image: url('/dashboard/sepalmeiras/img/escudo-sepalmeiras.svg'); }
-    .orbit-5  { bottom: 18%; left: 70%; transform: translate(0,0);  background-image: url('/dashboard/santosfc/img/escudo-santosfc.png'); }
-    .orbit-6  { bottom: 16%;  left: 45%; transform: translate(-50%,0);  background-image: url('/dashboard/guaranifc/img/escudo-guaranifc.png'); }
-    .orbit-7  { bottom: 15%; left: 20%; transform: translate(0,0);    background-image: url('/dashboard/acmilan/img/escudo-acmilan.svg'); }
-    .orbit-8  { bottom: 38%; left: 18%;  transform: translate(0,0);    background-image: url('/dashboard/juventusfc/img/escudo-juventusfc.png'); }
-    .orbit-9  { top: 32%;  left: 10%; transform: translate(0,0);      background-image: url('/dashboard/scinternacional/img/escudo-scinternacional.svg'); }
-    .orbit-10 { top: 15%;  left: 32%; transform: translate(0,0);      background-image: url('/dashboard/crflamengo/img/escudo-crflamengo.svg'); }
+    .orbit-1  { top: 8%;   left: 48%; transform: translate(-50%,-50%); background-image: url('assets/escudo-racing.svg'); }
+    .orbit-2  { top: 18%;  right: 22%; transform: translate(50%,0);   background-image: url('assets/escudo-bocajuniors.png'); }
+    .orbit-3  { top: 40%;  right: 5%;  transform: translate(0,-50%); background-image: url('assets/escudo-riverplate.png'); }
+    .orbit-4  { bottom: 30%; right: 10%; transform: translate(0,0);  background-image: url('assets/escudo-palmeiras.png'); }
+    .orbit-5  { bottom: 18%; left: 70%; transform: translate(0,0);  background-image: url('assets/escudo-santos.png'); }
+    .orbit-6  { bottom: 16%;  left: 45%; transform: translate(-50%,0);  background-image: url('assets/escudo-guaranifc.png'); }
+    .orbit-7  { bottom: 15%; left: 20%; transform: translate(0,0);    background-image: url('assets/escudo-milan.svg'); }
+    .orbit-8  { bottom: 38%; left: 18%;  transform: translate(0,0);    background-image: url('assets/escudo-juventus.png'); }
+    .orbit-9  { top: 32%;  left: 10%; transform: translate(0,0);      background-image: url('assets/escudo-scinternacional.svg'); }
+    .orbit-10 { top: 15%;  left: 32%; transform: translate(0,0);      background-image: url('assets/escudo-flamengo.svg'); }
 
     /* responsividade */
     @media (max-width:768px){
@@ -112,7 +112,7 @@
     <div class="thumbnail orbit orbit-2"
          role="link" tabindex="0"
          data-href="./dashboard/cabocajuniors/index.html"
-         title="Boca Juniors — vezes invicto (dados fornecidos): 1919 (12V 1E); 1924 (18V 1E); 1926 (15V 2E); 1998 (12V 7E)"
+         title="Boca Juniors — vezes invicto: 1919 (12V 1E); 1924 (18V 1E); 1926 (15V 2E); 1998 (12V 7E)"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Boca — 4x (dados)</div>
@@ -130,7 +130,7 @@
     <div class="thumbnail orbit orbit-4"
          role="link" tabindex="0"
          data-href="./dashboard/sepalmeiras/index.html"
-         title="Palmeiras — 1960 invicto (Campeonato informado: 1960). Vitórias/empates não fornecidos."
+         title="Palmeiras — 1960 invicto (Campeonato informado: 1960)"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Palmeiras — 1x (1960)</div>
@@ -157,7 +157,7 @@
     <div class="thumbnail orbit orbit-7"
          role="link" tabindex="0"
          data-href="./dashboard/acmilan/index.html"
-         title="AC Milan — dados de títulos invictos não informados (informe se quiser que eu adicione)."
+         title="AC Milan — 1x invicto"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Milan — 1x invicto</div>
@@ -166,7 +166,7 @@
     <div class="thumbnail orbit orbit-8"
          role="link" tabindex="0"
          data-href="./dashboard/juventusfc/index.html"
-         title="Juventus — dados de títulos invictos não informados (informe se quiser que eu adicione)."
+         title="Juventus — Invicto"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Juventus — 1x invicta</div>
@@ -175,7 +175,7 @@
     <div class="thumbnail orbit orbit-9"
          role="link" tabindex="0"
          data-href="./dashboard/scinternacional/index.html"
-         title="SC Internacional — 1979 (campeão brasileiro invicto) — detalhes de vitórias/empates não fornecidos."
+         title="SC Internacional — 1979 (campeão brasileiro invicto)"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Internacional — 1x (1979)</div>
@@ -184,7 +184,7 @@
     <div class="thumbnail orbit orbit-10"
          role="link" tabindex="0"
          data-href="./dashboard/crflamengo/index.html"
-         title="Flamengo — dados de títulos invictos não informados (adicione os anos/dados que quiser mostrar)."
+         title="Flamengo — 4x Invicto"
          onclick="location.href=this.dataset.href"
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Flamengo — 1x invicto</div>
