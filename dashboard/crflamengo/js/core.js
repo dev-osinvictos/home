@@ -367,7 +367,7 @@ async function sendVisionTactic() {
     const green = getGuaraniPositions();
     const black = getOpponentPositions();
 
-    const res = await fetch("https://guaranifc.onrender.com/ai/vision-tactic", {
+    const res = await fetch("https://crflamengo.onrender.com/ai/vision-tactic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fieldImage, possession, ball, green, black })
