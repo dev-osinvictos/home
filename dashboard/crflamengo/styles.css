@@ -1,4 +1,4 @@
-        .background-square {  /* Gramado */
+        .background-square {  /* Gramado para aprimoramento esportivo */
             position: absolute;
             left: 20px;
             top: 20px;
@@ -228,7 +228,39 @@
             font-size: 14px;
             user-select: none;
         }
+        
+		#room-user-indicator {
+		position: fixed;
+		top: 55px;              /* logo abaixo do HUD das estrelas */
+		right: 20px;            /* canto superior direito */
+		background: rgba(0, 0, 0, 0.65);
+		padding: 8px 14px;
+		border-radius: 10px;
+		border: 1px solid #ffffff33;
+		font-size: 14px;
+		font-weight: 600;
+		color: #fff;
+		text-align: right;
+		line-height: 16px;
+		display: none;          /* só aparece quando conectar */
+		z-index: 200000;        /* acima de tudo */
+		backdrop-filter: blur(6px);
+		min-width: 80px;
+		}
+		
+.menu-icon {
+  display: inline-block;
+  cursor: pointer;
+}
 
+.menu-icon span {
+  display: block;
+  width: 20px;
+  height: 3px;
+  margin: 2px 0;
+  background: blue; /* color of the lines */
+  border-radius: 4px;
+}
 
         .circle {
             width: 26px; height: 26px;
@@ -247,20 +279,33 @@
             user-select: none;
             text-shadow: 0 0 3px rgba(0,0,0,0.6);
         }
-        #circle1 { left: 25px; top: 160px; background: #ff33aa; }
-        #circle2 { left: 160px; top: 270px; background: #000000; }
-        #circle3 { left: 120px; top: 130px; background: #000000; }
-        #circle4 { left: 120px; top: 200px; background: #000000; }
-        #circle5 { left: 200px; top: 160px; background: #000000; }
-        #circle6 { left: 160px; top: 40px; background: #000000; }
-        #circle7 { left: 300px; top: 270px; background: #000000; }
-        #circle8 { left: 260px; top: 160px; background: #000000; }
-        #circle9 { left: 370px; top: 160px; background: #000000; }
-        #circle10 { left: 230px; top: 120px; background: #000000; }
-        #circle11 { left: 320px; top: 40px; background: #000000; }
-        #circle23 { left: 620px; top: 150px; background: #660000; }
-        #circle24 { left: 420px; top: 40px; background: #ffffff; }
-        body { margin: 0; overflow: hidden; background-color: green; }
+		
+		/* GOLEIRO */
+		#circle1  { left:  25px; top: 160px; background:#000000; color:red; }
+	
+		/* DEFESA (linha de 4) */
+		#circle2  { left: 70px; top:  50px; background:#000000; color:red; } /* lateral esquerdo */
+		#circle3  { left: 70px; top: 120px; background:#000000; color:red; } /* zagueiro esquerdo */
+		#circle4  { left: 70px; top: 190px; background:#000000; color:red; } /* zagueiro direito */
+		#circle5  { left: 70px; top: 260px; background:#000000; color:red; } /* lateral direito */
+
+		/* MEIO (triângulo 3) */
+		#circle6  { left: 140px; top: 160px; background:#000000; color:red; } /* volante (6) */
+		#circle7  { left: 160px; top: 90px; background:#000000; color:red; } /* meia esquerda (8) */
+		#circle8  { left: 160px; top: 230px; background:#000000; color:red; } /* meia direita (10) */
+
+		/* ATAQUE (linha de 3) */
+		#circle9  { left: 250px; top: 70px; background:#000000; color:red; } /* ponta esquerda (11) */
+		#circle10 { left: 270px; top: 160px; background:#000000; color:red; } /* centroavante (9) */
+		#circle11 { left: 250px; top: 250px; background:#000000; color:red; } /* ponta direita (7) */
+
+        #circle23 { left: 600px; top: 150px; background: #660000; }
+        #circle24 { left: 420px; top: 40px; background: #FFFFFF; }
+
+        html, body {
+          margin: 0;
+          overflow: auto; /* iOS bloqueia fullscreen se overflow:hidden */
+        }
 
 /* === Botão IA com spinner === */
 .ai-button {
@@ -342,4 +387,224 @@
   cursor: wait;
 }
 
+#ai-notification {
+  transition: opacity 0.8s ease;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1.5em;
+}
+#tactical-hud {
+  transition: opacity 0.8s ease, background 0.4s ease;
 
+}
+
+    /* --- LOGO CENTRAL --- */
+#logo-container {
+  position: fixed;
+  bottom: 3px;
+  right: 20px;
+  width: 180px;
+  height: 180px;
+  z-index: 2000;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0.25));
+  pointer-events: auto;
+
+}
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      --environment-image: var(--cor-fundo);
+      --progress-bar-color: var(--cor-fundo);
+    }
+
+/* ==== POPUP CAMISA INVICTO ==== */
+#popup-invicto {
+  position: fixed;
+  bottom: 80px;
+  right: 10px;
+  width: 250px;
+  height: 300px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20005;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .4s ease, transform .4s ease;
+  pointer-events: none;
+}
+
+#popup-invicto.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+#close-popup-invicto {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.popup-img {
+  width: 180px;
+  margin-top: 10px;
+}
+
+.popup-title {
+  margin: 6px 0;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.popup-price {
+  font-size: 18px;
+  color: #00ff66;
+  margin: 4px 0 10px 0;
+}
+
+.popup-link {
+  background: #33aaff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: .3s;
+}
+
+.popup-link:hover {
+  background: #2288ff;
+}
+/* ==== Ícone de trsigger do popup Invicto ==== */
+#invicto-icon {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 55px;
+  height: 55px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 20000;
+  transition: transform 0.3s, background 0.3s;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+#invicto-icon:hover {
+  transform: scale(1.12);
+  background: rgba(0, 150, 255, 0.9);
+}
+/* ===== POPUP DO TREINADOR (IA) ===== */
+#coach-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  padding: 18px;
+  background: rgba(0,0,0,0.90);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 12px;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 16px;
+  text-align: center;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+#coach-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  z-index: 4000 ;
+  transition: all 0.3s ease;
+}
+
+#chat-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#chat-input-area {
+  display: flex;
+  border-top: 1px solid #333;
+  padding: 6px;
+  gap: 4px;
+  background: #111;
+}
+
+@supports (-webkit-touch-callout: none) {
+  #chat-container {
+    bottom: env(keyboard-inset-height, 0);
+  }
+}
+/* Detecta iPhone / Safari iOS */
+@supports (-webkit-touch-callout: none) {
+
+  /* Ajusta os botões fixos */
+  button,
+  #fullscreen-overlay,
+  #ai-analise-btn,
+  #pen-path-btn,
+  #treino-btn {
+    height: 38px !important;      /* deixa mais fino */
+    padding: 6px 10px !important; /* reduz padding */
+    font-size: 0.8em !important;
+  }
+
+  /* Opcional: empurra os botões para cima do "safe area" */
+  .ios-bottom-fix {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Se quiser jogar os botões todos para o bottom */
+  .force-bottom {
+    position: fixed !important;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    top: auto !important;
+  }
+}
+/* === Centraliza o pop-up do treino no centro do campo === */
+#treino-missao,
+.missao-popup,
+#mission-popup,
+#treino-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;  
+  transform: translate(-50%, -50%);
+  z-index: 200000;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
