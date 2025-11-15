@@ -1,4 +1,4 @@
-// server.js — AI Tática v13 (Render + Realtime WebSocket)
+// server.js — AI Tática v12.1.2 (Render + Realtime WebSocket)
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -50,6 +50,7 @@ app.get("/", (req, res) => {
 // === Constantes ===
 const FIELD_WIDTH = 600;
 const FIELD_HEIGHT = 300;
+
 
 // === IA: Detector geométrico FIFA 2D ===
 function detectOpponentFormationAdvanced(players) {
@@ -323,6 +324,40 @@ function detectFormationByThirds(def, mid, att){
   return "UNKNOWN";
 }
 
+// === Função de correspondência com tolerância espacial (hitTest) ===
+function detectFormationByProximity(players, tolerance = 30) {
+  if (!players || players.length === 0) return "UNKNOWN";
+
+  const formations = Object.keys(global.FORMATIONS || window.FORMATIONS || {});
+  let bestMatch = { formation: "UNKNOWN", score: 0 };
+
+  for (const key of formations) {
+    const positions = (global.FORMATIONS || window.FORMATIONS)[key];
+    let hits = 0;
+
+    for (const p of players) {
+      for (const ref of positions) {
+        const dx = p.x - ref.prefferedZone[0];
+        const dy = p.y - ref.prefferedZone[1];
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= tolerance) {
+          hits++;
+          break; // conta apenas uma correspondência por jogador
+        }
+      }
+    }
+
+    const score = hits / positions.length;
+    if (score > bestMatch.score) {
+      bestMatch = { formation: key, score };
+    }
+  }
+
+  console.log(`📊 Proximidade: melhor correspondência = ${bestMatch.formation} (${(bestMatch.score * 100).toFixed(1)}%)`);
+  return bestMatch.formation;
+}
+
 
     // --- DETECTA PRESSÃO NA ÁREA DEFENSIVA ---
     function emergencyBlockIfUnderPressure(ball, blackPlayers) {
@@ -376,11 +411,46 @@ function abelSpeech(opponentFormation, detectedFormation, phase, bloco, compacta
 // === Endpoint IA ===
 app.post("/ai/analyze", async (req, res) => {
   try {
-    const { green = [], black = [], ball = {}, possession = "preto" } = req.body;
+    const { green = [], black = [], ball = {}, possession = "preto", tacticalRoles = {} } = req.body;
     const opponentFormation = (req.body.opponentFormationVision && req.body.opponentFormationVision !== "null")
     ? req.body.opponentFormationVision
     : detectOpponentFormationAdvanced(black);
     let detectedFormation = chooseCounterFormation(opponentFormation, possession);
+
+	// === REFINO NOVO: TacticalRoles (D/M/A) ajustam formação do Guarani ===
+if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
+
+  let d = 0, m = 0, a = 0;
+
+  for (const id in tacticalRoles) {
+    const role = tacticalRoles[id];
+    if (role === "D") d++;
+    if (role === "M") m++;
+    if (role === "A") a++;
+  }
+
+  const manualSignature = `${d}-${m}-${a}`;
+  console.log("🎯 Assinatura Guarani via TacticalRoles:", manualSignature);
+
+  const formationMap = {
+    "4-4-2": "4-4-2",
+    "4-3-3": "4-3-3",
+    "4-2-3-1": "4-2-3-1",
+    "3-5-2": "3-5-2",
+    "3-4-3": "3-4-3",
+    "5-4-1": "5-4-1",
+    "5-3-2": "5-3-2",
+    "4-2-4": "4-2-4",
+    "4-5-1": "4-5-1",
+    "4-1-4-1": "4-1-4-1"
+  };
+
+  if (formationMap[manualSignature]) {
+    console.log("📌 Formação Guarani forçada pelo usuário:", formationMap[manualSignature]);
+    detectedFormation = formationMap[manualSignature];
+  }
+}
+
 
     // ==== NOVO: se o Guarani já tem jogadores no campo, deduz via terços ====
     if (green && green.length > 0){
@@ -418,7 +488,7 @@ app.post("/ai/analyze", async (req, res) => {
         });
       }
 
-    res.json({ opponentFormation, detectedFormation, phase, bloco, compactacao, coachComment, green: greenAI });
+    res.json({ opponentFormation, detectedFormation, phase, bloco, compactacao, coachComment, tacticalRoles, green: greenAI });
   } catch (err) {
     console.error("Erro /ai/analyze", err);
     res.status(500).json({ error: "Erro interno IA", details: err.message });
@@ -428,7 +498,7 @@ app.post("/ai/analyze", async (req, res) => {
 // === IA VISUAL + AÇÃO TÁTICA REAL ===
 app.post("/ai/vision-tactic", async (req, res) => {
   try {
-    const { fieldImage, ball, green, black } = req.body;
+    const { fieldImage, ball, green, black, tacticalRoles = {} } = req.body;
 
     console.log("📸 Enviando imagem para Google Vision...");
 
@@ -441,7 +511,6 @@ app.post("/ai/vision-tactic", async (req, res) => {
       });
 
       const objects = result.localizedObjectAnnotations ?? [];
-
       console.log("🧠 Google detectou:", objects.map(o => o.name));
 
       players = objects
@@ -452,7 +521,6 @@ app.post("/ai/vision-tactic", async (req, res) => {
         }));
 
       ballDetected = objects.some(o => o.name === "Sports ball");
-
     } catch (visionErr) {
       console.warn("⚠️ Erro no Google Vision, ativando fallback...");
     }
@@ -463,29 +531,92 @@ app.post("/ai/vision-tactic", async (req, res) => {
       players = black; // usa as coordenadas que vieram do front
     }
 
-    // ✅ aplica seu algoritmo tático existente
+    // Aplica seu algoritmo tático existente
     const { def, mid, att } = classifyByThird(players);
-    // ✅ usa let, pois pode mudar no fallback
+	// Avalia também por proximidade espacial (hitTest)
+	let formationOpponent = detectFormationByProximity(players, 25); // raio ~25px
+	// === NOVO MÓDULO: refinamento via tacticalRoles (D/M/A do front) ===
+	if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
+    console.log("🎯 TacticalRoles recebidos:", tacticalRoles);
 
-	let formationOpponent = detectFormationByThirds(def, mid, att);
+    let countD = 0, countM = 0, countA = 0;
 
-	// ✅ FALLBACK quando retorna UNKNOWN ou vazio
+    // Conta quantos jogadores estão marcados manualmente
+    for (const k in tacticalRoles) {
+      if (tacticalRoles[k] === "D") countD++;
+      if (tacticalRoles[k] === "M") countM++;
+      if (tacticalRoles[k] === "A") countA++;
+    }
+
+    // Monta assinatura manual (ex: 4-4-2 vira algo como: 4D - 4M - 2A)
+    const signature = `${countD}-${countM}-${countA}`;
+    console.log("🎯 Assinatura manual:", signature);
+
+    // Regras decisórias baseadas na escolha do usuário
+    const manualMap = {
+      "4-4-2": "4-4-2",
+      "4-3-3": "4-3-3",
+      "4-2-3-1": "4-2-3-1",
+      "3-5-2": "3-5-2",
+      "3-4-3": "3-4-3",
+      "5-4-1": "5-4-1",
+      "5-3-2": "5-3-2",
+      "4-2-4": "4-2-4",
+      "4-5-1": "4-5-1",
+      "4-1-4-1": "4-1-4-1"
+    };
+
+    if (manualMap[signature]) {
+      console.log("📌 Formação ajustada pelos TacticalRoles:", manualMap[signature]);
+      formationOpponent = manualMap[signature];
+    }
+}
+
+	
 	if (!formationOpponent || formationOpponent === "UNKNOWN") {
-	console.log("⚠️ Formação indeterminada → usando fallback avançado");
-	formationOpponent = detectOpponentFormationAdvanced(players) ?? "4-4-2";
+	formationOpponent = detectFormationByThirds(def, mid, att);
 	}
 
+    // FALLBACK quando retorna UNKNOWN ou vazio
+    if (!formationOpponent || formationOpponent === "UNKNOWN") {
+      console.log("⚠️ Formação indeterminada → usando fallback avançado");
+      formationOpponent = detectOpponentFormationAdvanced(players) ?? "4-4-2";
+    }
 
-	return res.json({
-	opponentFormation: formationOpponent,
-	playersDetected: players.length,
-	ballDetected,
-	coachComment:
-    players.length < 6
-      ? "Fallback ativado (geométrico)."
-      : "Formação detectada via Google Vision."
-	});
+    // NOVO: adiciona prompt descritivo para a IA tática (explicativo)
+    const visionPrompt = `
+			Você é um analista tático de futebol.
+			Além das coordenadas espaciais, você recebe rótulos humanos:
+			D = defesa, M = meio, A = ataque.
+			Esses rótulos indicam a intenção e função tática do jogador.
 
+			Use:
+			- terços do campo (defesa, meio, ataque)
+			- agrupamento geométrico
+			- D/M/A quando existir como reforço
+
+			Os sistemas possíveis são:
+			4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 3-4-3, 5-4-1, 5-3-2, 4-2-4, 4-5-1, 4-1-4-1.
+
+			Responda somente com o nome da formação.
+			`;
+
+    console.log("📋 Prompt tático de observação configurado:", visionPrompt);
+
+    // (futuramente, você pode enviar o prompt e players para outro modelo, tipo Gemini ou GPT)
+
+    // 🕒 Atraso para sincronizar feedback no front
+    setTimeout(() => {
+      return res.json({
+        opponentFormation: formationOpponent,
+        playersDetected: players.length,
+        ballDetected,
+        coachComment:
+          players.length < 6
+            ? "Fallback ativado (geométrico)."
+            : "Formação detectada via Google Vision."
+      });
+    }, 5000); // 5s de delay visual
   } catch (err) {
     console.error("❌ Erro Vision:", err);
     res.status(500).json({ error: "Falha no Vision", details: err.message });
@@ -725,4 +856,4 @@ app.get("/ranking", (req, res) => {
 
 // === Inicializa Render ===
 const PORT = process.env.PORT || 10000;
-httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v13 + Realtime rodando na porta ${PORT}`));
+httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v12.1.2 + Realtime rodando na porta ${PORT}`));
