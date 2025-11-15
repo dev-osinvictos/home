@@ -35,6 +35,9 @@ const circles = {};
 const dragState = {};
 let activeId = null;
 
+let movedDuringDrag = false;
+
+
 // === Inicializa círculos (jogadores) ===
 for (let i = 1; i <= 24; i++) {
   const el = document.getElementById("circle" + i);
@@ -60,6 +63,65 @@ for (let i = 1; i <= 24; i++) {
     activeId = i;
     e.preventDefault();
   }, { passive: false });
+}
+
+// === NOVO: Estado tático por jogador (D / M / A / número) ===
+const circleTacticalState = {};
+const circleOriginalNumber = {};
+
+// === Inicializa labels originais ===
+for (let i = 1; i <= 24; i++) {
+  const el = document.getElementById("circle" + i);
+  if (!el) continue;
+
+// guarda o número original do círculo
+  circleOriginalNumber[i] = el.textContent.trim() || "";
+}
+
+// === Ciclo de clique: Número → D → M → A → Número ===
+function cycleTacticalRole(circleId) {
+  const el = circles[circleId];
+  if (!el) return;
+
+  const current = circleTacticalState[circleId] || "NUM";
+
+  let next;
+  if (current === "NUM") next = "D";
+  else if (current === "D") next = "M";
+  else if (current === "M") next = "A";
+  else next = "NUM";
+
+  // salva estado
+  circleTacticalState[circleId] = next;
+
+  // renderiza text
+  if (next === "NUM") {
+    el.textContent = circleOriginalNumber[circleId];
+    el.style.background = ""; // mantem seu estilo atual
+  } else {
+    el.textContent = next; // D / M / A
+  }
+}
+
+// === Adiciona listeners (click) para cada círculo ===
+for (let i = 1; i <= 24; i++) {
+  const el = document.getElementById("circle" + i);
+  if (!el) continue;
+
+el.addEventListener("pointerup", (e) => {
+  e.stopPropagation();
+
+  if (movedDuringDrag) {
+    movedDuringDrag = false;
+    return;
+  }
+
+  if (i === 24) return;
+
+  cycleTacticalRole(i);
+});
+
+
 }
 
 // === Física da bola ===
@@ -202,6 +264,7 @@ const emitPlayerMove = throttle((id, left, top, room) => {
 
 document.addEventListener("mousemove", (e) => {
   if (!activeId) return;
+  movedDuringDrag = true;
   const i = activeId;
   const x = e.clientX - dragState[i].offsetX;
   const y = e.clientY - dragState[i].offsetY;
@@ -211,6 +274,7 @@ document.addEventListener("mousemove", (e) => {
 
 document.addEventListener("touchmove", (e) => {
   if (!activeId) return;
+  movedDuringDrag = true;
   const i = activeId;
   const touch = e.touches[0];
   const x = touch.clientX - dragState[i].offsetX;
@@ -225,14 +289,15 @@ function endDrag() {
     dragState[activeId].dragging = false;
     activeId = null;
   }
+  // reset mover detector
+  movedDuringDrag = false;
 }
+
 document.addEventListener("mouseup", endDrag);
 document.addEventListener("touchend", endDrag);
 
-
 const canvas = document.getElementById("trace-canvas");
 const ctx = canvas?.getContext("2d", { willReadFrequently: true });
-
    
 function animateTeam(prefix, positions, onComplete, phase = "defesa") {
   const fieldRect = document.getElementById("background-square").getBoundingClientRect();
@@ -370,7 +435,7 @@ async function sendVisionTactic() {
     const res = await fetch("https://guaranifc.onrender.com/ai/vision-tactic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fieldImage, possession, ball, green, black })
+      body: JSON.stringify({ fieldImage, possession, ball, green, black, tacticalRoles: circleTacticalState })
     });
 
     const data = await res.json();
