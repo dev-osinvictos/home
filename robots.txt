@@ -1,0 +1,12 @@
+# ferramenta esportiva
+# aprimoramento esportivo
+# pt-br
+# ct virtual
+# campo tático
+# mesa tática interativa
+# mesa tática compartilhada
+
+User-agent: *
+Allow: /
+
+Sitemap: https://osinvictos.com.br/sitemap.xml
