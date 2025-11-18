@@ -103,15 +103,18 @@ const supabase = createClient(
     if (typeof showAskForTraineeToHelp === "function") {
       showAskForTraineeToHelp();
     }
-  }, 30000);
+   }, 30000);
   }
+  
+  // 🔥 expõe a função para o escopo global
+  window.startTraining = startTraining;
 
   function endTraining(success){
     state.active = false;
     window.trainingBallLock = false;
     window.trainingPlayMode = false;
     if (success) {
-      notifyTop(`✅ Missão cumprida! ${state.mission}`);
+      showVictoryOverlay("models/vitoria.glb", `Missão cumprida!\n${state.mission}`);
     } else {
       notifyTop(`❌ Missão encerrada. A missão era ${state.mission}.`);
     }
@@ -169,9 +172,7 @@ function scoreWithHelp(attempt){
       syncHUD();
       state.solved = true;
       endTraining(true);
-
-      // auto-encadeia nova missão (opcional). Comente se não quiser.
-      setTimeout(startTraining, 1100);
+      
       return;
     }
 
@@ -324,3 +325,29 @@ $rkSave?.addEventListener("click", async () => {
 
 })();
 
+window.showVictoryOverlay = function(glbFile, message) {
+  const overlay = document.getElementById("victory-overlay");
+  const model = document.getElementById("victory-model");
+  const text = document.getElementById("victory-text");
+
+  model.src = glbFile;
+  text.textContent = message;
+
+  // espera 5s e faz fade-in
+  overlay.style.display = "flex";
+  overlay.style.opacity = "0";
+  setTimeout(() => {
+    overlay.style.opacity = "1";
+  }, 5000);
+};
+
+window.closeVictoryOverlay = function() {
+  const overlay = document.getElementById("victory-overlay");
+  overlay.style.opacity = "0";
+  overlay.style.display = "none";
+  
+  // ▶️ Inicia a próxima missão automaticamente
+  if (typeof window.startTraining === "function") {
+      setTimeout(() => window.startTraining(), 400);
+  }
+};
