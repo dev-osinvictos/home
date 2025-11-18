@@ -37,6 +37,9 @@ let activeId = null;
 
 let movedDuringDrag = false;
 
+window.trainingBallLock = false;
+window.trainingPlayMode = false;
+window.trainingForceShot = false;
 
 // === Inicializa círculos (jogadores) ===
 for (let i = 1; i <= 24; i++) {
@@ -48,6 +51,7 @@ for (let i = 1; i <= 24; i++) {
   el.style.zIndex = "20";
 
   el.addEventListener("mousedown", (e) => {
+    if (i === 24 && window.trainingBallLock) return;
     dragState[i].dragging = true;
     dragState[i].offsetX = e.offsetX;
     dragState[i].offsetY = e.offsetY;
@@ -55,6 +59,7 @@ for (let i = 1; i <= 24; i++) {
   });
 
   el.addEventListener("touchstart", (e) => {
+    if (i === 24 && window.trainingBallLock) return;
     const touch = e.touches[0];
     const rect = el.getBoundingClientRect();
     dragState[i].dragging = true;
@@ -188,6 +193,13 @@ if (id === 24) {
     // === Cálculo do impacto proporcional à velocidade ===
     const vx = (x - oldX) * 0.6; // força (ajuste: 0.6–1.0)
     const vy = (y - oldY) * 0.6;
+    
+   // 🟩 AUTO-CHUTE DA IA (time verde)
+   if (window.trainingForceShot && id >= 13 && id <= 23) {
+       aiAutoKickTowardsLeftGoal(el);
+       return;
+   }
+    
     ballVelocity.x = vx;
     ballVelocity.y = vy;
     ballMoving = true;
@@ -298,6 +310,101 @@ document.addEventListener("touchend", endDrag);
 
 const canvas = document.getElementById("trace-canvas");
 const ctx = canvas?.getContext("2d", { willReadFrequently: true });
+
+ // ================================================
+ // === IA FINALIZA TREINO (verde corre e chuta) ===
+ // ================================================
+ window.triggerAITreinoFinisher = function () {
+     if (!window.trainingPlayMode) return;
+
+     const ball = document.getElementById("circle24");
+     const bx = parseFloat(ball.style.left);
+     const by = parseFloat(ball.style.top);
+
+     // seleciona só jogadores VERDES (13 a 23)
+     const green = [];
+     for (let i = 13; i <= 23; i++) {
+         const el = document.getElementById("circle" + i);
+         if (!el) continue;
+         green.push({
+             id: i,
+             el,
+             x: parseFloat(el.style.left),
+             y: parseFloat(el.style.top)
+         });
+     }
+
+     // encontra o mais próximo da bola
+     let best = null;
+     let bestDist = 99999;
+     for (const p of green) {
+          const d = Math.hypot(p.x - bx, p.y - by);
+        if (d < bestDist) {
+             bestDist = d;
+             best = p;
+         }
+     }
+     if (!best) return;
+
+     // jogador verde corre até a bola
+     const steps = 28;
+     const dur = 380;
+     let n = 0;
+     const stepX = (bx - best.x) / steps;
+     const stepY = (by - best.y) / steps;
+
+     const interval = setInterval(() => {
+         n++;
+         best.x += stepX;
+         best.y += stepY;
+		 moveElement(best.id, best.x, best.y);
+
+         if (n >= steps) {
+             clearInterval(interval);
+             aiKickBallLeft();
+         }
+     }, dur / steps);
+ };
+
+ // IA chuta a bola para o GOL DA ESQUERDA
+ function aiKickBallLeft() {
+     const ball = document.getElementById("circle24");
+     if (!ball) return;
+
+     // força inicial do chute → direção esquerda
+	 aiAutoKickTowardsLeftGoal();
+	 
+	 // após a bola ser chutada
+	 setTimeout(() => {
+     window.trainingForceShot = false;
+   }, 800);
+ }
+
+function aiAutoKickTowardsLeftGoal(playerEl) {
+    const ball = document.getElementById("circle24");
+    const bx = parseFloat(ball.style.left);
+    const by = parseFloat(ball.style.top);
+
+    const goal = document.getElementById("gol-square");
+    if (!goal) {
+        console.warn("⚠️ gol-square não encontrado, chute cancelado.");
+        return;
+    }
+    const gr = goal.getBoundingClientRect();
+    const br = ball.getBoundingClientRect();
+
+    // centro do gol
+    const goalY = gr.top + (gr.height / 2);
+
+    // direção do chute
+    const dx = -1; // esquerda
+    const dy = (goalY - br.top) * 0.06; // ajusta trajetória vertical
+
+    // força do chute
+    ballVelocity.x = dx * 14;
+    ballVelocity.y = dy;
+    ballMoving = true;
+}
    
 function animateTeam(prefix, positions, onComplete, phase = "defesa") {
   const fieldRect = document.getElementById("background-square").getBoundingClientRect();
@@ -323,8 +430,7 @@ function animateTeam(prefix, positions, onComplete, phase = "defesa") {
       const offsetY = Math.sin((frame / 6) + idx / 2) * 5;
       const offsetX = Math.cos((frame / 10) + idx / 3) * 2;
 
-      el.style.left = fieldRect.left + point.x + offsetX + "px";
-      el.style.top = fieldRect.top + point.y + offsetY + "px";
+      moveElement(p.id, point.x + offsetX, point.y + offsetY);
     });
 
     frame++;
@@ -372,10 +478,10 @@ function animateFormationTransition(prefix, fromFormation, toFormation, phase = 
       const offsetY = Math.sin((frame / 8) + i / 3) * 3;
 
       // Recentrar o time (Carlos Alberto Silva Style)
-      const centerOffsetX = fieldCenterX - 300; // 600/2 - referência base
+      const centerOffsetX = 0; // fieldCenterX - 300; // 600/2 - referência base
+	
+	  moveElement(player.id, (lerpX + point.x / 10 + offsetX), (lerpY + point.y / 10 + offsetY));
 
-      el.style.left = rect.left + (lerpX + point.x / 10 + offsetX + centerOffsetX) + "px";
-      el.style.top  = rect.top  + (lerpY + point.y / 10 + offsetY) + "px";
     }
 
     frame++;
@@ -404,8 +510,7 @@ function applyDynamicBlocks(greenPlayers, phase, opponentFormation) {
     if (!el) return;
     const newX = p.left + blockOffsetX;
 	const fieldRect = document.getElementById("background-square").getBoundingClientRect();
-	el.style.left = (fieldRect.left + p.left) + "px";
-	el.style.top  = (fieldRect.top + p.top) + "px";
+    moveElement(p.id, p.left, p.top);
     p.left = Math.max(20, Math.min(580, newX));
   });
 }

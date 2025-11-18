@@ -95,6 +95,8 @@ const supabase = createClient(
     state.attempts = 0;
     state.usedHelpThisAttempt = false;
     state.solved = false;
+    window.trainingBallLock = true;
+    window.trainingPlayMode = true;
     notifyTop(`🎯 Missão: faça a IA montar ${state.mission}. Mova o time de treino Branco e aperte "Análise IA".`);
       clearTimeout(helpTimeout);
 	  helpTimeout = setTimeout(() => {
@@ -106,6 +108,8 @@ const supabase = createClient(
 
   function endTraining(success){
     state.active = false;
+    window.trainingBallLock = false;
+    window.trainingPlayMode = false;
     if (success) {
       notifyTop(`✅ Missão cumprida! ${state.mission}`);
     } else {
@@ -192,7 +196,11 @@ function scoreWithHelp(attempt){
     if (state.attempts >= 4) {
       state.goals = Math.max(0, state.goals - 1);
       syncHUD();
-      notifyTop(`🚫 4ª errada: -1 gol pró. Missão encerrada.`);
+      notifyTop(`🚫 4ª errada: -1 gol pró. IA vai finalizar o lance...`);
+      window.trainingForceShot = true;
+    if (window.triggerAITreinoFinisher) {
+      setTimeout(() => window.triggerAITreinoFinisher(), 600);
+    }
       endTraining(false);
     }
   });
