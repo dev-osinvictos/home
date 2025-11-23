@@ -1,4 +1,5 @@
-// server.js — AI Tática v12.1.2 (Render + Realtime WebSocket)
+
+// server.js — AI Tática v12.2 (Render + Realtime WebSocket)
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -10,8 +11,33 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import Groq from "groq-sdk";
 import { createClient } from "@supabase/supabase-js";
+import formations from "./js/formations.mjs";
+import vision from "@google-cloud/vision";
+
+// Garante que FORMATIONS existe no backend
+global.FORMATIONS = global.FORMATIONS || {};
+global.FORMATIONS = formations;
+console.log('⚽ FORMATIONS pronta no backend:', Object.keys(global.FORMATIONS));
 
 dotenv.config();
+
+function isTacticallyValid(form) {
+  if (!form) return false;
+  const parts = form.split("-").map(Number);
+  if (parts.some(isNaN)) return false;
+  const total = parts.reduce((s, n) => s + n, 0);
+ 
+  // mínimo 8 (sem GK), máximo 10 (sem GK + com GK possível)
+  return total >= 8 && total <= 10;   
+}
+
+let visionClient;
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  const creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+  visionClient = new vision.ImageAnnotatorClient({ credentials: creds });
+} else {
+  visionClient = new vision.ImageAnnotatorClient();
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -40,7 +66,13 @@ const __dirname = path.dirname(__filename);
 // === Middleware ===
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
 // === Serve o frontend ===
 app.get("/", (req, res) => {
@@ -54,7 +86,7 @@ const FIELD_HEIGHT = 300;
 
 // === IA: Detector geométrico FIFA 2D ===
 function detectOpponentFormationAdvanced(players) {
-  if (!players || players.length < 8) return "4-4-2";
+  if (!players || players.length < 4) return "4-4-2";
 
   const sortedByX = [...players].sort((a,b) => a.left - b.left);
   const noGK = sortedByX.slice(1); // drop leftmost
@@ -62,7 +94,7 @@ function detectOpponentFormationAdvanced(players) {
  const sorted = [...noGK].sort((a, b) => a.top - b.top);
   const lines = [];
   for (const p of sorted) {
-    let line = lines.find(l => Math.abs(l.centerY - p.top) <= 50); // tolerância ligeiramente maior
+    let line = lines.find(l => Math.abs(l.centerY - p.top) <= 30); // tolerância ligeiramente maior
     if (line) {
       line.players.push(p);
       line.centerY = (line.centerY * (line.players.length - 1) + p.top) / line.players.length;
@@ -70,6 +102,28 @@ function detectOpponentFormationAdvanced(players) {
       lines.push({ players: [p], centerY: p.top });
     }
   }
+  
+  // === DETECÇÃO POR ELO (INTELIGÊNCIA TÁTICA REAL) ===
+  const elo = detectEloFormation(noGK);
+  if (elo?.role === "zaga-4") {
+  console.log("🧠 detectEloFormation: Linha de 4 zagueiros encontrada via cluster");
+  
+  // Agora buscamos os outros clusters pra definir:
+  // 4-4-2 ? ou 4-2-3-1 ? ou 4-1-4-1 ?
+  // Vamos usar os clusters baseado na altura (top) para montar as linhas:
+
+  const mids = noGK.filter(p => p.top > elo.avgY + 50 && p.top < elo.avgY + 130);
+  const atks = noGK.filter(p => p.top > elo.avgY + 130);
+
+  if (mids.length === 4 && atks.length === 2) return "4-4-2";
+  if (mids.length === 3 && atks.length === 3) return "4-3-3";
+  if (mids.length === 5 && atks.length === 1) return "4-5-1";
+  if (mids.length === 4 && atks.length === 1) return "4-1-4-1";
+  if (mids.length === 2 && atks.length === 3) return "4-2-3-1";
+
+  return "4-4-2";  // fallback seguro
+}
+
 
   lines.sort((a, b) => a.centerY - b.centerY);
   const counts = lines.map(l => l.players.length);
@@ -101,6 +155,65 @@ function detectOpponentFormationAdvanced(players) {
   // Último fallback neutro (melhor que fixar 4-4-2)
   return "4-2-3-1";
 }
+
+
+function detectEloFormation(players, maxDist = 70) {  // maxDist maior para tolerância real
+  if (!players || players.length < 4) return null;
+
+  const roles = {};
+  const clusters = [];
+  const visited = new Set();
+
+  function bfsCluster(startIdx) {
+    const queue = [players[startIdx]];
+    const cluster = [];
+    visited.add(startIdx);
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      cluster.push(current);
+      for (let i = 0; i < players.length; i++) {
+        if (visited.has(i)) continue;
+        const dx = players[i].left - current.left;
+        const dy = players[i].top - current.top;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= maxDist) {
+          visited.add(i);
+          queue.push(players[i]);
+        }
+      }
+    }
+    return cluster;
+  }
+
+  for (let i = 0; i < players.length; i++) {
+    if (!visited.has(i)) {
+      const cluster = bfsCluster(i);
+      if (cluster.length >= 2) clusters.push(cluster);
+    }
+  }
+
+  const FIELD_WIDTH = 600;
+  const T1 = FIELD_WIDTH / 3;
+  const T2 = FIELD_WIDTH * 2 / 3;
+
+  clusters.forEach(cluster => {
+    const avgX = cluster.reduce((s,p)=>s+p.left,0) / cluster.length;
+    if      (cluster.length === 4 && avgX < T1) roles.zaga = cluster;
+    else if (cluster.length === 3 && avgX < T2) roles.meio = cluster;
+    else if (cluster.length === 3 && avgX > T2) roles.ataque = cluster;
+  });
+
+  return roles;
+}
+
+function interpretFormation(roles) {
+  if (roles?.zaga && roles?.meio && roles?.ataque) return "4-3-3";
+  if (roles?.zaga && roles?.meio) return "4-4-2";
+  return "4-2-3-1";  // fallback moderno
+}
+
 
 // === Fase / Bloco / Compactação ===
 function detectPhase(possession, opponentFormation) {
@@ -136,84 +249,86 @@ function detectPhase(possession, opponentFormation) {
 }
 
 
-// === Contra-formação — Filosofia Carlos Alberto Silva ===
-function chooseCounterFormation(opponentFormation, possession) {
-  
-  // Quando Guarani tem a bola → monta postura ofensiva organizada
-  if (possession === "verde") {
+// === Contra-formação — Filosofia Carlos Alberto Silva (mesclada com contra-ataque IA) ===
+function chooseCounterFormation(opponentFormation, possession = "verde", phase = "") {
+
+  // NOVO: Evita espelhamento ineficiente (4-4-2 x 4-4-2)
+  if (opponentFormation === "4-4-2" && phase === "Ataque") {
+    console.log("⚠️ Espelhamento detectado (4-4-2 x 4-4-2). Mudando para 4-3-3 para atacar half-spaces.");
+    return "4-3-3";  // ganho de profundidade + meio mais forte
+  }
+
+  // ⚡ 1) DETECÇÃO DE CONTRA-ATAQUE (RECUPERAÇÃO DE BOLA) ========================
+  const vulneraveisContraAtaque = ["4-2-4", "3-4-3", "4-3-3", "4-2-3-1"];
+
+  if (phase === "Defesa" && possession === "verde" && vulneraveisContraAtaque.includes(opponentFormation)) {
+    console.log("⚡ TRANSIÇÃO RÁPIDA ATIVADA (contra-ataque)!");
+    return "4-2-4"; // explosão vertical — muita profundidade
+  }
+
+
+  // 🍃 2) FILOSOFIA CARLOS ALBERTO SILVA — MANTIDA E RESPEITADA ===================
+  if (possession === "verde") {  // COM POSSE
     switch (opponentFormation) {
 
       case "5-4-1":
       case "5-3-2":
-        // Retranca forte: precisamos de meia central conectando e amplitude
-        return "4-2-3-1"; // construção paciente para infiltrar
+        return "4-2-3-1"; // infiltração paciente
 
       case "4-4-2":
-        // Linha horizontal rígida → atacar half-spaces
-        return "4-3-3";   // amplitude + extremos atacando profundidade
+        return "4-3-3";   // atacar half-spaces
 
       case "4-3-3":
-        // Espelho sem perder meio → cortar triangulação deles
-        return "4-2-3-1";
+        return "4-2-3-1"; // cortar triangulação
 
       case "4-2-4":
-        // Eles tiram meio → ganho numérico no meio
-        return "4-1-4-1"; // controle total de meio de campo
+        return "4-1-4-1"; // ganhar meio
 
       case "4-1-4-1":
-        // Um volante só protegendo → atrair e infiltrar por dentro
-        return "4-2-3-1"; // superioridade entrelinhas com camisa 10
+        return "4-2-3-1"; // camisa 10 vem ditar ritmo
 
       case "3-5-2":
-        // 3 zagueiros: abrir campo
         return "4-3-3";  // amplitude máxima
 
       case "3-4-3":
-        // Alas altos, espaço nas costas
-        return "4-2-4";  // dois na última linha para atacar profundidade
+        return "4-2-4";  // atacar costas dos alas
 
       default:
-        return "4-3-3";
+        return "4-3-3";  // postura base
     }
   }
 
-  // Quando o Guarani está sem a bola → prioridade é equilíbrio e disciplina
-  else {
+  // ❌ 3) SEM POSSE DE BOLA (ORGANIZAÇÃO DEFENSIVA) ==============================
+  else {  
     switch (opponentFormation) {
 
       case "4-3-3":
-        // eles têm superioridade no meio → fechar corredor central
-        return "4-5-1"; // marcação por zona com compactação curta
+        return "4-5-1"; // fechar meio
 
       case "4-2-3-1":
-        // neutralizar meia central deles (camisa 10)
-        return "4-4-2"; // 2 encaixes no volante/meia
+        return "4-4-2"; // encaixe no 10
 
       case "4-1-4-1":
-        // volante deles constrói → tiramos linha de passe
-        return "4-3-3"; // encaixe no volante e extremos fecham corredor
+        return "4-3-3"; // cortar linha do volante
 
       case "4-4-2":
-        // Espelho defensivo com disciplina
-        return "4-4-2";
+        return "4-4-2"; // espelhamento seguro
 
       case "3-5-2":
-        // 2 atacantes deles → sempre sobra 1 nosso
-        return "5-4-1"; // fecha com três zagueiros e alas baixos
+        return "5-4-1"; // cobrir atacantes duplos
 
       case "3-4-3":
-        // alas altos, perigoso → proteger amplitude
-        return "5-3-2"; // alas voltam, fecha corredor
+        return "5-3-2"; // alas recuam
 
       case "4-2-4":
-        // eles sacrificam meio campo → transição mata
-        return "4-1-4-1"; // volante controla transição
+        return "4-1-4-1"; // proteger transição
 
       default:
-        return "4-4-2";
+        return "4-4-2"; // disciplina
     }
   }
 }
+
 
 
 // === Monta o Verde (direita → esquerda) ===// === Monta o Verde (direita → esquerda) ===
@@ -224,7 +339,7 @@ function chooseCounterFormation(opponentFormation, possession) {
 // - Filosofia Carlos Alberto Silva (organização + superioridade no setor da bola)
 
 function buildGreenFromFormation(formationKey, ball, phase = "defesa") {
-  const formation = FORMATIONS[formationKey] || FORMATIONS["4-3-3"];
+  const formation = global.FORMATIONS[formationKey] || global.FORMATIONS["4-3-3"];
   const greenAI = [];
 
   const BALL_X = ball?.left ?? FIELD_WIDTH / 2;
@@ -306,33 +421,49 @@ function classifyByThird(players){
 }
 
 
-// ---------------------------------------------------------------
-// === DEDUÇÃO DA FORMAÇÃO com base na distribuição numérica
-// ---------------------------------------------------------------
-function detectFormationByThirds(def, mid, att){
-  if (def === 4 && mid === 4 && att === 2) return "4-4-2";
-  if (def === 4 && mid === 3 && att === 3) return "4-3-3";
-  if (def === 4 && mid === 2 && att === 3) return "4-2-3-1";
-  if (def === 3 && mid === 5 && att === 2) return "3-5-2";
-  if (def === 3 && mid === 4 && att === 3) return "3-4-3";
-  if (def === 5 && mid === 4 && att === 1) return "5-4-1";
-  if (def === 5 && mid === 3 && att === 2) return "5-3-2";
-  if (def === 4 && mid === 2 && att === 4) return "4-2-4";
-  if (def === 4 && mid === 5 && att === 1) return "4-5-1";
-  if (def === 4 && mid === 5 && att === 1) return "4-1-4-1";
+// === DETECÇÃO REAL POR POSIÇÃO (SEM D/M/A) ===
+// Divide o campo em terços e conta aglomerações
+function detectFormationAuto(greenPlayers, fieldWidth = 600, fieldHeight = 300) {
+  const DEF_LINE = fieldHeight * 0.35;  // abaixo → defesa
+  const MID_LINE = fieldHeight * 0.65;  // meio
+  // acima disso → ataque
 
-  return "UNKNOWN";
+  let d = 0, m = 0, a = 0;
+
+  for (const p of greenPlayers) {
+    if (p.top < DEF_LINE) d++;
+    else if (p.top < MID_LINE) m++;
+    else a++;
+  }
+
+  const signature = `${d}-${m}-${a}`;
+  console.log("📌 Assinatura visual detectada:", signature);
+
+  const map = {
+    "4-4-2": "4-4-2",
+    "4-3-3": "4-3-3",
+    "3-5-2": "3-5-2",
+    "4-2-3-1": "4-2-3-1",
+    "3-4-3": "3-4-3",
+    "4-2-4": "4-2-4",
+    "4-1-4-1": "4-1-4-1",
+    "5-3-2": "5-3-2",
+    "5-4-1": "5-4-1"
+  };
+
+  return map[signature] || "UNKNOWN"; // fallback
 }
+
 
 // === Função de correspondência com tolerância espacial (hitTest) ===
 function detectFormationByProximity(players, tolerance = 30) {
   if (!players || players.length === 0) return "UNKNOWN";
 
-  const formations = Object.keys(global.FORMATIONS || window.FORMATIONS || {});
+  const formations = Object.keys(global.FORMATIONS || {});
   let bestMatch = { formation: "UNKNOWN", score: 0 };
 
   for (const key of formations) {
-    const positions = (global.FORMATIONS || window.FORMATIONS)[key];
+    const positions = (global.FORMATIONS)[key];
     let hits = 0;
 
     for (const p of players) {
@@ -408,30 +539,205 @@ function abelSpeech(opponentFormation, detectedFormation, phase, bloco, compacta
   return `${pick(intro)} ${pick(corpo)} ${pick(contexto)}`;
 }
 
+// === DETECTOR TÁTICO COM CLUSTERING (sem depender de D/M/A) ===
+// detecta linhas defensivas, meio-campo e ataque, mesmo tortos
+
+function detectFormationByClustering(players) {
+  if (!players || players.length < 6) return "UNKNOWN";
+
+  // 1) Ordenar por Y (vertical)
+  const sorted = players.slice().sort((a, b) => a.top - b.top);
+
+  // 2) K-means adaptado para 3 terços (sem biblioteca)
+  const groups = [[], [], []]; // defesa, meio, ataque
+
+  // Definir 2 divisores (25% e 55% da altura média)
+  const allY = sorted.map(p => p.top);
+  const minY = Math.min(...allY);
+  const maxY = Math.max(...allY);
+  const range = maxY - minY;
+
+  const defenseLine = minY + range * 0.33;
+  const attackLine  = minY + range * 0.66;
+
+  for (const p of sorted) {
+    if (p.top < defenseLine) groups[0].push(p);      // defesa
+    else if (p.top < attackLine) groups[1].push(p);  // meio
+    else groups[2].push(p);                          // ataque
+  }
+
+  // 3) Gera assinatura tática (ex.: 4-4-2)
+  const d = groups[0].length;
+  const m = groups[1].length;
+  const a = groups[2].length;
+  const signature = `${d}-${m}-${a}`;
+  console.log("📌 Assinatura por clustering:", signature);
+
+  // 4) Mapeamento possível
+  const map = {
+    "4-4-2": "4-4-2",
+    "3-5-2": "3-5-2",
+    "4-3-3": "4-3-3",
+    "4-2-3-1": "4-2-3-1",
+    "4-2-4": "4-2-4",
+    "3-4-3": "3-4-3",
+    "5-4-1": "5-4-1",
+    "5-3-2": "5-3-2",
+    "4-1-4-1": "4-1-4-1",
+  };
+
+  return map[signature] || "UNKNOWN";
+}
+
+function detectHybridFormation(players) {
+  if (!players || players.length < 4) return "indefinido";
+
+  // 🧤 GK
+  const gk = findGoalkeeper(players);
+  const playersNoGK = players.filter(p => p !== gk);
+
+  // 📊 TERÇOS
+  const thirds = analyzeFieldThirds(playersNoGK);
+  const { def, mid, att } = thirds;
+
+  // 🔗 ELO
+  const roles = detectEloFormation(playersNoGK);
+  let eloFormation = null;
+  if (roles && Object.values(roles).some(arr => arr.length > 0)) {
+    eloFormation = interpretFormation(roles);
+  }
+
+  // 🧠 VALIDAÇÃO PROFISSIONAL — FIFA/OPTA
+  function isTacticallyValid(form) {
+    if (!form) return false;
+    const parts = form.split("-").map(Number);
+    if (parts.some(isNaN)) return false;
+    const total = parts.reduce((s, n) => s + n, 0);
+    return total >= 8 && parts.length >= 2;
+  }
+
+  // 🔎 ORDEM DE ESCOLHA
+  if (isTacticallyValid(eloFormation)) {
+    console.log("✔ ELO válido:", eloFormation);
+    return eloFormation;     // 1️⃣ PRIORIDADE
+  }
+
+  const tercosFormation = `${def}-${mid}-${att}`;
+  if (isTacticallyValid(tercosFormation)) {
+    console.log("✔ Terços válido:", tercosFormation);
+    return tercosFormation;  // 2️⃣ PRIORIDADE
+  }
+
+// 🧠 DETECÇÃO TÁTICA ESPECIAL → 4-1-4-1 DINÂMICO
+if ((def === 5 && mid === 4 && att === 1) ||        // ex: 5-4-1 (volante afundado)
+    (def === 4 && mid === 4 && att === 1)) {        // ex: 4-4-1 (flutuante)
+  
+  // Identificar quem é o volante (6) e quem é o 9
+  const volantes = playersNoGK.filter(p => p.left < T1 && p !== gk);
+  const atacantes = playersNoGK.filter(p => p.left > T2);
+
+  if (volantes.length === 1 && atacantes.length === 1) {
+    console.log("🔥 Detectado 4-1-4-1 dinâmico");
+    return "4-1-4-1"; // RETORNO FINAL E CERTO
+  }
+}
+
+  // fallback moderno
+  console.warn("⚠ nenhum válido — fallback 4-2-3-1");
+  return "4-2-3-1";
+}
+
+
+
 // === Endpoint IA ===
 app.post("/ai/analyze", async (req, res) => {
   try {
-    const { green = [], black = [], ball = {}, possession = "preto", tacticalRoles = {} } = req.body;
-    const opponentFormation = (req.body.opponentFormationVision && req.body.opponentFormationVision !== "null")
-    ? req.body.opponentFormationVision
-    : detectOpponentFormationAdvanced(black);
-    let detectedFormation = chooseCounterFormation(opponentFormation, possession);
+   if (!global.FORMATIONS || Object.keys(global.FORMATIONS).length === 0) {
+     console.log("♻️ Recuperando FORMATIONS após reinicialização…");
+     const formationsModule = await import('./js/formations.mjs');
+     global.FORMATIONS = formationsModule.default || formationsModule;
+     console.log("⚽ FORMATIONS RECARREGADAS:", Object.keys(global.FORMATIONS));
+   }
 
-	// === REFINO NOVO: TacticalRoles (D/M/A) ajustam formação do Guarani ===
-if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
+     const { green = [], black = [], ball = {}, possession = "preto", tacticalRoles = {} } = req.body;
 
+	 // Identifica GK pelo jogador mais recuado
+	 const findGoalkeeper = (players) => {
+     if (!players || players.length === 0) return null;
+     return players.reduce((gk, p) => (p.left < gk.left ? p : gk), players[0]);
+     };
+
+     const gk = findGoalkeeper(black);
+     const playersNoGK = black.filter(p => p !== gk);
+     console.log("🧤 Backend GK detectado:", gk);
+
+     // 🔒 Fallback SEGURO – SEMPRE EXISTE
+     let detectedFormation = "4-4-2";
+
+     // 🔍 IA TÁTICA HÍBRIDA (Terço + ELO + GK)
+     const hybridFormation = detectHybridFormation(playersNoGK); // front já envia formato válido
+     if (hybridFormation && hybridFormation !== "indefinido") {
+     detectedFormation = hybridFormation;
+     console.log("🧠 Formação detectada via IA HÍBRIDA (ELO + terços + GK):", hybridFormation);
+   }
+   
+// --- RESULTADOS DISPONÍVEIS --- //
+const viaVision  = req.body.opponentFormationVision || null;  // visão tática (Google Vision)
+const viaTerços  = analyzeFieldThirds(playersNoGK)?.shape || null;  
+const viaHibrida = detectHybridFormation(playersNoGK); // já calculado
+
+// 1) Coletar votos
+const votes = {};
+[viaVision, viaTerços, viaHibrida].forEach(form => {
+  if (!form) return;
+  votes[form] = (votes[form] || 0) + 1;
+});
+
+// 2) Escolher a mais votada
+let bestFormation = Object.keys(votes).reduce((a, b) => votes[a] > votes[b] ? a : b);
+
+console.log("📊 Votação tática:", votes);
+console.log("✔ Formação FINAL:", bestFormation);
+
+detectedFormation = bestFormation;
+
+   
+ // ⚖️ Etapa de validação — se for inválido (ex: 2-2-0, 0-3-3...) → usar VISION!
+ if (!isTacticallyValid(detectedFormation)) {
+   console.warn("⚠ Formação suspeita:", detectedFormation);
+   const viaVision = detectOpponentFormationAdvanced(black); // VISION entra aqui!
+   if (isTacticallyValid(viaVision)) {
+     detectedFormation = viaVision;
+     console.log("🧠 Formação confirmada via Vision:", viaVision);
+   } else {
+     console.warn("⚠ Vision também falhou → fallback moderno: 4-2-3-1");
+     detectedFormation = "4-2-3-1";  // padrão FIFA/Tite
+   }
+ }
+     
+     const opponentFormation = (req.body.opponentFormationVision && req.body.opponentFormationVision !== "null")
+       ? req.body.opponentFormationVision
+       : detectOpponentFormationAdvanced(black);
+
+     // === 1) DETECÇÃO VISUAL / CLUSTERING — PRIORIDADE MÁXIMA ===
+       if (black && black.length >= 6) {
+       const viaCluster = detectFormationByClustering(black);   // ✔ usar ADVERSÁRIO!
+       if (viaCluster !== "UNKNOWN") {
+         detectedFormation = viaCluster;
+         console.log("🔍 Formação detectada automaticamente (clustering):", viaCluster);
+       }
+     }
+
+     // === 2) SE O USUÁRIO DEFINIR D/M/A → ISSO SOBRESCREVE O CLUSTER ===
+     if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
   let d = 0, m = 0, a = 0;
-
   for (const id in tacticalRoles) {
     const role = tacticalRoles[id];
     if (role === "D") d++;
     if (role === "M") m++;
     if (role === "A") a++;
   }
-
   const manualSignature = `${d}-${m}-${a}`;
-  console.log("🎯 Assinatura Guarani via TacticalRoles:", manualSignature);
-
   const formationMap = {
     "4-4-2": "4-4-2",
     "4-3-3": "4-3-3",
@@ -444,30 +750,34 @@ if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
     "4-5-1": "4-5-1",
     "4-1-4-1": "4-1-4-1"
   };
-
   if (formationMap[manualSignature]) {
-    console.log("📌 Formação Guarani forçada pelo usuário:", formationMap[manualSignature]);
     detectedFormation = formationMap[manualSignature];
+     console.log("🎯 Formação AJUSTADA via tacticalRoles:", detectedFormation);
   }
 }
 
-
-    // ==== NOVO: se o Guarani já tem jogadores no campo, deduz via terços ====
-    if (green && green.length > 0){
-      const { def, mid, att } = classifyByThird(green);
-      const viaThirds = detectFormationByThirds(def, mid, att);
-      if (viaThirds !== "UNKNOWN") detectedFormation = viaThirds;
-    }
+// === 3) Se o chat pedir manualmente → SOBRESCREVE TUDO
+if (req.body.manualFormation) {
+  detectedFormation = req.body.manualFormation;
+}
 
 
-    // ✅ prioridade: comando manual vindo do chat
-    if (req.body.manualFormation){
-       detectedFormation = req.body.manualFormation;
-    }
-
-    const { greenAI } = buildGreenFromFormation(detectedFormation, ball, possession === "verde" ? "ataque" : "defesa");
+ // === 3) Detecta fase ANTES da contraformação ===
     const { phase, bloco, compactacao } = detectPhase(possession, opponentFormation);
 
+ // Só reage taticamente se o clustering NÃO caiu no fallback
+ if (detectedFormation === opponentFormation) {
+   detectedFormation = chooseCounterFormation(opponentFormation, possession, phase);
+   console.log("⚽ Formação ALTERADA por reação tática:", detectedFormation);
+ } else {
+   console.log("🧠 Mantendo formação detectada visualmente (clustering):", detectedFormation);
+ }
+    // === 5) Só agora gera o posicionamento real do Guarani ===
+    const { greenAI } = buildGreenFromFormation(
+      detectedFormation,
+      ball,
+      possession === "verde" ? "ataque" : "defesa"
+    );
     let coachComment = "";
     if (opponentFormation !== lastFormation || phase !== lastPhase) {
       coachComment = abelSpeech(opponentFormation, detectedFormation, phase, bloco, compactacao);
@@ -488,7 +798,7 @@ if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
         });
       }
 
-    res.json({ opponentFormation, detectedFormation, phase, bloco, compactacao, coachComment, tacticalRoles, green: greenAI });
+    res.json({ opponentFormation, detectedFormation, phase, bloco, compactacao, trainingMode: true, coachComment, tacticalRoles, green: greenAI });
   } catch (err) {
     console.error("Erro /ai/analyze", err);
     res.status(500).json({ error: "Erro interno IA", details: err.message });
@@ -498,7 +808,33 @@ if (tacticalRoles && Object.keys(tacticalRoles).length > 0) {
 // === IA VISUAL + AÇÃO TÁTICA REAL ===
 app.post("/ai/vision-tactic", async (req, res) => {
   try {
+	if (!global.FORMATIONS || Object.keys(global.FORMATIONS).length === 0) {
+      console.error("❌ FORMATIONS indisponível (vision-tactic)");
+      return res.status(500).json({ error: "FORMATIONS indisponível no backend" });
+    }
     const { fieldImage, ball, green, black, tacticalRoles = {} } = req.body;
+    
+    // ============================================
+  // 1) PRIORIDADE: SE O FRONT JÁ MANDOU COORDENADAS DO TIME ADVERSÁRIO
+// ============================================
+  if (Array.isArray(black) && black.length >= 4) {
+   console.log("📌 Coordenadas do adversário recebidas — pulando visão.");
+
+   // Detecta elo: zaga, meio, ataque
+   const roles = detectEloFormation(black);  
+
+   // Interpreta a formação tática real
+   const formation = interpretFormation(roles);
+
+   return res.json({
+     opponentFormation: formation,
+     detectedFormation: formation,
+     playersDetected: black.length,
+     ballDetected: !!ball,
+     coachComment: `Formação detectada: ${formation} (via ELO + terços)`,
+     green: await generateResponseForGreen(formation) // sua lógica
+   });
+ }
 
     console.log("📸 Enviando imagem para Google Vision...");
 
@@ -530,6 +866,21 @@ app.post("/ai/vision-tactic", async (req, res) => {
       console.log(`⚠️ Vision detectou só ${players.length} jogadores → usando FALLBACK geométrico`);
       players = black; // usa as coordenadas que vieram do front
     }
+  //  ⚽ DETECÇÃO POR ELO  — INTELIGÊNCIA TÁTICA REAL
+ const roles = detectEloFormation(players);  // players agora = black[]
+ const eloFormation = interpretFormation(roles);
+
+ if (eloFormation !== "4-2-3-1") { // Se não for fallback, aceitamos!
+   return res.json({
+     opponentFormation: eloFormation,
+     detectedFormation: eloFormation,
+     playersDetected: players.length,
+     ballDetected,
+     coachComment: `Formação detectada via ELO: ${eloFormation}`,
+     green: await generateResponseForGreen(eloFormation)
+   });
+ }
+ console.log("⚠️ ELO não fechou formação — deixando fallback continuar…");
 
     // Aplica seu algoritmo tático existente
     const { def, mid, att } = classifyByThird(players);
@@ -623,12 +974,15 @@ app.post("/ai/vision-tactic", async (req, res) => {
   }
 });
 
-
-
 // === Socket.IO realtime ===
 io.on("connection", (socket) => {
 
   console.log("🟢 Novo cliente conectado:", socket.id);
+  
+  setTimeout(() => {
+  io.emit("alexa-formation", { formation: "4-3-3" });
+  console.log("🔥 Emitido para frontend via socket.io!");
+}, 3000);
 
   socket.on("join-room", async (room) => {
     console.log("📥 SERVER RECEBEU join-room:", room);
@@ -854,6 +1208,77 @@ app.get("/ranking", (req, res) => {
 });
 
 
+// 💡 NOVA ROTA PARA ALEXA → server.js
+app.post("/alexa/formation", (req, res) => {
+  const requestType = req.body.request?.type;
+  console.log("📩 Tipo de requisição:", requestType);
+
+  switch (requestType) {
+    case "LaunchRequest":
+      // resposta ao "Alexa, abrir treinador tático"
+      return res.json({
+        version: "1.0",
+        response: {
+          shouldEndSession: false,
+          outputSpeech: {
+            type: "PlainText",
+            text: "Olá treinador! Diga uma formação. Exemplo: quatro três três."
+          }
+        }
+      });
+
+    case "IntentRequest":
+      return handleFormationIntent(req, res);
+
+    default:
+      return res.json({
+        version: "1.0",
+        response: {
+          shouldEndSession: true,
+          outputSpeech: {
+            type: "PlainText",
+            text: "Não entendi. Tente dizer a formação, por exemplo: quatro quatro dois."
+          }
+        }
+      });
+  }
+});
+
+function handleFormationIntent(req, res) {
+  let formation = req.body.request?.intent?.slots?.formation?.value;
+
+  if (!formation) {
+    return res.json({
+      version: "1.0",
+      response: {
+        shouldEndSession: false,
+        outputSpeech: {
+          type: "PlainText",
+          text: "Não entendi a formação. Tente dizer quatro três três."
+        }
+      }
+    });
+  }
+
+  // 🔧 NORMALIZA → 433 vira 4-3-3
+  formation = formation.replace(/(\d)(?=\d)/g, "$1-");
+
+  // mover o time via socket!
+  io.emit("alexa-formation", { formation });
+
+  return res.json({
+    version: "1.0",
+    response: {
+      shouldEndSession: true,
+      outputSpeech: {
+        type: "PlainText",
+        text: `Formação ${formation} enviada para o campo!`
+      }
+    }
+  });
+}
+
+
 // === Inicializa Render ===
 const PORT = process.env.PORT || 10000;
-httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v12.1.2 + Realtime rodando na porta ${PORT}`));
+httpServer.listen(PORT, () => console.log(`✅ AI TÁTICA v12.2 + Realtime rodando na porta ${PORT}`));

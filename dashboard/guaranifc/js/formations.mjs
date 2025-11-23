@@ -377,13 +377,4 @@ const FORMATIONS = {
 ]
 };
 
-
-if (typeof window !== "undefined") {
-  window.FORMATIONS = FORMATIONS;
-
-  console.log("⚽ FRONT-END FORMATIONS PRONTAS!");
-
-  setTimeout(() => {
-    dispatchEvent(new Event("formations_ready"));
-  }, 10);
-}
+export default FORMATIONS;

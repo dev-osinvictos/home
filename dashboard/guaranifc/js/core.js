@@ -18,6 +18,8 @@ window.FIELD_WIDTH  = field.clientWidth  || window.innerWidth;
 window.FIELD_HEIGHT = field.clientHeight || window.innerHeight;
 const FIELD_RIGHT_GOAL_X = FIELD_WIDTH - 20; // ajuste conforme seu campo
 
+window.notify = window.notifyTop;
+
 function isGoalRight(ballEl) {
   const goalEl = document.getElementById("gol2-square");
   if (!ballEl || !goalEl) return false;
@@ -47,15 +49,16 @@ for (let i = 1; i <= 24; i++) {
   circles[i] = el;
   dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
   if (!el) continue;
+  const id = i;
   el.style.position = el.style.position || "absolute";
   el.style.zIndex = "20";
 
   el.addEventListener("mousedown", (e) => {
     if (i === 24 && window.trainingBallLock) return;
-    dragState[i].dragging = true;
-    dragState[i].offsetX = e.offsetX;
-    dragState[i].offsetY = e.offsetY;
-    activeId = i;
+    dragState[id].dragging = true;
+    dragState[id].offsetX = e.offsetX;
+    dragState[id].offsetY = e.offsetY;
+    activeId = id;
   });
 
   el.addEventListener("touchstart", (e) => {
@@ -311,6 +314,38 @@ document.addEventListener("touchend", endDrag);
 const canvas = document.getElementById("trace-canvas");
 const ctx = canvas?.getContext("2d", { willReadFrequently: true });
 
+// =========================================================
+// ⚫ PEGAR POSIÇÕES DO TIME ADVERSÁRIO NO CAMPO ⚫
+// =========================================================
+function getOpponentPositions() {
+  // detecta automaticamente se existe circleOpp1
+  // ou usa circle1 a circle11 como ADVERSÁRIO!
+  const black = [];
+  for (let i = 1; i <= 11; i++) {
+    let el = document.getElementById("circleOpp" + i);
+    if (!el) el = document.getElementById("circle" + i); // fallback automático
+    if (!el) continue;
+    
+    // pega estilos COMPUTADOS (o que realmente aparece na tela)
+    const comp = window.getComputedStyle(el);
+    const left = parseFloat(comp.left);
+    const top  = parseFloat(comp.top);
+
+    black.push({
+      id: i,
+      left: isNaN(left) ? 0 : left,
+      top:  isNaN(top)  ? 0 : top
+    });
+  }
+  return black;
+}
+
+// 🔥 Permitir usar pelo console:
+if (typeof window !== "undefined") {
+  window.getOpponentPositions = getOpponentPositions;
+}
+
+
  // ================================================
  // === IA FINALIZA TREINO (verde corre e chuta) ===
  // ================================================
@@ -396,13 +431,28 @@ function aiAutoKickTowardsLeftGoal(playerEl) {
     // centro do gol
     const goalY = gr.top + (gr.height / 2);
 
-    // direção do chute
-    const dx = -1; // esquerda
-    const dy = (goalY - br.top) * 0.06; // ajusta trajetória vertical
+// 💥 VELOCIDADE MONSTRA (POMBO SEM ASA)
+   const dx = -18;    // muito mais força na horizontal
+   const dy = (goalY - br.top) * 0.09; // correção vertical mais agressiva
 
-    // força do chute
-    ballVelocity.x = dx * 14;
-    ballVelocity.y = dy;
+   // 🌀 EFEITO DE ROTAÇÃO (rosca / trivela)
+   // cria leve curvatura na bola conforme ela chega perto do gol
+   let spin = (Math.random() * 2 - 1) * 0.6;   // rotação leve aleatória
+   ball.style.transition = "transform 0.15s linear";
+   ball.style.transform = `rotate(${spin}rad)`;  // faz a bola girar
+
+   // leva essa rotação para o deslocamento físico
+   const curve = (Math.random() * 2 - 1) * 0.8;
+   ballVelocity.x = dx + curve;     // desvia durante a viagem
+   ballVelocity.y = dy + curve * 0.4;  // chance de fazer “subir e cair”
+
+   // 🪄 ANIMAÇÃO NO AR — sobe um pouco e cai fortemente
+   ball.style.transition = "all 0.08s linear";
+   ball.style.top = (by - 12) + "px";     // pequena subida
+   setTimeout(() => {                     // e queda!
+     ball.style.top = (by + 18) + "px";
+    }, 150);
+
     ballMoving = true;
 }
    
@@ -442,12 +492,27 @@ function animateTeam(prefix, positions, onComplete, phase = "defesa") {
  * Anima a transição entre duas formações (ex: 4-4-2 → 4-3-3)
  * usando uma curva Sheen & Ghain (ش غ).
  */
-function animateFormationTransition(prefix, fromFormation, toFormation, phase = "transicao") {
+function animateFormationTransition(prefix, fromFormation, toFormation, phase = "transicao", mode = "match") {
   const field = document.getElementById("background-square");
   const rect = field.getBoundingClientRect();
+  
+ const currentPos = {};
+ document.querySelectorAll(`.${prefix}`).forEach(el => {
+   const id = parseInt(el.id.replace(prefix, ""));
+   currentPos[id] = {
+     left: parseFloat(el.style.left),
+     top:  parseFloat(el.style.top)
+   };
+ });
 
-  // Gera a trajetória Sheen → Ghain → Diagonal
-  const { path: sheenPath, speed } = window.generateSheenPath(300, 50, phase, true);
+ // Gera a trajetória Sheen → Ghain → Diagonal
+ const isTraining = mode === "training";
+ const { path: sheenPath, speed } = window.generateSheenPath(
+   isTraining ? 150 : 300,   // movimento mais curto no treino
+   isTraining ? 30 : 50,     // menos oscilação
+   phase,
+   true
+ );
 
   const fieldCenterX = rect.width / 2;
   const totalFrames = sheenPath.length;
@@ -515,6 +580,342 @@ function applyDynamicBlocks(greenPlayers, phase, opponentFormation) {
   });
 }
 
+// ======================================================
+// 🔍 PEGAR POSIÇÕES DO GUARANI — GUARDIÃO DO VISION 🔰
+// ======================================================
+function getGuaraniPositions() {
+  const green = [];
+  for (let i = 13; i <= 23; i++) {
+    const el = document.getElementById("circle" + i);
+    if (!el) continue;
+
+    green.push({
+      id: i,
+      left: parseFloat(el.style.left) || 0,
+      top: parseFloat(el.style.top) || 0
+    });
+  }
+  return green;
+}
+
+// ======================================================
+// DETECTA ELO TÁTICO NO CAMPO (ZAGA / MEIO / ATAQUE)
+// ======================================================
+function detectEloFormation(players, maxDist = 45) {
+  if (!players || players.length < 4) return null;
+
+  const roles = { zaga: [], meio: [], ataque: [] }; // AGORA FOI DECLARADO!
+  const clusters = [];
+  const visited = new Set();
+
+  function bfsCluster(startIdx) {
+    const queue = [players[startIdx]];
+    const cluster = [];
+    visited.add(startIdx);
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      cluster.push(current);
+
+      for (let i = 0; i < players.length; i++) {
+        if (visited.has(i)) continue;
+        const dx = players[i].left - current.left;
+        const dy = players[i].top - current.top;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= maxDist) {
+          visited.add(i);
+          queue.push(players[i]);
+        }
+      }
+    }
+    return cluster;
+  }
+
+  // 🧊 monta clusters automáticos
+  for (let i = 0; i < players.length; i++) {
+    if (!visited.has(i)) {
+      const cluster = bfsCluster(i);
+      if (cluster.length >= 2) clusters.push(cluster);
+    }
+  }
+
+// 📌 Coordenadas do campo (frações reais: 2/8 e 5/8)
+const FIELD_WIDTH = 600;
+const DEF_LIMIT = FIELD_WIDTH * (2/8);   // 150px
+const MID_LIMIT = FIELD_WIDTH * (5/8);   // 375px
+
+clusters.forEach(cluster => {
+  const avgX = cluster.reduce((s, p) => s + p.left, 0) / cluster.length;
+
+  // 1️⃣ Primeiro identifica a ZONA
+  let zone = "ATT";
+  if (avgX < DEF_LIMIT)      zone = "DEF";
+  else if (avgX < MID_LIMIT) zone = "MID";
+
+  // 2️⃣ Depois avalia TAMANHO do cluster
+  if (zone === "DEF") {
+    roles.zaga.push(...cluster);
+  } 
+  else if (zone === "MID") {
+    roles.meio.push(...cluster);
+  } 
+  else {
+    roles.ataque.push(...cluster);
+  }
+});
+
+
+  return roles;
+}
+
+if (typeof window !== "undefined") {
+  window.detectEloFormation = detectEloFormation;
+}
+
+
+// =====================================================
+// INTERPRETA A FORMAÇÃO BASEADO NO ELO
+// =====================================================
+function interpretFormation(roles) {
+  const z = roles.zaga?.length || 0;
+  const m = roles.meio?.length || 0;
+  const a = roles.ataque?.length || 0;
+
+  // Reconhecimento automático de padrões profissionais
+  if (z === 4 && m === 3 && a === 3) return "4-3-3";
+  if (z === 4 && m === 1 && a === 4) return "4-1-4-1";
+  if (z === 4 && m === 4 && a === 2) return "4-4-2";
+  if (z === 4 && m === 2 && a === 4) return "4-2-4";
+  if (z === 4 && m === 3 && a === 2) return "4-1-3-2";  // sua formação atual!
+  if (z === 3 && m === 5 && a === 2) return "3-5-2";
+  if (z === 5 && m === 3 && a === 2) return "5-3-2";
+
+  // Fallback moderno (não fica preso em 4-4-2)
+  return `${z}-${m}-${a}`;
+}
+
+if (typeof window !== "undefined") {
+  window.interpretFormation = interpretFormation;
+}
+
+// ==============================================================
+// 1) ANÁLISE POR TERÇOS DO CAMPO – ESTRUTURA BÁSICA
+// ==============================================================
+function analyzeFieldThirds(players) {
+  const FIELD_WIDTH = 600;
+
+  // NOVA DIVISÃO REAL – 2/8, 3/8, 3/8
+  const DEF_LIMIT = FIELD_WIDTH * (2/8);   // 150px
+  const MID_LIMIT = FIELD_WIDTH * (5/8);   // 375px
+
+  const def = players.filter(p => p.left < DEF_LIMIT).length;
+  const mid = players.filter(p => p.left >= DEF_LIMIT && p.left < MID_LIMIT).length;
+  const att = players.filter(p => p.left >= MID_LIMIT).length;
+
+  return { def, mid, att, shape: `${def}-${mid}-${att}` };
+}
+
+
+window.analyzeFieldThirds = analyzeFieldThirds;
+
+
+// ======================================================
+// IDENTIFICA GOLEIRO: jogador mais recuado do time
+// ======================================================
+function findGoalkeeper(players) {
+  if (!players || players.length === 0) return null;
+  // O mais à esquerda (time branco atacando da esquerda pra direita)
+  return players.reduce((gk, p) => (p.left < gk.left ? p : gk), players[0]);
+}
+
+window.findGoalkeeper = findGoalkeeper;
+
+
+// ==============================================================
+// 2) SISTEMA TÁTICO HÍBRIDO – TERÇO + ELO + VISION
+// ==============================================================
+function detectHybridFormation(players) {
+  if (!players || players.length < 4) return "indefinido";
+
+  // 🧤 EXCLUIR O GOLEIRO DOS CÁLCULOS TÁTICOS
+  const gk = findGoalkeeper(players);
+  const playersNoGK = players.filter(p => p !== gk);
+  console.log("🧤 Goleiro detectado:", gk);
+
+  // 1️⃣ TERÇOS DO CAMPO – BASE
+  const thirds = analyzeFieldThirds(playersNoGK);
+  console.log("📊 Terços:", thirds.shape);
+
+  // 2️⃣ ELO – SE TIVER, USA COMO VOTO (NÃO MAIS PRIORIDADE)
+  const roles = detectEloFormation(playersNoGK);
+  let eloFormation = null;
+  if (roles && Object.values(roles).some(arr => arr.length > 0)) {
+    eloFormation = interpretFormation(roles);
+    console.log("🧠 ELO detectado:", eloFormation);
+  }
+
+  // 🏆 VOTAÇÃO ENTRE MÉTODOS
+  const votes = {};
+  const VALID_FORMATIONS = [
+    '4-4-2', '4-1-4-1',
+    '4-3-3', '4-2-3-1',
+    '4-2-4', '3-5-2',
+    '5-4-1', '4-5-1',
+    '3-4-3', '5-3-2'
+  ];
+
+  const addVote = (form, weight) => {
+    if (form && VALID_FORMATIONS.includes(form)) {
+      votes[form] = (votes[form] || 0) + weight;
+    }
+  };
+
+  // 👍 TERÇOS — peso 2
+  addVote(thirds.shape, 2);
+
+  // 👍 VISION — peso 2
+  addVote(window.lastVisionFormation, 2);
+
+  // 👍 ELO — peso 1 (se existir)
+  if (eloFormation) addVote(eloFormation, 1);
+
+  console.log("📊 VOTAÇÃO:", votes);
+
+  // 🏆 Resultado final (quem tem mais votos)
+  const bestFormation = Object.keys(votes)
+    .sort((a, b) => votes[b] - votes[a])[0] || "4-4-2";
+
+  console.log("🏆 Formação escolhida por votação:", bestFormation);
+
+  return bestFormation;  // <-- AGORA É O ÚNICO return!!!
+}
+
+
+window.detectHybridFormation = detectHybridFormation;
+
+function clearDebugVisual() {
+  document.querySelectorAll(".debug-marker, .debug-line").forEach(el => el.remove());
+  console.log("🧽 Debug visual LIMPO!");
+}
+
+// ============================================================
+// DEBUG VISUAL – sem quebrar drag – compatível com ELO
+// ============================================================
+function debugVisual(players) {
+  const field = document.getElementById("background-square");
+  if (!field) return;
+
+  // Remove debug anterior
+  document.querySelectorAll(".debug-marker, .debug-line").forEach(el => el.remove());
+
+  const FIELD_WIDTH = field.clientWidth || 600;
+  const FIELD_HEIGHT = field.clientHeight || 300;
+
+  // 🧠 NOVA DIVISÃO DO CAMPO — 2/8 - 3/8 - 3/8
+  const DEF_LIMIT = FIELD_WIDTH * (2/8);  // 150px
+  const MID_LIMIT = FIELD_WIDTH * (5/8);  // 375px
+
+  // === DESENHA AS NOVAS LINHAS AMARELAS ===
+  [DEF_LIMIT, MID_LIMIT].forEach(x => {
+    const line = document.createElement("div");
+    line.className = "debug-line";
+    line.style.position = "absolute";
+    line.style.left = x + "px";
+    line.style.top = "0px";
+    line.style.width = "2px";
+    line.style.height = FIELD_HEIGHT + "px";
+    line.style.background = "rgba(255, 255, 0, 0.7)";
+    field.appendChild(line);
+  });
+
+  // === MARCA TODOS OS JOGADORES COM SETOR ===
+  players.forEach(player => {
+    const label =
+      player.left < DEF_LIMIT ? "DEF" :
+      player.left < MID_LIMIT ? "MID" :
+      "ATT";
+
+    createMarker(player, "white", label);
+  });
+
+  // === LINHA MÉDIA DA ZAGA (Se existir Elo detectado) ===
+  const elo = detectEloFormation(players);
+  if (elo?.zaga && elo.zaga.length >= 2) {
+    const avgY = elo.zaga.reduce((s, p) => s + p.top, 0) / elo.zaga.length;
+    const lineZ = document.createElement("div");
+    lineZ.className = "debug-line";
+    lineZ.style.position = "absolute";
+    lineZ.style.left = "0px";
+    lineZ.style.top = avgY + "px";
+    lineZ.style.width = FIELD_WIDTH + "px";
+    lineZ.style.height = "2px";
+    lineZ.style.background = "rgba(255, 0, 0, 0.6)";
+    field.appendChild(lineZ);
+
+    elo.zaga.forEach(p => createMarker(p, "red", "ZAG"));
+  }
+
+  // === FUNÇÃO AUXILIAR ===
+  function createMarker(p, color, text) {
+    const el = document.createElement("div");
+    el.className = "debug-marker";
+    el.style.position = "absolute";
+    el.style.left = p.left + "px";
+    el.style.top = p.top + "px";
+    el.style.padding = "2px 6px";
+    el.style.borderRadius = "8px";
+    el.style.background = color;
+    el.style.color = "black";
+    el.style.fontSize = "10px";
+    el.style.transform = "translate(-50%, -50%)";
+    el.style.zIndex = 9999;
+    el.innerText = text;
+    field.appendChild(el);
+  }
+}
+
+// Permite usar no console:
+window.debugVisual = debugVisual;
+
+function interpretFormation(roles) {
+  const z = roles.zaga?.length || 0;
+  const m = roles.meio?.length || 0;
+  const a = roles.ataque?.length || 0;
+
+  // 4-1-3-2 (variação moderna do 4-4-2 losango)
+  if (z === 4 && m === 3 && a === 2) return "4-1-3-2";
+
+  // 4-3-3 clássico
+  if (z === 4 && m === 3 && a === 3) return "4-3-3";
+
+  // 4-1-4-1
+  if (z === 4 && m === 4 && a === 1) return "4-1-4-1";
+
+  // fallback moderno
+  return `${z}-${m}-${a}`;
+}
+
+
+// ======================================================
+// 🧠 ANALISAR TÁTICA (CHAMA BACKEND /ai/analyze)
+// ======================================================
+async function analyzeFormation(opponentFormation) {
+  const res = await fetch("https://guaranifc.onrender.com/ai/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      opponentFormation,
+      tacticalRoles: circleTacticalState,
+      room: window.currentRoomCode || null
+    })
+  });
+
+  const data = await res.json();
+  return data;
+}
+
+
 // === Função: envia imagem do campo para análise visual (IA Vision) ===
 async function sendVisionTactic() {
   try {
@@ -546,6 +947,17 @@ async function sendVisionTactic() {
     const data = await res.json();
     console.log("📊 Visão Tática (backend):", data);
 
+    // 🟡 SALVAR POSIÇÕES DO TIME ADVERSÁRIO PRA DEBUG VISUAL
+	window.lastBlackPositions = black;  // black já está pegado antes no código
+	
+	// 🧪 🔍 DEBUG VISUAL — marca clusters, setores e zaga detectada
+	if (typeof debugVisual === "function") {
+	console.log("🔍 Debug Visual ativado com lastBlackPositions");
+		debugVisual(window.lastBlackPositions);
+	} else {
+		console.warn("⚠ debugVisual() não encontrada no escopo!");
+	}
+
     // ✅ Move o Verde pela visão da IA
     if (Array.isArray(data.green) && data.green.length > 0) {
       animateTeam("circle", data.green);
@@ -557,11 +969,11 @@ async function sendVisionTactic() {
       );
     }
 
-    // ✅ Abre popup do treinador
-    if (data.coachComment && typeof showAbelCommentPopup === "function") {
-      showAbelCommentPopup(data.coachComment);
-    }
-    
+	// 🆕 Move / Atualiza o adversário visualmente
+	if (Array.isArray(data.black) && data.black.length > 0) {
+	animateTeam("circleOpp", data.black);  // <--- ISSO FALTAVA!
+	}
+
     return data;
   } catch (err) {
     console.error("❌ Erro ao enviar imagem para IA Vision:", err);
@@ -569,3 +981,88 @@ async function sendVisionTactic() {
 }
 
     window.animateTeam = animateTeam;
+    window.getOpponentPositions = getOpponentPositions;
+
+
+    // Garantir que notify é global
+if (typeof window !== "undefined") {
+  window.notify = notify;
+}
+
+
+// ====== Expor funções da IA para o FRONT ======
+if (typeof window !== "undefined") {
+  if (typeof sendVisionTactic === "function")     window.sendVisionTactic     = sendVisionTactic;
+  if (typeof getGuaraniPositions === "function")  window.getGuaraniPositions  = getGuaraniPositions;
+  if (typeof analyzeFormation === "function")     window.analyzeFormation     = analyzeFormation;
+  if (typeof detectEloFormation === "function")   window.detectEloFormation  = detectEloFormation;
+
+  console.log("⚡ Funções IA disponíveis para o front-end");
+}
+
+// ============================================================
+// ANALISAR FORMAÇÃO — ENVIA PARA O BACKEND /ai/analyze
+// ============================================================
+async function analyzeFormation() {
+  // 1) Coleta os jogadores adversários (black)
+  const black = getOpponentPositions();
+  if (!black || black.length === 0) {
+    console.warn("❌ analyzeFormation(): sem jogadores.");
+    return null;
+  }
+
+  // 2) Detecta formação TÁTICA AVANÇADA (ELO + terços + GK)
+  const hybridFormation = detectHybridFormation(black);
+  console.log("🧠 Formação híbrida detectada:", hybridFormation);
+
+  // 3) Monta o body do POST — envia também tacticalRoles se tiver
+  const body = {
+    opponentFormationVision: hybridFormation,
+    tacticalRoles: window.circleTacticalState || {},
+    black,
+    ball: window.lastBallPosition || {},
+    room: window.currentRoomCode || null
+  };
+
+  // 4) Envia para o backend (IA)
+  try {
+    const response = await fetch("https://guaranifc.onrender.com/ai/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    console.log("📊 IA Analyze:", data);
+
+    // 5) Recebe resposta e aplica reação tática
+    if (data.green) {
+      applyGreenPositions(data.green); // mover time verde no campo
+    }
+
+// 🔕 pop-up do treinador desativado no treino e no modo normal
+// if (data.coachComment) showCoachComment(data.coachComment);
+
+    return data;
+  } catch (err) {
+    console.error("Erro ao chamar /ai/analyze:", err);
+    return null;
+  }
+}
+
+// MOVIMENTAR TIME VERDE (RESPONDER NO CAMPO)
+function applyGreenPositions(greenAI) {
+  greenAI.forEach(p => {
+    const el = document.getElementById("circle" + p.id);
+    if (el) {
+      el.style.left = p.left + "px";
+      el.style.top  = p.top  + "px";
+    }
+  });
+}
+
+// ❌ BLOQUEADO DEFINITIVAMENTE
+function showCoachComment(text) {
+  console.log("🧠 coachComment BLOQUEADO:", text);
+}
+
