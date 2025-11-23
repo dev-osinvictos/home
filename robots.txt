@@ -1,10 +1,17 @@
 # ferramenta esportiva
+# sportool
 # aprimoramento esportivo
-# pt-br
+# sports enhance
 # ct virtual
+# virtual tactical field
+# ct privado
+# soccer scout
+# escolte esportivo
 # campo tático
 # mesa tática interativa
 # mesa tática compartilhada
+# ia futebol
+# ai soccer analizer
 
 User-agent: *
 Allow: /
