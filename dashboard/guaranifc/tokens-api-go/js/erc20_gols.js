@@ -1,5 +1,5 @@
 // erc20_gols_abi.js
-export const GOLS_ERC20_ABI = [
+window.GOLS_ERC20_ABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
