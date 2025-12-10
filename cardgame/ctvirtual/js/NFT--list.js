@@ -193,6 +193,7 @@ function dropCardIntoPot(cardId, ownerId = window.socket?.id || "local") {
     confirmed: false,
     by: ownerId
   });
+  collapseNFTList();
 }
 
 function attachCardHandlers(el) {
@@ -615,6 +616,15 @@ function setupNFTToggle() {
     btn.textContent = isHidden ? "▲" : "▼";
     btn.setAttribute("aria-expanded", String(isHidden));
   });
+}
+
+function collapseNFTList() {
+  const btn = document.getElementById("nft-toggle");
+  const body = document.getElementById("nft-list-body");
+  if (!btn || !body) return;
+  body.style.display = "none";
+  btn.textContent = "▼";
+  btn.setAttribute("aria-expanded", "false");
 }
 
 function openCardActions(cardId, imgSrc) {
