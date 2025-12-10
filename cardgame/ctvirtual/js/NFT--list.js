@@ -298,13 +298,16 @@ function resolvePotLocally() {
   const myCards = pot.filter((id) => owners[normalizeCardId(id)] === myId);
   const iWon = myCards.includes(winnerCard);
   const myLosingCard = myCards.find((c) => c !== winnerCard) || myCards[0];
+  const collectedCards = [winnerCard, ...loserCards];
 
   if (statusEl) statusEl.textContent = `Resultado: Card ${winnerCard} venceu`;
 
   let msg;
   if (iWon) {
-    msg = `Você ganhou! Conquistou o CARD ${winnerCard}.`;
-    window.addCardToNFTList?.(winnerCard);
+    msg = loserCards.length
+      ? `Você ganhou! Conquistou ${collectedCards.join(", ")}.`
+      : `Você ganhou! Conquistou o CARD ${winnerCard}.`;
+    collectedCards.forEach((id) => window.addCardToNFTList?.(id));
   } else if (myLosingCard) {
     msg = `Você perdeu! Perdeu para o CARD ${winnerCard}.`;
     window.removeCardFromList?.(myLosingCard);
