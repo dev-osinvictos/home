@@ -1,0 +1,1037 @@
+/* --- HAMBURGER MENU (top-right) --- */
+#menu-button.hamburger {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 40px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  z-index: 200300;
+  cursor: pointer;
+}
+
+#menu-button.hamburger:focus {
+  outline: 2px solid rgba(255,255,255,0.2);
+  outline-offset: 4px;
+}
+
+#menu-button .line {
+  display: block;
+  width: 32px;
+  height: 10px;
+  margin: 2px 0;
+  background: #ffffff;
+  border-radius: 3px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.6);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 180ms ease, background 180ms ease;
+}
+
+/* open -> cross animation */
+#menu-button.hamburger.open .line:nth-child(1) {
+  transform: translateY(11px) rotate(45deg);
+}
+#menu-button.hamburger.open .line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.2);
+}
+#menu-button.hamburger.open .line:nth-child(3) {
+  transform: translateY(-11px) rotate(-45deg);
+}
+
+/* --- MENU OVERLAY --- */
+#menu-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 50vw;
+  max-width: 100%;
+  background: rgba(255,255,255,0.55);
+  transform: translateX(100%);
+  transition: transform 360ms cubic-bezier(.2,.8,.2,1);
+  z-index: 200290;
+  pointer-events: none;
+}
+
+#menu-overlay.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* optional content area inside overlay */
+#menu-overlay .content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* --- SUB-MENUS ROTATED AT TOP --- */
+#menu-overlay .overlay-top {
+  position: absolute;
+  top: 120px;
+  left: 16px;
+  display: flex;
+  gap: 7px; /* aproxima ainda mais os submenus */
+  align-items: flex-start;
+  pointer-events: auto;
+}
+
+#menu-overlay .overlay-top .submenu {
+  display: inline-block;
+  transform: rotate(-90deg);
+  transform-origin: left top;
+  color: rgba(0,0,0,0.95);
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease, opacity 160ms ease, transform 220ms ease;
+}
+
+#menu-overlay .overlay-top .submenu:focus,
+#menu-overlay .overlay-top .submenu:hover {
+  color: #28a745;
+  opacity: 0.95;
+  text-decoration: underline;
+}
+
+#menu-overlay .overlay-top .submenu[data-action="login"],
+#menu-overlay .overlay-top .submenu:nth-child(2) {
+  margin-left: 0;
+}
+
+#menu-overlay .overlay-top .submenu[data-action="faq"],
+#menu-overlay .overlay-top .submenu:nth-child(3) {
+  margin-left: 0;
+}
+
+/* make sure rotated elements don't overflow the overlay edge on small screens */
+@media (max-width: 640px) {
+  #menu-overlay .overlay-top {
+    gap: 6px;
+    left: 8px;
+  }
+  #menu-overlay .overlay-top .submenu {
+    font-size: 16px;
+    padding: 4px 6px;
+    margin-left: 0;
+  }
+}
+
+/* ===== MARKETPLACE POPUP ===== */
+#notifyTop, .notify-top {
+  position: fixed;      /* garante que fique sempre visível */
+  top: 20px;
+  right: 20px;
+  z-index: 200250 !important;  /* maior que o modal  */
+  pointer-events: auto;
+}
+/* --- POPUP MARKETPLACE --- */
+.popup-market {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;              /* ESSENCIAL! */
+  align-items: center;
+  justify-content: center;
+  z-index: 200250;
+}
+
+.market-content {
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  width: 330px;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.market-btn {
+  display: block;
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #444;
+  cursor: pointer;
+}
+
+.market-close {
+  margin-top: 15px;
+  background: #444;
+}
+
+/* --- CARTAS CONQUISTADAS / AÇÕES --- */
+.nft-panel {
+  position: fixed;
+  left: 170px;
+  bottom: 10px;
+  z-index: 200100;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  font-size: 12px;
+  min-width: 168px;
+  max-width: 290px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.nft-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nft-panel-header button {
+  background: transparent;
+  border: none;
+  color: #ffd700;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.nft-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 350px;
+  scrollbar-width: thin;
+}
+
+.nft-horizontal::-webkit-scrollbar {
+  width: 6px;
+}
+.nft-horizontal::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 6px;
+}
+
+.nft-card {
+  position: relative;
+  width: 120px;   /* ~90% de 120px */
+  height: 200px;  /* ~90% de 200px */
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2f2f2f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+  cursor: pointer;
+  flex-shrink: 0;
+  background: #111;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.nft-card:hover,
+.nft-card:focus {
+  transform: translateY(-2px);
+  border-color: #ffd700;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.55);
+}
+
+.nft-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-action-menu {
+  position: fixed;
+  left: 160px;
+  bottom: 140px;
+  background: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  padding: 10px;
+  width: 240px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200200;
+}
+
+.card-action-menu.open {
+  display: flex;
+}
+
+.card-action-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.card-action-head button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-action-feedback {
+  font-size: 12px;
+  color: #9cd4ff;
+  min-height: 18px;
+}
+
+.card-action-btn {
+  background: #1e90ff;
+  border: none;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.card-action-btn[data-action="save"] {
+  background: #0db55b;
+}
+.card-action-btn[data-action="bet"] {
+  background: #b53a0d;
+}
+.card-action-btn[data-action="view"] {
+  background: #444;
+}
+
+.card-login-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200250;
+}
+
+.card-login-modal.open {
+  display: flex;
+}
+
+.card-login-box {
+  background: #121212;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 14px;
+  width: min(320px, 92vw);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+}
+
+.card-login-box input,
+.card-login-box select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0b0b0b;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.card-login-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.card-login-actions button {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.card-login-actions .ghost {
+  background: #333;
+  color: #fff;
+}
+
+.card-login-actions button:not(.ghost) {
+  background: #1e90ff;
+  color: #fff;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.checkbox-line input {
+  width: auto;
+}
+
+.card-preview-box {
+  background: #0c0c0c;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #222;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+  max-width: min(520px, 94vw);
+  max-height: min(720px, 90vh);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-preview-box img {
+  width: auto;
+  height: auto;
+  max-width: min(480px, 90vw);
+  max-height: min(680px, 80vh);
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+
+
+        .background-square {  /* Gramado para aprimoramento esportivo */
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 340px;
+            height: 550px;
+            background: #16c516;
+            z-index: 0;
+            border-radius: 8px;
+        }
+        #background-line { /* Linha esquerda */
+            position: absolute;
+            left: 22px;
+            top: 22px;
+            width: 2px;
+            height: 545px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line2 { /* Linha inferior */
+            position: absolute;
+            left: 22px;
+            top: 566px;
+            width: 335px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line3 { /* Linha direita*/
+            position: absolute;
+            left: 357px;
+            top: 22px;
+            width: 2px;
+            height: 545px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line4 { /* Linha superior */
+            position: absolute;
+            left: 22px;
+            top: 22px;
+            width: 335px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line5 { /* Linha central */
+            position: absolute;
+            left: 22px;
+            top: 293px;
+            width: 335px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line6 { /* Linha grande Área superior topo */
+            position: absolute;
+            left: 184px;
+            top: 5px;
+            width: 2px;
+            height: 165px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line7 { /* Linha Pequena Área superior topo */
+            position: absolute;
+            left: 185px;
+            top: 9px;
+            width: 2px;
+            height: 102px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line8 {
+            position: absolute;
+            left: 219px;
+            top: 40px; /* Linha Pequena Área direita topo*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line9 {
+            position: absolute;
+            left: 216px;
+            top: 547px; /* Linha Pequena Área direita baixa*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line10 {
+            position: absolute;
+            left: 235px;
+            top: 55px; /* Linha Grande Área direita topo*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line11 {
+            position: absolute;
+            left: 235px;
+            top: 534px; /* Linha Grande Área direita baixa*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line12{ /* Linha grande Área superior baixa */
+            position: absolute;
+            left: 184px;
+            top: 420px;
+            width: 2px;
+            height: 165px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line13 { /* Linha Pequena Área superior baixa */
+            position: absolute;
+            left: 183px;
+            top: 480px;
+            width: 2px;
+            height: 102px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line14 {
+            position: absolute;
+            left: 118px;
+            top: 40px; /* Linha Pequena Área esquerda topo*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line15 {
+            position: absolute;
+            left: 116px;
+            top: 547px; /* Linha Pequena Área esquerda baixa*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line16 {
+            position: absolute;
+            left: 70px;
+            top: 535px; /* Linha Grande Área esquerda baixa*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line17 {
+            position: absolute;
+            left: 70px;
+            top: 55px; /* Linha Grande Área esquerda topo*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        /* Rotate 90deg all lines that belong to Pequena Área and Grande Área */
+        #background-line6,
+        #background-line7,
+        #background-line8,
+        #background-line9,
+        #background-line10,
+        #background-line11,
+        #background-line12,
+        #background-line13,
+        #background-line14,
+        #background-line15,
+        #background-line16,
+        #background-line17 {
+          transform: rotate(90deg);
+          transform-origin: center center;
+        }
+        .gol-square {
+            position: absolute;
+            left: 180px;  /* Adjust to place the square under the circles */
+            top: 535px;
+            width: 10px;
+            height: 70px;
+            background: #ffffff;
+            z-index: 10080;
+            border-radius: 8px;
+            transform: rotate(90deg);
+        }
+        .gol2-square {
+            position: absolute;
+            left: 180px;  /* Adjust to place the square under the circles */
+            top: -15px;
+            width: 10px;
+            height: 70px;
+            background: #ffffff;
+            z-index: 10080;
+            border-radius: 8px;
+            transform: rotate(90deg);
+        }
+        .circlecentral {
+              position: absolute;
+              width: 140px; height: 140px;
+              border-radius: 50%;
+              left: 120px !important;
+              top: 223px !important;
+              z-index: 1000;
+              display: flex;
+              color: #fff;
+              user-select: none;
+        }
+        
+		#room-user-indicator {
+		position: fixed;
+		top: 600px;
+		left: 5px;
+		background: rgba(0, 0, 0, 0.65);
+		padding: 8px 14px;
+		border-radius: 10px;
+		border: 1px solid #ffffff33;
+		font-size: 14px;
+		font-weight: 600;
+		color: #fff;
+		text-align: right;
+		line-height: 16px;
+		display: none;          /* só aparece quando conectar */
+		z-index: 200000;        /* acima de tudo */
+		backdrop-filter: blur(6px);
+		min-width: 80px;
+		}
+		
+.menu-icon {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.menu-icon span {
+  display: block;
+  width: 20px;
+  height: 3px;
+  margin: 2px 0;
+  background: blue; /* color of the lines */
+  border-radius: 4px;
+}
+
+        .circle, .circleOpp {
+            width: 26px; height: 26px;
+            background: #33aaff; border-radius: 50%;
+            position: absolute;
+            z-index: 200000 !important;
+            pointer-events: auto !important;
+            cursor: grab;
+            touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            color: #fff;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 13px;
+            user-select: none;
+            text-shadow: 0 0 3px rgba(0,0,0,0.6);
+        }
+ 
+.debug-marker,
+.debug-line {
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+		
+		/* GOLEIRO */
+#circle1  { left: 180px; top: 520px; background:#c78c00; color:green; z-index: 10100; }
+
+/* DEFESA (linha de 4) */
+#circle2  { left: 60px;  top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle3  { left: 140px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle4  { left: 220px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle5  { left: 300px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+
+/* MEIO (linha em triângulo) */
+#circle6  { left: 160px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+#circle7  { left: 120px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+#circle8  { left: 200px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+
+/* ATAQUE (linha em triângulo) */
+#circle9  { left: 100px; top: 100px; background:#FFFFFF; color:green; z-index: 10070; }
+#circle10 { left: 160px; top: 200px; background:#FFFFFF; color:green; z-index: 10070; }
+#circle11 { left: 220px; top: 100px; background:#FFFFFF; color:green; z-index: 10070; }
+ 
+#circle24 { left: 420px; top: 40px; background: #ffffff; z-index: 10070;}
+
+html, body {
+margin: 0;
+overflow: auto; /* iOS bloqueia fullscreen se overflow:hidden */
+}
+
+#tactical-hud {
+  transition: opacity 0.8s ease, background 0.4s ease;
+
+}
+
+/* --- LOGO CENTRAL --- */
+#logo-container {
+  position: fixed;
+  bottom: 3px;
+  right: 20px;
+  width: 180px;
+  height: 180px;
+  z-index: 2000;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0.25));
+  pointer-events: auto;
+
+}
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      --environment-image: var(--cor-fundo);
+      --progress-bar-color: var(--cor-fundo);
+    }
+
+/* ==== POPUP CAMISA INVICTO ==== */
+#popup-invicto {
+  position: fixed;
+  bottom: 80px;
+  right: 10px;
+  width: 250px;
+  height: 300px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20005;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .4s ease, transform .4s ease;
+  pointer-events: none;
+}
+
+#popup-invicto.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+#close-popup-invicto {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.popup-img {
+  width: 180px;
+  margin-top: 10px;
+}
+
+.popup-title {
+  margin: 6px 0;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.popup-price {
+  font-size: 18px;
+  color: #00ff66;
+  margin: 4px 0 10px 0;
+}
+
+.popup-link {
+  background: #33aaff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: .3s;
+}
+
+.popup-link:hover {
+  background: #2288ff;
+}
+/* ==== Ícone de trsigger do popup Invicto ==== */
+#invicto-icon {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 55px;
+  height: 55px;
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 20000;
+  transition: transform 0.3s, background 0.3s;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+#invicto-icon:hover {
+  transform: scale(1.12);
+  background: rgba(0, 150, 255, 0.9);
+}
+/* ====== POPUP GLOBAL ====== */
+#coach-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  width: 90%;
+  max-width: 380px;
+  background: #111;
+  border-radius: 14px;
+  padding: 22px;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: 0.25s ease-out;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+#coach-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+#coach-popup h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+#coach-popup .close {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 10px;
+  background: #ffd700;
+  color: #111;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  z-index: 4000 ;
+  transition: all 0.3s ease;
+}
+
+#chat-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#chat-input-area {
+  display: flex;
+  border-top: 1px solid #333;
+  padding: 6px;
+  gap: 4px;
+  background: #111;
+}
+
+@supports (-webkit-touch-callout: none) {
+  #chat-container {
+    bottom: env(keyboard-inset-height, 0);
+  }
+}
+/* Detecta iPhone / Safari iOS */
+@supports (-webkit-touch-callout: none) {
+
+  /* Ajusta os botões fixos */
+  button,
+  #fullscreen-overlay,
+  #ai-analise-btn,
+  #pen-path-btn,
+  #treino-btn {
+    height: 38px !important;      /* deixa mais fino */
+    padding: 6px 10px !important; /* reduz padding */
+    font-size: 0.8em !important;
+  }
+
+  /* Opcional: empurra os botões para cima do "safe area" */
+  .ios-bottom-fix {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Se quiser jogar os botões todos para o bottom */
+  .force-bottom {
+    position: fixed !important;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    top: auto !important;
+  }
+}
+/* === Centraliza o pop-up do treino no centro do campo === */
+#treino-missao,
+.missao-popup,
+#mission-popup,
+#treino-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;  
+  transform: translate(-50%, -50%);
+  z-index: 200000;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* === IA Button: hover branco e loading martelo === */
+#ai-analise-btn {
+  transition: background-color 180ms ease, color 180ms ease, opacity 180ms ease;
+  will-change: transform, opacity;
+  position: fixed; /* já está, mas reforça para o pseudo-elemento */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover: fundo branco e texto/ícone em azul (mantém contraste) */
+#ai-analise-btn:hover {
+  background: #ffffff !important;
+  color: #1E90FF !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+
+/* Loading state: esconde o conteúdo atual e mostra o martelo animado */
+#ai-analise-btn.loading {
+  cursor: wait;
+  color: transparent;       /* oculta o ícone/emoji original sem alterar layout */
+  background: #0f76d1 !important; /* mantém tom de loading, opcional */
+  opacity: 0.98;
+}
+
+/* Pseudo-elemento que mostra o martelo quando estiver em loading */
+#ai-analise-btn.loading::after {
+  content: "🔨";             /* martelo */
+  display: inline-block;
+  font-size: 1.2em;
+  color: #ffffff;
+  position: relative;
+  transform-origin: center;
+  animation: hammer-bounce 900ms ease-in-out infinite;
+}
+
+/* animação suave (pequeno bounce) */
+@keyframes hammer-bounce {
+  0%   { transform: translateY(0) rotate(0deg); }
+  40%  { transform: translateY(-6px) rotate(-8deg); }
+  70%  { transform: translateY(0) rotate(6deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}

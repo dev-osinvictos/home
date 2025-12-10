@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">    
+    <title>OS INVICTOS { CARDGAME }</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.osinvictos.com.br/">
+    <meta property="og:title" content="SUPERTRUNFO DA COPA DO MUNDO 2026 / WEB 3.0"/>
+    <meta property="og:description" content=""/>
+    <meta property="og:image" content="#"/>
+    <meta property="og:image:width" content="580"/>
+    <meta property="og:image:height" content="464"/>
+    <meta name="google-adsense-account" content="ca-pub-6390604470898441">
+    <link rel="stylesheet" href="./styles.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8');
+    </script>
+</head>
+<body>
+  <button id="menu-button" class="hamburger" aria-label="Abrir menu" aria-expanded="false">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </button>
+  <div id="center-scene">
+    <div id="logo-container">
+      <model-viewer src="./ctvirtual/models/logo.glb" alt="Logo 3D" auto-rotate camera-controls exposure="1" shadow-intensity="1" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look"></model-viewer>
+      <h1>FIFA</h1>
+    </div>
+    <img id="side-badge" src="./img/super-trumfo_cc.png" alt="Super Trunfo" />
+  </div>
+  <div id="menu-overlay" aria-hidden="true">
+    <div class="overlay-top" role="navigation" aria-label="Submenus">
+      <a href="./ctvirtual/index.html" class="submenu" data-action="ganhe-carta">WIN CARD</a>
+      <a href="#" class="submenu" data-action="login">LOGIN</a>
+      <a href="#" class="submenu" data-action="faq">FAQ</a>
+    </div>
+    <div class="content" aria-hidden="true"></div>
+  </div>
+
+  <!-- Login / Newsletter / Cofre de cards -->
+  <div id="auth-modal" class="card-login-modal" aria-hidden="true">
+    <div class="card-login-box">
+      <h4>Login e mala-direta</h4>
+      <p>Entre para salvar seus cards e receber novidades.</p>
+      <input id="auth-name" type="text" placeholder="Seu nome">
+      <input id="auth-email" type="email" placeholder="email@exemplo.com">
+      <input id="auth-password" type="password" placeholder="Senha (opcional)">
+      <label class="checkbox-line">
+        <input id="auth-newsletter" type="checkbox" checked>
+        Quero receber novidades (mala direta).
+      </label>
+      <div class="card-login-actions">
+        <button id="auth-submit">Entrar/Salvar</button>
+        <button id="auth-logout" class="ghost">Sair</button>
+        <button id="auth-close" class="ghost">Fechar</button>
+      </div>
+      <div id="auth-feedback" class="card-action-feedback"></div>
+    </div>
+  </div>
+
+  <script src="./ctvirtual/js/auth.js"></script>
+  <script src="./menu.js"></script>
+</body>
+</html>

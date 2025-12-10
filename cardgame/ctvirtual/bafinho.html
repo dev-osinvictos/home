@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Super-Trunfo</title>
+  <link rel="stylesheet" href="styles-bafinho.css">
+  <style>
+    body { background:#0c1d2b; color:#fff; font-family:Arial, sans-serif; margin:0; padding:20px; }
+    .game-wrapper { max-width: 960px; margin: 0 auto; }
+    .hud { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .pot { background:#111; border:1px solid #333; padding:10px; border-radius:8px; }
+    .hand { display:flex; gap:8px; flex-wrap:wrap; }
+    .card { width:90px; height:140px; border-radius:10px; overflow:hidden; border:1px solid #444; position:relative; cursor:pointer; background:#222; display:flex; align-items:center; justify-content:center; }
+    .card img { width:100%; height:100%; object-fit:cover; }
+    .card span { position:absolute; bottom:4px; left:6px; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:6px; font-size:12px; }
+    .card.selected { outline:3px solid #1e90ff; }
+    .timer { font-weight:bold; color:#ffd700; }
+    .log { background:#0f1720; border:1px solid #233; border-radius:8px; padding:10px; max-height:200px; overflow:auto; font-size:13px; }
+    button { background:#1e90ff; color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <h2>🃏 SUPERTRUNFO DA COPA DE '26</h2>
+    <div class="hud">
+      <div class="pot">Cards em órbita: <span id="pot-count">0</span></div>
+      <div class="pot">Suas cartas: <span id="hand-count">0</span></div>
+      <div class="pot">Bot cartas: <span id="bot-count">0</span></div>
+      <div class="pot">Tempo: <span class="timer" id="timer">--</span></div>
+      <button id="start-btn">Iniciar rodada</button>
+    </div>
+
+    <div>
+      <h4>Suas cartas</h4>
+      <div id="player-hand" class="hand"></div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <h4>Cards em órbita</h4>
+      <div id="pot-cards" class="hand"></div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <h4>Log</h4>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Setup de cartas (1..8) com formações fixas ======
+    const baseCards = [
+      { id: 1,  name: "Marcelo Bielsa",        formation: "4-3-3",   tactical_power: 4, wins: 208, title_year: 2001, clubs: 15 },
+      { id: 2,  name: "Lionel Scaloni",        formation: "4-3-3",   tactical_power: 4, wins: 209, title_year: 2022, clubs: 17 },
+      { id: 3,  name: "Carlo Ancelotti",       formation: "4-3-3",   tactical_power: 4, wins: 215, title_year: 2002, clubs: 10 },
+      { id: 4,  name: "Sebastien Mingnó",      formation: "4-3-3",   tactical_power: 4, wins: 22,  title_year: 0,    clubs: 5  },
+      { id: 5,  name: "Amir Ghalenoel",        formation: "4-2-3-1", tactical_power: 3, wins: 20,  title_year: 0,    clubs: 5  },
+      { id: 6,  name: "Didier Deschamps",      formation: "3-4-3",   tactical_power: 1, wins: 213, title_year: 2002, clubs: 19 },
+      { id: 7,  name: "Genaro Gattuso",        formation: "4-3-3",   tactical_power: 4, wins: 212, title_year: 2001, clubs: 10 },
+      { id: 8,  name: "Thomas Tuchel",         formation: "3-4-3",   tactical_power: 1, wins: 211, title_year: 2000, clubs: 17 },
+      { id: 9,  name: "Julian Nagelsmann",     formation: "4-2-3-1", tactical_power: 3, wins: 205, title_year: 1999, clubs: 16 },
+      { id: 10, name: "Luis de la Fuente",     formation: "4-3-3",   tactical_power: 4, wins: 210, title_year: 2011, clubs: 20 },
+      { id: 11, name: "Ralf Rangnick",         formation: "4-4-2",   tactical_power: 5, wins: 130, title_year: 2002, clubs: 10 },
+      { id: 12, name: "Rudi Garcia",           formation: "3-4-3",   tactical_power: 1, wins: 200, title_year: 2021, clubs: 10 },
+      { id: 13, name: "Zlatko Dalic",          formation: "4-2-3-1", tactical_power: 3, wins: 160, title_year: 2003, clubs: 10 },
+      { id: 14, name: "Steve Clark",           formation: "4-2-3-1", tactical_power: 3, wins: 120, title_year: 2004, clubs: 12 },
+      { id: 15, name: "Louis Van Gaal",        formation: "4-3-3",   tactical_power: 4, wins: 150, title_year: 2005, clubs: 12 },
+      { id: 16, name: "Stale Solbakken",       formation: "4-3-3",   tactical_power: 4, wins: 100, title_year: 2006, clubs: 8  },
+      { id: 17, name: "Roberto Martinez",      formation: "3-4-3",   tactical_power: 1, wins: 100, title_year: 2007, clubs: 10 },
+      { id: 18, name: "Murat Yakin",           formation: "3-4-2-1", tactical_power: 1, wins: 100, title_year: 2008, clubs: 9  },
+      { id: 19, name: "Hugo Broos",            formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 2009, clubs: 4  },
+      { id: 20, name: "Vladimir Petkovic",     formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 2010, clubs: 4  },
+      { id: 21, name: "Bubista",               formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 1901, clubs: 6  },
+      { id: 22, name: "Emerse Faé",            formation: "4-3-3",   tactical_power: 4, wins: 50,  title_year: 1902, clubs: 8  },
+      { id: 23, name: "Hossan Hassan",         formation: "4-3-3",   tactical_power: 4, wins: 50,  title_year: 1903, clubs: 11 },
+      { id: 24, name: "Otto Addo",             formation: "4-2-3-1", tactical_power: 3, wins: 100, title_year: 1904, clubs: 10 },
+      { id: 25, name: "Walid Regragui",        formation: "4-3-3",   tactical_power: 4, wins: 50,  title_year: 1905, clubs: 6  },
+      { id: 26, name: "Pape Thiaw",            formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 1906, clubs: 5  },
+      { id: 27, name: "Sami Trebelsi",         formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 1907, clubs: 3  },
+      { id: 28, name: "Hervé Renard",          formation: "4-1-4-1", tactical_power: 6, wins: 100, title_year: 1909, clubs: 4  },
+      { id: 29, name: "Tony Popovic",          formation: "4-3-3",   tactical_power: 4, wins: 200, title_year: 1910, clubs: 5  },
+      { id: 30, name: "Darren Bazely",         formation: "4-2-3-1", tactical_power: 3, wins: 20,  title_year: 1911, clubs: 3  },
+      { id: 31, name: "Tintin Marque",         formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 1912, clubs: 3  },
+      { id: 32, name: "João Aroso",            formation: "4-3-3",   tactical_power: 4, wins: 20,  title_year: 1913, clubs: 2  },
+      { id: 33, name: "TBD",                   formation: "4-4-2",   tactical_power: 5, wins: 0,   title_year: 0,    clubs: 0  },
+      { id: 34, name: "Hajime Moriyasu",       formation: "3-4-3",   tactical_power: 1, wins: 100, title_year: 1914, clubs: 6  },
+      { id: 35, name: "Ramal Sellami",         formation: "4-3-3",   tactical_power: 4, wins: 50,  title_year: 1915, clubs: 3  },
+      { id: 36, name: "Fabio Cannavaro",       formation: "4-3-3",   tactical_power: 4, wins: 50,  title_year: 1916, clubs: 3  },
+      { id: 37, name: "Jesse Marsh",           formation: "4-2-2-2", tactical_power: 3, wins: 100, title_year: 1917, clubs: 8  },
+      { id: 38, name: "Dick Advoccat",         formation: "4-2-3-1", tactical_power: 3, wins: 50,  title_year: 1918, clubs: 4  },
+      { id: 39, name: "Mauricio Pochettino",   formation: "3-4-2-1", tactical_power: 1, wins: 100, title_year: 2001, clubs: 11 },
+      { id: 40, name: "Javier Aguirre",        formation: "4-3-3",   tactical_power: 4, wins: 100, title_year: 1999, clubs: 10 },
+      { id: 41, name: "Thomas Christiansen",   formation: "3-4-3",   tactical_power: 1, wins: 50,  title_year: 1998, clubs: 5  },
+      { id: 42, name: "Sebastién Beccacece",   formation: "3-4-3",   tactical_power: 1, wins: 200, title_year: 1997, clubs: 14 },
+      { id: 43, name: "Nestor Lorenzo",        formation: "4-2-3-1", tactical_power: 3, wins: 200, title_year: 1996, clubs: 16 },
+      { id: 44, name: "Gustavo Alfaro",        formation: "4-2-3-1", tactical_power: 3, wins: 200, title_year: 1995, clubs: 15 }
+    ].map(c => ({ ...c, img: `./cards/${c.id}.png` }));
+
+    const playerHandEl = document.getElementById("player-hand");
+    const potEl = document.getElementById("pot-cards");
+    const logEl = document.getElementById("log");
+    const timerEl = document.getElementById("timer");
+    const potCountEl = document.getElementById("pot-count");
+    const handCountEl = document.getElementById("hand-count");
+    const botCountEl = document.getElementById("bot-count");
+    const startBtn = document.getElementById("start-btn");
+
+    let playerCards = [];
+    let botCards = [];
+    let pot = [];
+    let selectedCard = null;
+    let roundTimer = null;
+    const ROUND_TIME = 15;
+
+    function log(msg) {
+      const p = document.createElement("div");
+      p.textContent = msg;
+      logEl.prepend(p);
+    }
+
+    function renderHand() {
+      playerHandEl.innerHTML = "";
+      playerCards.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card";
+        if (selectedCard && selectedCard.id === card.id) div.classList.add("selected");
+        div.innerHTML = `<img src="${card.img}" alt="card ${card.id}"><span>#${card.id}</span>`;
+        div.onclick = () => { selectedCard = card; renderHand(); };
+        playerHandEl.appendChild(div);
+      });
+      handCountEl.textContent = playerCards.length;
+    }
+
+    function renderPot() {
+      potEl.innerHTML = "";
+      pot.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<img src="${card.img}" alt="card ${card.id}"><span>#${card.id}</span>`;
+        potEl.appendChild(div);
+      });
+      potCountEl.textContent = pot.length;
+      botCountEl.textContent = botCards.length;
+    }
+
+    function dealCards() {
+      // usa NFT_LIST se existir
+      const available = (window.NFT_LIST && window.NFT_LIST.length > 0)
+        ? baseCards.filter(c => window.NFT_LIST.includes(c.id))
+        : baseCards;
+      playerCards = [...available];
+      botCards = [...baseCards].sort(() => Math.random() - 0.5).slice(0, 4);
+      pot = [];
+      selectedCard = null;
+      renderHand();
+      renderPot();
+      log("💥 Novo jogo iniciado. Selecione um card e clique em Iniciar rodada.");
+    }
+
+    function scoreBattle(pCard, bCard) {
+      const rank = ["3-4-3","3-5-2","4-2-3-1","4-3-3","4-4-2","4-1-4-1","5-3-2"];
+      const getRank = (c) => {
+        if (typeof c.tactical_power === "number" && c.tactical_power > 0) return c.tactical_power;
+        const idx = rank.indexOf(c.formation);
+        return idx >= 0 ? idx + 1 : 0;
+      };
+      const p = { total:0, tactical:0, wins:0, title:0, clubs:0 };
+      const b = { total:0, tactical:0, wins:0, title:0, clubs:0 };
+
+      const pT = getRank(pCard);
+      const bT = getRank(bCard);
+      if (pT !== bT) {
+        const target = pT > bT ? p : b;
+        target.tactical = 3;
+        target.total += 3;
+      }
+
+      const pWins = pCard.wins || 0;
+      const bWins = bCard.wins || 0;
+      if (pWins !== bWins) {
+        const target = pWins > bWins ? p : b;
+        target.wins = 1;
+        target.total += 1;
+      }
+
+      const pYear = pCard.title_year || 0;
+      const bYear = bCard.title_year || 0;
+      if (pYear !== bYear) {
+        const target = pYear > bYear ? p : b;
+        target.title = 1;
+        target.total += 1;
+      }
+
+      const pClubs = pCard.clubs || pCard.teams || 0;
+      const bClubs = bCard.clubs || bCard.teams || 0;
+      if (pClubs !== bClubs) {
+        const target = pClubs > bClubs ? p : b;
+        target.clubs = 1;
+        target.total += 1;
+      }
+
+      let winner = "draw";
+      if (p.total > b.total) winner = "player";
+      else if (b.total > p.total) winner = "bot";
+
+      return { winner, playerScore: p, botScore: b };
+    }
+
+    function compareCards(player, bot) {
+      const result = scoreBattle(player, bot);
+      log(`🔎 Quesitos → Tático(3): ${result.playerScore.tactical} x ${result.botScore.tactical} | Vitórias: ${result.playerScore.wins} x ${result.botScore.wins} | Ano título: ${result.playerScore.title} x ${result.botScore.title} | Clubes: ${result.playerScore.clubs} x ${result.botScore.clubs}`);
+      log(`⚖️ Total: ${result.playerScore.total} x ${result.botScore.total} → ${result.winner === "draw" ? "Empate" : result.winner === "player" ? "Você venceu" : "Bot venceu"}`);
+      return result;
+    }
+
+    function startRound() {
+      if (!playerCards.length || !botCards.length) {
+        log("⚠️ Sem cartas suficientes para jogar.");
+        return;
+      }
+      if (!selectedCard) {
+        log("⚠️ Selecione um card para disputar.");
+        return;
+      }
+      const botCard = botCards[Math.floor(Math.random()*botCards.length)];
+      pot.push(selectedCard, botCard);
+      potCountEl.textContent = pot.length;
+      botCountEl.textContent = botCards.length - 1;
+
+      let timeLeft = ROUND_TIME;
+      timerEl.textContent = timeLeft;
+      if (roundTimer) clearInterval(roundTimer);
+      roundTimer = setInterval(() => {
+        timeLeft -= 1;
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(roundTimer);
+          resolveRound(botCard);
+        }
+      }, 1000);
+      // resolve imediatamente (ou ao fim do tempo) comparando atributos
+      setTimeout(() => {
+        if (roundTimer) {
+          clearInterval(roundTimer);
+          resolveRound(botCard);
+        }
+      }, ROUND_TIME * 1000);
+    }
+
+    function resolveRound(botCard) {
+      if (!selectedCard || !botCard) return;
+      const { winner } = compareCards(selectedCard, botCard);
+      if (winner === "player") {
+        playerCards.push(...pot);
+        log(`🏆 Você ganhou a órbita de ${pot.length} cartas!`);
+        pot = [];
+      } else if (winner === "bot") {
+        botCards.push(...pot);
+        log(`🤖 Bot ganhou a órbita de ${pot.length} cartas.`);
+        pot = [];
+      } else {
+        log("⚖️ Empate: cartas permanecem na órbita.");
+      }
+      // remove usadas da mão apenas se resolver pot
+      if (winner !== "draw") {
+        playerCards = playerCards.filter(c => c !== selectedCard);
+        botCards = botCards.filter(c => c !== botCard);
+        selectedCard = null;
+      }
+      renderHand();
+      renderPot();
+    }
+
+    startBtn.onclick = startRound;
+    dealCards();
+  </script>
+</body>
+</html>

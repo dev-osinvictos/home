@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>CT Virtual / CARDGAME</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.osinvictos.com.br/cardgame/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="#">
+    <meta property="og:title" content="CT Virtual / CARDGAME">
+    <meta property="og:description" content="Cardgame model Supertrunfo da Copa do Mundo 2026">
+    <meta property="og:image" content="#">
+    <link rel="stylesheet" href="styles.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8');
+    </script>
+</head>
+<body style="background-color: #000000;">
+
+  <button id="menu-button" class="hamburger" aria-label="Abrir menu" aria-expanded="false">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </button>
+  <div id="menu-overlay" aria-hidden="true">
+    <div class="overlay-top" role="navigation" aria-label="Submenus">
+      <a href="../index.html" class="submenu" data-action="home">HOME</a>
+      <a href="#" class="submenu" data-action="login">LOGIN</a>
+      <a href="#" class="submenu" data-action="faq">FAQ</a>
+    </div>
+    <div class="content" aria-hidden="true"></div>
+  </div>
+
+  <!-- ===== Campo Tático para aprimoramento esportivo ===== -->
+    <div id="background-square" class="background-square"></div>
+    <div id="background-line"></div>
+    <div id="background-line2"></div>
+    <div id="background-line3"></div>
+    <div id="background-line4"></div>
+    <div id="background-line5"></div>
+    <div id="background-line6"></div>
+    <div id="background-line7"></div>
+    <div id="background-line8"></div>
+    <div id="background-line9"></div>
+    <div id="background-line10"></div>
+    <div id="background-line11"></div>
+    <div id="background-line12"></div>
+    <div id="background-line13"></div>
+    <div id="background-line14"></div>
+    <div id="background-line15"></div>
+    <div id="background-line16"></div>
+    <div id="background-line17"></div>
+  <div id="circulocentrar" class="circlecentral" style="background:transparent;left:237px;top:100px;border:2px solid #fff;"></div>
+  <div id="gol-square" class="gol-square"></div>
+  <div id="gol2-square" class="gol2-square"></div>
+
+  <!-- Jogadores e time adversário -->
+  <div id="circle1" class="circle">1</div>
+  <div id="circle2" class="circle">2</div>
+  <div id="circle3" class="circle">3</div>
+  <div id="circle4" class="circle">4</div>
+  <div id="circle5" class="circle">5</div>
+  <div id="circle6" class="circle">6</div>
+  <div id="circle7" class="circle">7</div>
+  <div id="circle8" class="circle">8</div>
+  <div id="circle9" class="circle">9</div>
+  <div id="circle10" class="circle">10</div>
+  <div id="circle11" class="circle">11</div>
+  <div id="circle12" class="circle" style="background: transparent;"></div>
+  <div id="circle13" class="circle" style="background:#125424;">2</div>
+  <div id="circle14" class="circle" style="background:#125424;">4</div>
+  <div id="circle15" class="circle" style="background:#125424;">3</div>
+  <div id="circle16" class="circle" style="background:#125424;">5</div>
+  <div id="circle17" class="circle" style="background:#125424;">8</div>
+  <div id="circle18" class="circle" style="background:#125424;">6</div>
+  <div id="circle19" class="circle" style="background:#125424;">10</div>
+  <div id="circle20" class="circle" style="background:#125424;">7</div>
+  <div id="circle21" class="circle" style="background:#125424;">11</div>
+  <div id="circle22" class="circle" style="background:#125424;">9</div>
+  <div id="circle23" class="circle">01</div>
+  <div id="circle24" class="circle" style="left:288px;top:130px;z-index:12000;background-image: url('img/adidasball.jpg');"></div>
+  </div>
+  <canvas id="trace-canvas" width="300" height="600"
+   style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;"></canvas>
+
+  <!-- Placeholder para futuro CARD -->
+  <div id="card-placeholder" style="
+    position:absolute;
+    left:5px;
+    bottom:0px;
+    width:120px;
+    height:200px;
+    background: transparent;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    z-index:15000;
+  "></div>
+
+ <button id="ai-analise-btn" class="force-bottom"
+  style="position:fixed;bottom:45px;left:158px;z-index:20000;
+         font-size:1.2em;padding:8px 16px;border-radius:8px;
+         background:#1E90FF;color:#fff;border:none;cursor:pointer;
+         box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;">
+⚙️
+</button>
+
+<button id="btn-criar-campo" style="position:fixed;bottom:45px;left:230px;z-index:20000; font-size:0.7em;padding:8px 16px;border-radius:8px; background:#007bff;color:#fff;border:none;cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+Conectar CT Virtual
+</button>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="js/websocket.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/NFT--list.js"></script>
+<script src="js/reward.js"></script>
+
+<!-- === MODAL PARA PIN DE SALA PRIVADA === -->
+<div id="rt-room-modal" style="
+  position:fixed;inset:0;background:rgba(0,0,0,0.65);
+  display:none;align-items:center;justify-content:center;
+  z-index:299999;">
+
+  <div style="background:#111;padding:22px;border-radius:12px;
+      border:1px solid #444;display:flex;flex-direction:column;
+      gap:12px;width:260px;text-align:center;color:#fff;">
+
+    <h3>🔐 CT Privado</h3>
+    <p>Digite o PIN (4 números):</p>
+
+    <input id="rt-room-input" maxlength="4" placeholder="1234"
+      style="font-size:22px;text-align:center;padding:10px;border-radius:8px;border:none;">
+
+    <a id="whatsapp-share" href="#" target="_blank">
+      <button style="padding:10px;background:#25D366;border:none;border-radius:8px;color:#fff;cursor:pointer;">
+        📲 Enviar PIN no WhatsApp
+      </button>
+    </a>
+
+    <button id="rt-room-confirm"
+      style="padding:10px;background:#28a745;border:none;border-radius:8px;color:#fff;cursor:pointer;">
+      Entrar
+    </button>
+
+    <button id="rt-room-cancel"
+      style="padding:6px;background:#444;border:none;border-radius:8px;color:#fff;cursor:pointer;">
+      Cancelar
+    </button>
+  </div>
+</div>
+
+<script src="js/formations.js" defer></script>
+<script src="js/sheenpath.js"></script>
+<script src="js/core.js" defer></script> 
+<script src="js/aitatica.js" defer></script>
+<script type="module" src="js/treino.js"></script>
+
+<div id="tactical-status" style="
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:rgba(0,0,0,0.8);
+  color:#fff;
+  padding:14px 16px;
+  border-radius:10px;
+  font-family:'Segoe UI',sans-serif;
+  font-size:14px;
+  z-index:10002;
+  min-width:220px;
+  line-height:1.5;
+  box-shadow:0 0 8px rgba(0,0,0,0.3);
+  display:none;
+  transition:opacity 0.3s ease;
+"></div>
+<script src="js/voice.js"></script>
+<!-- === HUD TÁTICO AVANÇADO === -->
+<div id="tactical-hud" style="
+  position: absolute;
+  top: 55px;
+  right: 5px;
+  width: 130px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: left;
+  line-height: 1.4;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+  display: none;
+  z-index: 10005;
+">
+  <b>📊 Inteligência Tática</b><br>
+  <span id="hud-formations">Card: ? | Invicto: ?</span><br>
+  <span id="hud-phase">Fase: ?</span><br>
+  <span id="hud-block">Bloco: ? | Compactação: ?</span>
+</div>
+
+<!-- SCORE HUD -->
+<div id="score-hud" style="position:fixed;top:15px;left:246px;z-index:10050;display:flex;gap:10px;align-items:flex-start;">
+
+  <!-- ⭐ Pontos -->
+  <button id="star-points" style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.7);color:#ffd700;border:1px solid rgba(255,255,255,0.2);padding:6px 10px;border-radius:10px;cursor:pointer;margin-bottom:150px;">
+    ⭐ <span id="points-value" style="color:#ffd700;font-weight:700;">0</span>
+  </button>
+
+  <!-- ✨ Gols pró -->
+  <button id="btn-market" style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.7);color:#c0c0c0;border:1px solid rgba(255,255,255,0.2);padding:6px 10px;border-radius:10px;cursor:pointer;margin-bottom:150px;">
+    💰 <span id="goals-value" style="color:#c0c0c0;font-weight:700;">0</span>
+  </button>
+
+</div>
+
+<!-- Lista de cartas conquistadas (minimizada/expandida) -->
+<div id="nft-list-container" class="nft-panel">
+  <div class="nft-panel-header">
+    <span id="nft-list-title">Cards conquistados: <span id="nft-count">0</span></span>
+    <button id="nft-toggle" aria-expanded="false">▼</button>
+  </div>
+  <div id="nft-list-body" class="nft-horizontal" style="display:none;"></div>
+</div>
+
+<!-- Ações rápidas para cada carta -->
+<div id="card-action-menu" class="card-action-menu" aria-hidden="true">
+  <div class="card-action-head">
+    <span id="card-action-title">Card</span>
+    <button id="card-action-close" aria-label="Fechar">×</button>
+  </div>
+  <div id="card-action-feedback" class="card-action-feedback"></div>
+  <button class="card-action-btn" data-action="view">Ver card</button>
+  <button class="card-action-btn" data-action="save">Guardar card</button>
+  <button class="card-action-btn" data-action="bet">Apostar card</button>
+  <button class="card-action-btn" data-action="share">Compartilhar card</button>
+</div>
+
+<!-- Modal de login para guardar card -->
+<div id="card-login-modal" class="card-login-modal" aria-hidden="true">
+  <div class="card-login-box">
+    <h4>Guardar card</h4>
+    <p>Entre com e-mail e senha para salvar no cofre.</p>
+    <input id="card-login-email" type="email" placeholder="email@exemplo.com">
+    <input id="card-login-password" type="password" placeholder="senha">
+    <div class="card-login-actions">
+      <button id="card-login-submit">Guardar</button>
+      <button id="card-login-cancel" class="ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Visualização ampliada do card -->
+<div id="card-preview-modal" class="card-login-modal" aria-hidden="true">
+  <div class="card-preview-box">
+    <img id="card-preview-img" src="" alt="Card selecionado">
+  </div>
+</div>
+
+<!-- Seleção de compartilhamento -->
+<div id="card-share-menu" class="card-login-modal" aria-hidden="true">
+  <div class="card-login-box">
+    <h4>Compartilhar card</h4>
+    <p>Selecione o destino no Instagram.</p>
+    <select id="card-share-dest">
+      <option value="story">Story</option>
+      <option value="dm">Mensagem direta</option>
+      <option value="feed">Feed (link)</option>
+    </select>
+    <div class="card-login-actions">
+      <button id="card-share-confirm">Compartilhar</button>
+      <button id="card-share-cancel" class="ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login / Newsletter / Cofre de cards -->
+<div id="auth-modal" class="card-login-modal" aria-hidden="true">
+  <div class="card-login-box">
+    <h4>Login e mala-direta</h4>
+    <p>Entre para salvar seus cards e receber novidades.</p>
+    <input id="auth-name" type="text" placeholder="Seu nome">
+    <input id="auth-email" type="email" placeholder="email@exemplo.com">
+    <input id="auth-password" type="password" placeholder="Senha (opcional)">
+    <label class="checkbox-line">
+      <input id="auth-newsletter" type="checkbox" checked>
+      Quero receber novidades (mala direta).
+    </label>
+    <div class="card-login-actions">
+      <button id="auth-submit">Entrar/Salvar</button>
+      <button id="auth-logout" class="ghost">Sair</button>
+      <button id="auth-close" class="ghost">Fechar</button>
+    </div>
+    <div id="auth-feedback" class="card-action-feedback"></div>
+  </div>
+</div>
+
+  <div id="room-user-indicator">
+    <div id="room-user-title">👥 1</div>
+    <div id="room-pot-line" style="margin-top:4px;font-size:12px;color:#fff;">
+      Aposte o CARD aqui:
+      <span id="room-pot-list" style="color:#ffd700;">(vazio)</span>
+      <button id="room-pot-ok" style="margin-left:6px;padding:4px 8px;border:none;border-radius:6px;background:#28a745;color:#fff;cursor:pointer;font-size:12px;">OK</button>
+      <div id="room-pot-status" style="margin-top:4px;color:#ffd700;font-size:12px;"></div>
+      <div id="room-pot-timer" style="margin-top:2px;color:#ff6b6b;font-size:12px;"></div>
+    </div>
+  </div>
+
+
+<div id="ranking-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300000;
+  align-items:center;justify-content:center;">
+  <div style="width:min(92vw,560px);background:#121212;color:#fff;border:1px solid #333;border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h3 style="margin:0;font-size:18px;">🏆 Ranking Invicto</h3>
+      <button id="ranking-close" style="background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;">×</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:#1e1e1e;padding:12px;border-radius:10px;">
+        <h4 style="margin:0 0 8px 0;font-size:14px;">Cadastrar/Entrar</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input id="rk-name" type="text" placeholder="Seu nome" style="padding:8px;border-radius:8px;border:1px solid #333;background:#111;color:#fff;">
+          <input id="rk-email" type="email" placeholder="Seu e-mail" style="padding:8px;border-radius:8px;border:1px solid #333;background:#111;color:#fff;">
+          <input id="rk-pass" type="password" placeholder="Senha" style="padding:8px;border-radius:8px;border:1px solid #333;background:#111;color:#fff;">
+          <button id="rk-save" style="background:#28a745;border:none;border-radius:8px;padding:10px;color:#fff;cursor:pointer;">
+            Salvar/Atualizar Pontuação
+          </button>
+        </div>
+      </div>
+      <div style="background:#1e1e1e;padding:12px;border-radius:10px;">
+        <h4 style="margin:0 0 8px 0;font-size:14px;">Tabela</h4>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button class="rk-tab" data-range="daily"  style="flex:1;background:#222;border:1px solid #333;color:#fff;border-radius:8px;padding:6px;cursor:pointer;">Diário</button>
+          <button class="rk-tab" data-range="weekly" style="flex:1;background:#222;border:1px solid #333;color:#fff;border-radius:8px;padding:6px;cursor:pointer;">Semanal</button>
+          <button class="rk-tab" data-range="monthly" style="flex:1;background:#222;border:1px solid #333;color:#fff;border-radius:8px;padding:6px;cursor:pointer;">Mensal</button>
+        </div>
+        <div id="rk-list" style="max-height:240px;overflow:auto;font-size:13px;line-height:1.5;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/pin.js"></script>
+<!-- === OVERLAY DE VITÓRIA COM 3D === -->
+<div id="victory-overlay" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:500000;
+  backdrop-filter: blur(6px);
+  text-align:center;
+  color:white;
+  padding:20px;
+  opacity:0;
+  transition: opacity 0.8s ease;
+">
+  <model-viewer id="victory-model"
+    src=""
+    style="width:260px;height:260px;"
+    auto-rotate
+    disable-zoom
+    exposure="1.2"
+    shadow-intensity="1">
+  </model-viewer>
+
+  <div id="victory-text" style="
+    font-size:2em;
+    margin-top:20px;
+    font-weight:700;
+    text-shadow:0 0 12px rgba(255,255,255,0.5);
+  "></div>
+
+  <button onclick="closeVictoryOverlay()" style="
+    margin-top:30px;
+    padding:12px 22px;
+    background:#28a745;
+    border:none;
+    border-radius:10px;
+    font-size:1.1em;
+    color:white;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(0,0,0,0.4);
+  ">
+    OK
+  </button>
+</div>
+<!-- 🛒 MARKETPLACE -->
+<div id="popup-market" class="popup-market">
+  <div class="market-content">
+    <h3>🛒 Marketplace</h3>
+
+    <div id="marketplace"></div>
+    <div id="market-items">
+      <div>Carregando...</div>
+    </div>
+
+    <button id="add-token-metamask" class="market-btn">
+      ➕ Add Token GOLS na MetaMask
+    </button>
+
+    <button id="btn-show-gols-balance" class="market-btn">
+      📊 Ver saldo GOLS na minha carteira
+    </button>
+
+    <button id="close-market" class="market-close">
+      Fechar
+    </button>
+  </div>
+</div>
+<script src="./tokens-api-go/js/erc20_gols.js"></script> 
+<script type="module" src="marketplace.js"></script>
+<script src="../menu.js"></script>
+</body>
+</html>
