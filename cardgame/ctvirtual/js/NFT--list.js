@@ -370,17 +370,16 @@ function resolvePotLocally() {
   const iWon = myCards.includes(winnerCard);
   const myLosingCard = myCards.find((c) => c !== winnerCard) || myCards[0];
   const collectedCards = [winnerCard, ...loserCards];
+  const conqueredCard = loserCards[0] || winnerCard;
 
   if (statusEl) statusEl.textContent = `Resultado: Card ${winnerCard} venceu`;
 
   let msg;
   if (iWon) {
-    msg = loserCards.length
-      ? `Você ganhou! Conquistou ${collectedCards.join(", ")}.`
-      : `Você ganhou! Conquistou o CARD ${winnerCard}.`;
+    msg = "Venceu! CARD CONQUISTADO.";
     collectedCards.forEach((id) => window.addCardToNFTList?.(id));
   } else if (myLosingCard) {
-    msg = `Você perdeu! Perdeu para o CARD ${winnerCard}.`;
+    msg = "Perdeu! ESTE CARD VENCEU.";
     window.removeCardFromList?.(myLosingCard);
   } else {
     msg = loserCards.length
@@ -389,7 +388,7 @@ function resolvePotLocally() {
   }
 
   if (typeof window.showVictoryOverlay === "function") {
-    const front = iWon ? (loserCards[0] || winnerCard) : winnerCard;
+    const front = iWon ? conqueredCard : winnerCard;
     const back = iWon ? winnerCard : (myLosingCard || loserCards[0] || winnerCard);
     window.showVictoryOverlay(msg, front, back);
   }
@@ -542,26 +541,23 @@ function handlePotResult(data) {
   const myCards = Array.isArray(pot) ? pot.filter((id) => owners[normalizeCardId(id)] === myId) : [];
   const iWon = winning && myCards.includes(winning);
   const myLosingCard = myCards.find((c) => c !== winning) || myCards[0];
+  const losers = Array.isArray(pot) ? pot.filter((c) => c !== winning) : [];
+  const conqueredCard = losers[0] || winning;
 
   if (winning && typeof window.showVictoryOverlay === "function") {
     let msg;
     if (iWon) {
-      msg = `Você ganhou! Conquistou o CARD ${winning}.`;
+      msg = "Venceu! CARD CONQUISTADO.";
       window.addCardToNFTList?.(winning);
     } else if (myLosingCard) {
-      msg = `Você perdeu! Perdeu para o CARD ${winning}.`;
+      msg = "Perdeu! ESTE CARD VENCEU.";
       window.removeCardFromList?.(myLosingCard);
     } else {
-      const losers = Array.isArray(pot) ? pot.filter((c) => c !== winning) : [];
       msg = losers.length ? `Card ${winning} venceu a aposta contra ${losers.join(", ")}` : `Card ${winning} conquistado!`;
     }
-    const opponentCard = iWon
-      ? (Array.isArray(pot) ? pot.find((c) => c !== winning) || winning : winning)
-      : winning;
-    const myCardForBack = iWon
-      ? winning
-      : (myLosingCard || (Array.isArray(pot) ? pot.find((c) => c !== winning) || winning : winning));
-    window.showVictoryOverlay(msg, opponentCard, myCardForBack);
+    const front = iWon ? conqueredCard : winning;
+    const back = iWon ? winning : (myLosingCard || losers[0] || winning);
+    window.showVictoryOverlay(msg, front, back);
   }
   clearPotState(true);
 }
