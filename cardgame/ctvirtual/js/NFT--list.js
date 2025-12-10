@@ -39,6 +39,7 @@ window.roomPotConfirmers = window.roomPotConfirmers || {};
 let lastConfirmTs = 0;
 const potChannel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("ctv-pot") : null;
 window.roomPotOwners = window.roomPotOwners || {};
+let touchCardId = null;
 
 function getRoomConfirmers() {
   const key = getRoomKey();
@@ -139,15 +140,7 @@ function renderNFTList() {
     body.appendChild(link);
   });
 
-  // torna os cards arrastáveis para o pote de apostas
-  Array.from(body.querySelectorAll(".nft-card")).forEach((el) => {
-    el.setAttribute("draggable", "true");
-    el.addEventListener("dragstart", (e) => {
-      const id = el.dataset.cardId;
-      e.dataTransfer.setData("text/card-id", id);
-      e.dataTransfer.effectAllowed = "copyMove";
-    });
-  });
+  registerCardInteractivity();
 }
 
 function getCardImageUrl(cardId) {
@@ -170,6 +163,96 @@ function getRoomOwners() {
   const key = getRoomKey();
   window.roomPotOwners[key] = window.roomPotOwners[key] || {};
   return window.roomPotOwners[key];
+}
+
+function setPotOutline(active) {
+  const target = document.getElementById("room-user-indicator");
+  if (!target) return;
+  target.style.outline = active ? "2px dashed #ffd700" : "";
+}
+
+function isTouchInsidePot(touch) {
+  const target = document.getElementById("room-user-indicator");
+  if (!target || !touch) return false;
+  const rect = target.getBoundingClientRect();
+  const { clientX: x, clientY: y } = touch;
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function dropCardIntoPot(cardId, ownerId = window.socket?.id || "local") {
+  if (!cardId) return;
+  addCardToPot(cardId, ownerId);
+  if (typeof notify === "function") {
+    notify(`Card ${cardId} pronto para apostar. Clique OK para sinalizar.`, 2200);
+  }
+  // apenas sincroniza o card; sem ativar alerta vermelho ainda
+  emitPotEvent("card-pot-added", {
+    room: window.currentRoomCode || null,
+    cardId,
+    cardIds: [cardId],
+    confirmed: false,
+    by: ownerId
+  });
+}
+
+function attachCardHandlers(el) {
+  el.setAttribute("draggable", "true");
+  el.addEventListener("dragstart", (e) => {
+    const id = el.dataset.cardId;
+    e.dataTransfer.setData("text/card-id", id);
+    e.dataTransfer.effectAllowed = "copyMove";
+  });
+
+  // Suporte a arrastar para o pote em telas touch (ex.: Android)
+  el.addEventListener(
+    "touchstart",
+    () => {
+      touchCardId = el.dataset.cardId;
+      setPotOutline(true);
+    },
+    { passive: true }
+  );
+
+  el.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!touchCardId) return;
+      const touch = e.changedTouches?.[0];
+      setPotOutline(isTouchInsidePot(touch));
+    },
+    { passive: true }
+  );
+
+  el.addEventListener(
+    "touchend",
+    (e) => {
+      const touch = e.changedTouches?.[0];
+      const inside = isTouchInsidePot(touch);
+      setPotOutline(false);
+      if (touchCardId && inside) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropCardIntoPot(touchCardId);
+      }
+      touchCardId = null;
+    },
+    { passive: false }
+  );
+
+  el.addEventListener(
+    "touchcancel",
+    () => {
+      setPotOutline(false);
+      touchCardId = null;
+    },
+    { passive: true }
+  );
+}
+
+function registerCardInteractivity() {
+  const body = document.getElementById("nft-list-body");
+  if (!body) return;
+  Array.from(body.querySelectorAll(".nft-card")).forEach((el) => attachCardHandlers(el));
 }
 
 function addCardToPot(cardId, ownerId = null) {
@@ -254,20 +337,7 @@ function setupRoomPotDrop() {
     e.preventDefault();
     target.style.outline = "";
     const cardId = e.dataTransfer.getData("text/card-id");
-    if (cardId) {
-      addCardToPot(cardId, window.socket?.id || "local");
-      if (typeof notify === "function") {
-        notify(`Card ${cardId} pronto para apostar. Clique OK para sinalizar.`, 2200);
-      }
-      // apenas sincroniza o card; sem ativar alerta vermelho ainda
-      emitPotEvent("card-pot-added", {
-        room: window.currentRoomCode || null,
-        cardId,
-        cardIds: [cardId],
-        confirmed: false,
-        by: window.socket?.id || "local"
-      });
-    }
+    if (cardId) dropCardIntoPot(cardId);
   });
 
   const okBtn = document.getElementById("room-pot-ok");
@@ -407,18 +477,7 @@ window.addCardToNFTList = function addCardToNFTList(cardId) {
     window.dispatchEvent(new CustomEvent("cards:changed"));
   }
 
-  // torna cada card arrastável para apostas
-  const body = document.getElementById("nft-list-body");
-  if (body) {
-    Array.from(body.querySelectorAll(".nft-card")).forEach((el) => {
-      el.setAttribute("draggable", "true");
-      el.addEventListener("dragstart", (e) => {
-        const id = el.dataset.cardId || normalized;
-        e.dataTransfer.setData("text/card-id", id);
-        e.dataTransfer.effectAllowed = "copyMove";
-      });
-    });
-  }
+  registerCardInteractivity();
 };
 
 function handlePotAdded(data) {
