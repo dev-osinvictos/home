@@ -361,9 +361,10 @@
       list.forEach((m) => {
         const opt = document.createElement("option");
         opt.value = m.id;
-        const rarity = m.rarity === "gold" ? "G" : "P";
-        const plans = m.formations?.length || 1;
-        opt.textContent = `Card ${m.id} — ${m.formation} (${rarity} | Força ${m.tacticalStrength}/5 | ${plans} plano${plans > 1 ? "s" : ""})`;
+        const formationsLabel = (m.formations && m.formations.length)
+          ? m.formations.join(" / ")
+          : m.formation;
+        opt.textContent = `Card ${m.id} — ${formationsLabel}`;
         missionSelect.appendChild(opt);
       });
       if (currentId && list.find((m) => String(m.id) === String(currentId))) {
