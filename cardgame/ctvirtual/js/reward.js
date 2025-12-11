@@ -16,16 +16,113 @@
       "3-5-2":   { pts: 1, goals: 1 }
     };
 
-    const missions = [
-      { id: 1, formation: "4-3-3", question: "Qual esquema tático combate o 4-3-3 (Marcelo Bielsa)?", rewards: card1Rewards },
-      { id: 2, formation: "4-3-3", question: "Qual esquema tático combate o 4-3-3 do Card 2?", rewards: standardRewards },
-      { id: 3, formation: "4-3-3", question: "Qual esquema tático combate o 4-3-3 do Card 3?", rewards: standardRewards },
-      { id: 4, formation: "4-3-3", question: "Qual esquema tático combate o 4-3-3 do Card 4?", rewards: standardRewards },
-      { id: 5, formation: "4-2-3-1", question: "Qual esquema tático combate o 4-2-3-1 do Card 5?", rewards: standardRewards },
-      { id: 6, formation: "3-4-3", question: "Qual esquema tático combate o 3-4-3 do Card 6?", rewards: standardRewards },
-      { id: 7, formation: "4-3-3", question: "Qual esquema tático combate o 4-3-3 do Card 7?", rewards: standardRewards },
-      { id: 8, formation: "3-4-3", question: "Qual esquema tático combate o 3-4-3 do Card 8?", rewards: standardRewards }
+    const FORMATION_STRENGTH = {
+      "4-4-2": 1,
+      "5-4-1": 2,
+      "4-3-3": 3,
+      "4-1-4-1": 3,
+      "4-2-3-1": 4,
+      "4-2-2-2": 4,
+      "3-4-3": 4,
+      "3-4-2-1": 4,
+      "3-5-2": 5
+    };
+    const DEFAULT_FORMATION_STRENGTH = 3;
+
+    const cardDeck = [
+      { id: 1, rarity: "p", formations: ["4-3-3", "3-4-3"] },
+      { id: 2, rarity: "g", formations: ["4-3-3"] },
+      { id: 3, rarity: "g", formations: ["4-3-3"] },
+      { id: 4, rarity: "p", formations: ["4-3-3"] },
+      { id: 5, rarity: "p", formations: ["4-2-3-1"] },
+      { id: 6, rarity: "g", formations: ["3-4-3"] },
+      { id: 7, rarity: "g", formations: ["4-3-3"] },
+      { id: 8, rarity: "g", formations: ["3-4-3"] },
+      { id: 9, rarity: "g", formations: ["4-2-3-1"] },
+      { id: 10, rarity: "g", formations: ["4-3-3"] },
+      { id: 11, rarity: "p", formations: ["4-4-2"] },
+      { id: 12, rarity: "g", formations: ["3-4-3"] },
+      { id: 13, rarity: "p", formations: ["4-2-3-1", "4-3-3"] },
+      { id: 14, rarity: "p", formations: ["4-2-3-1", "5-4-1"] },
+      { id: 15, rarity: "g", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 16, rarity: "p", formations: ["4-3-3"] },
+      { id: 17, rarity: "g", formations: ["3-4-3", "3-5-2"] },
+      { id: 18, rarity: "p", formations: ["3-4-2-1"] },
+      { id: 19, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 20, rarity: "p", formations: ["4-3-3", "3-4-2-1"] },
+      { id: 21, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 22, rarity: "p", formations: ["4-3-3"] },
+      { id: 23, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 24, rarity: "p", formations: ["4-2-3-1"] },
+      { id: 25, rarity: "p", formations: ["4-4-2", "4-1-4-1"] },
+      { id: 26, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 27, rarity: "p", formations: ["4-3-3"] },
+      { id: 28, rarity: "p", formations: ["4-1-4-1"] },
+      { id: 29, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 30, rarity: "p", formations: ["4-2-3-1"] },
+      { id: 31, rarity: "p", formations: ["4-3-3"] },
+      { id: 32, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 33, rarity: "p", formations: ["4-3-3"] },
+      { id: 34, rarity: "p", formations: ["3-4-3", "4-3-3"] },
+      { id: 35, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 36, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 37, rarity: "p", formations: ["4-2-2-2"] },
+      { id: 38, rarity: "p", formations: ["4-2-3-1"] },
+      { id: 39, rarity: "p", formations: ["4-3-3", "3-4-2-1"] },
+      { id: 40, rarity: "p", formations: ["4-3-3", "4-2-3-1"] },
+      { id: 41, rarity: "p", formations: ["3-4-3"] },
+      { id: 42, rarity: "p", formations: ["3-4-3", "3-5-2"] },
+      { id: 43, rarity: "p", formations: ["4-2-3-1", "4-3-3"] },
+      { id: 44, rarity: "p", formations: ["4-2-3-1"] }
     ];
+
+    function normalizeFormation(raw) {
+      const digits = (String(raw || "").match(/\d/g) || []);
+      if (!digits.length) return String(raw || "").trim();
+      return digits.join("-").replace(/-+/g, "-");
+    }
+
+    function computeTacticalStrength(formations = []) {
+      const baseList = formations.map((f) => FORMATION_STRENGTH[f] ?? DEFAULT_FORMATION_STRENGTH);
+      const base = baseList.length ? Math.max(...baseList) : DEFAULT_FORMATION_STRENGTH;
+      return Math.max(1, Math.min(5, base));
+    }
+
+    function buildQuestion(id, formations, rarityLabel) {
+      const label = formations.join(" / ");
+      return `Qual esquema tático combate o ${label} do Card ${id} (${rarityLabel})?`;
+    }
+
+    const missions = cardDeck.map((card) => {
+      const formations = card.formations.map(normalizeFormation);
+      const rarity = card.rarity === "g" ? "gold" : "prata";
+      const rarityShort = rarity === "gold" ? "GOLD" : "PRATA";
+      return {
+        id: card.id,
+        rarity,
+        formation: formations[0] || "4-3-3",
+        formations,
+        tacticalStrength: computeTacticalStrength(formations),
+        question: buildQuestion(card.id, formations, rarityShort),
+        rewards: card.id === 1 ? card1Rewards : standardRewards
+      };
+    });
+
+    window.cardTacticalRanking = [...missions].sort((a, b) => {
+      if (b.tacticalStrength !== a.tacticalStrength) {
+        return b.tacticalStrength - a.tacticalStrength; // força tática (1 a 5) primeiro
+      }
+      if ((a.formations?.length || 1) !== (b.formations?.length || 1)) {
+        return (b.formations?.length || 1) - (a.formations?.length || 1); // mais planos vence
+      }
+      if ((a.formations?.length || 1) > 1 && a.rarity !== b.rarity) {
+        return a.rarity === "gold" ? -1 : 1; // desempate de multi plano: gold > prata
+      }
+      if (a.rarity !== b.rarity) {
+        return a.rarity === "gold" ? -1 : 1;
+      }
+      return a.id - b.id;
+    });
 
     const notifyFn = typeof notify === "function" ? notify : (msg) => alert(msg);
     const updateScore = (ptsAdd, goalsAdd) => {
@@ -264,7 +361,9 @@
       list.forEach((m) => {
         const opt = document.createElement("option");
         opt.value = m.id;
-        opt.textContent = `Card ${m.id} — ${m.formation}`;
+        const rarity = m.rarity === "gold" ? "G" : "P";
+        const plans = m.formations?.length || 1;
+        opt.textContent = `Card ${m.id} — ${m.formation} (${rarity} | Força ${m.tacticalStrength}/5 | ${plans} plano${plans > 1 ? "s" : ""})`;
         missionSelect.appendChild(opt);
       });
       if (currentId && list.find((m) => String(m.id) === String(currentId))) {
