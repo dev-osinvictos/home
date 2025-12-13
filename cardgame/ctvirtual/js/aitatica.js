@@ -302,7 +302,34 @@ if (window.isTrainingMode && !toFormation) {
 // 🟢 3. Clique ÚNICO do Botão IA
 // ===============================
 
+function showAITip(btn) {
+  if (!btn || btn.dataset.aiTipShown === "true") return;
+  btn.dataset.aiTipShown = "true";
+
+  const tip = document.createElement("div");
+  tip.className = "ai-tip-dialog";
+  tip.textContent = "Qual esquema-tático combate o CARD? Monte o time e clique aqui!";
+  document.body.appendChild(tip);
+
+  const btnRect = btn.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  const margin = 12;
+  const top = btnRect.top - tipRect.height - margin + 20; // desloca 50px para baixo em relação ao anterior
+  // Alinha o tooltip pela direita do botão
+  const left = btnRect.right - tipRect.width;
+
+  tip.style.top = `${Math.max(8, top)}px`;
+  tip.style.left = `${Math.max(8, left)}px`;
+  tip.style.transform = "none";
+
+  setTimeout(() => tip.remove(), 7000);
+}
+
 const aiBtn = document.getElementById('ai-analise-btn');
+
+if (aiBtn) {
+  setTimeout(() => showAITip(aiBtn), 15000);
+}
 
 aiBtn.addEventListener('click', async function () {
   if (aiBtn.disabled) return;

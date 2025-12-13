@@ -605,13 +605,30 @@ if (potChannel) {
 function setupNFTToggle() {
   const btn = document.getElementById("nft-toggle");
   const body = document.getElementById("nft-list-body");
+  const title = document.getElementById("nft-list-title");
+  const container = document.getElementById("nft-list-container");
   if (!btn || !body) return;
+
+  const setExpanded = (expanded) => {
+    body.style.display = expanded ? "flex" : "none";
+    btn.textContent = expanded ? "▲" : "▼";
+    btn.setAttribute("aria-expanded", String(expanded));
+    if (container) container.classList.toggle("open", expanded);
+  };
+
   btn.addEventListener("click", () => {
-    const isHidden = body.style.display === "none" || body.style.display === "";
-    body.style.display = isHidden ? "flex" : "none";
-    btn.textContent = isHidden ? "▲" : "▼";
-    btn.setAttribute("aria-expanded", String(isHidden));
+    const isOpen = btn.getAttribute("aria-expanded") === "true";
+    setExpanded(!isOpen);
   });
+
+  // Também expande ao clicar no título "Cards conquistados".
+  if (title) {
+    title.style.cursor = "pointer";
+    title.addEventListener("click", () => {
+      const isOpen = btn.getAttribute("aria-expanded") === "true";
+      setExpanded(!isOpen);
+    });
+  }
 }
 
 function collapseNFTList() {

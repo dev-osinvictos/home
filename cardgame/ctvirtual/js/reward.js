@@ -262,7 +262,7 @@
       missionSelectWrap = document.createElement("div");
       missionSelectWrap.id = "mission-selector";
       missionSelectWrap.style.position = "fixed";
-      missionSelectWrap.style.left = "5px";
+      missionSelectWrap.style.left = "20px";
       missionSelectWrap.style.right = "";
       missionSelectWrap.style.bottom = "10px";
       missionSelectWrap.style.zIndex = "200100";
