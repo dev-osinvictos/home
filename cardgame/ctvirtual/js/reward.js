@@ -3,6 +3,8 @@
     const cardEl = document.getElementById("card-placeholder");
     if (!cardEl) return;
 
+    let finalMinimizeLock = false;
+
     const standardRewards = {
       "4-3-3":   { pts: 3, goals: 3 },
       "4-2-3-1": { pts: 2, goals: 2 },
@@ -324,6 +326,31 @@
         missionSelectWrap.style.gap = "4px";
       }, 10000);
 
+      // Agenda sequências de maximizar/minimizar
+      const togglePreviewTimed = (show) => {
+        missionSelectWrap.style.padding = show ? "8px" : "6px";
+        missionSelectWrap.style.gap = show ? "6px" : "4px";
+        preview.style.display = show ? "block" : "none";
+      };
+
+      const schedulePreviewSequence = () => {
+        const steps = [
+          { t: 35, show: true },
+          { t: 41, show: false },
+          { t: 50, show: true },
+          { t: 55, show: false, lock: true }
+        ];
+        steps.forEach(({ t, show, lock }) => {
+          setTimeout(() => {
+            if (!missionSelectWrap || finalMinimizeLock) return;
+            togglePreviewTimed(show);
+            if (lock) finalMinimizeLock = true;
+          }, t * 1000);
+        });
+      };
+
+      schedulePreviewSequence();
+
       // atualiza opções quando os cards mudarem (ganho/perda)
       window.addEventListener("cards:changed", () => {
         populateMissionSelect(window.currentMissionCard?.id);
@@ -396,14 +423,16 @@
       // maximiza ao trocar e minimiza após 6s
       if (missionSelectWrap) {
         const preview = document.getElementById("mission-preview");
-        missionSelectWrap.style.padding = "8px";
-        missionSelectWrap.style.gap = "6px";
-        if (preview) preview.style.display = "block";
-        setTimeout(() => {
-          missionSelectWrap.style.padding = "6px";
-          missionSelectWrap.style.gap = "4px";
-          if (preview) preview.style.display = "none";
-        }, 6000);
+        if (!finalMinimizeLock) {
+          missionSelectWrap.style.padding = "8px";
+          missionSelectWrap.style.gap = "6px";
+          if (preview) preview.style.display = "block";
+          setTimeout(() => {
+            missionSelectWrap.style.padding = "6px";
+            missionSelectWrap.style.gap = "4px";
+            if (preview) preview.style.display = "none";
+          }, 6000);
+        }
       }
     }
 
