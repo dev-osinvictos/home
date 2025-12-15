@@ -6,6 +6,7 @@ const STORAGE_KEY = "ctv-stored-cards";
 const LIST_KEY = "ctv-nft-list-cache";
 const baseCards = [
   { id: 1, formation: "4-3-3" },
+  { id: "1s", formation: "4-3-3", rarity: "signature" },
   { id: 2, formation: "4-3-3" },
   { id: 3, formation: "4-3-3" },
   { id: 4, formation: "4-3-3" },
@@ -14,6 +15,10 @@ const baseCards = [
   { id: 7, formation: "4-3-3" },
   { id: 8, formation: "3-4-3" }
 ];
+const SIGNATURE_ELIGIBLE = new Set(["1"]);
+const SIGNATURE_POWER_IDS = new Set(["1s"]);
+const SIGNATURE_AD_URL = "https://pl28253335.effectivegatecpm.com/3c/b6/ab/3cb6ab24c18d774fcdba91549d345c7d";
+const SIGNATURE_REQUIRED_VIEWS = 2;
 
 const ui = {
   actionMenu: null,
@@ -24,6 +29,10 @@ const ui = {
   loginEmail: null,
   loginPassword: null,
   shareSelect: null,
+  signatureModal: null,
+  signatureProgress: null,
+  signatureWatch: null,
+  signatureClose: null,
   previewModal: null,
   previewImg: null
 };
@@ -40,6 +49,8 @@ let lastConfirmTs = 0;
 const potChannel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("ctv-pot") : null;
 window.roomPotOwners = window.roomPotOwners || {};
 let touchCardId = null;
+let signatureViews = 0;
+let signatureTargetCard = null;
 
 function getRoomConfirmers() {
   const key = getRoomKey();
@@ -83,6 +94,16 @@ function normalizeCardId(id) {
 function dedupeIds(list = []) {
   const set = new Set(list.map(normalizeCardId));
   return Array.from(set);
+}
+
+function getSignatureUpgradeId(cardId) {
+  const normalized = normalizeCardId(cardId);
+  return SIGNATURE_ELIGIBLE.has(normalized) ? `${normalized}s` : null;
+}
+
+function isSignatureCard(cardId) {
+  const normalized = normalizeCardId(cardId).toLowerCase();
+  return SIGNATURE_POWER_IDS.has(normalized) || normalized.endsWith("s");
 }
 
 function persistList() {
@@ -467,6 +488,19 @@ function removeFromCollected(cardId) {
   window.dispatchEvent(new CustomEvent("cards:changed"));
 }
 
+function replaceCardInList(oldId, newId) {
+  if (!oldId || !newId) return;
+  const oldNorm = normalizeCardId(oldId);
+  const newNorm = normalizeCardId(newId);
+  let updated = window.NFT_LIST.map((id) => (normalizeCardId(id) === oldNorm ? newNorm : id));
+  if (!updated.includes(newNorm)) updated.push(newNorm);
+  window.NFT_LIST = dedupeIds(updated);
+  persistList();
+  renderNFTList();
+  window.dispatchEvent(new CustomEvent("cards:changed"));
+}
+window.replaceCardInList = replaceCardInList;
+
 window.addCardToNFTList = function addCardToNFTList(cardId) {
   if (!cardId) return;
   const normalized = normalizeCardId(cardId);
@@ -616,6 +650,10 @@ function setupNFTToggle() {
     if (container) container.classList.toggle("open", expanded);
   };
 
+  // Abre automaticamente em telas desktop; mantém fechado no mobile.
+  const isDesktop = window.innerWidth >= 768 && !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  setExpanded(isDesktop);
+
   btn.addEventListener("click", () => {
     const isOpen = btn.getAttribute("aria-expanded") === "true";
     setExpanded(!isOpen);
@@ -647,7 +685,10 @@ function openCardActions(cardId, imgSrc) {
   ui.actionMenu.classList.add("open");
   ui.actionMenu.setAttribute("aria-hidden", "false");
   if (ui.actionTitle) ui.actionTitle.textContent = `Card ${cardId}`;
-  setActionFeedback("Guardar, apostar ou compartilhar o card.");
+  const hint = isSignatureCard(cardId)
+    ? "Card autografado: poder extra (acima do GOLD)."
+    : "Guardar, apostar ou compartilhar o card.";
+  setActionFeedback(hint);
 }
 
 function closeCardActions() {
@@ -716,6 +757,9 @@ function simulateBafinho(cardId) {
   const rank = ["3-4-3", "3-5-2", "4-2-3-1", "4-3-3", "4-4-2", "4-1-4-1", "5-3-2"];
   const playerCard = baseCards.find((c) => String(c.id) === String(cardId)) || baseCards[0];
   const botCard = baseCards[Math.floor(Math.random() * baseCards.length)];
+  if (isSignatureCard(cardId)) {
+    return { winner: "player", botCard };
+  }
   const pv = rank.indexOf(playerCard.formation);
   const bv = rank.indexOf(botCard.formation);
   const winner = pv === bv ? Math.random() > 0.5 ? "player" : "bot" : pv > bv ? "player" : "bot";
@@ -846,6 +890,8 @@ function setupActionMenu() {
         toggleModal(ui.loginModal, true);
       } else if (action === "bet") {
         startBetFlow();
+      } else if (action === "signature") {
+        startSignatureFlow();
       } else if (action === "share") {
         toggleModal(ui.shareMenu, true);
       }
@@ -880,6 +926,95 @@ function setupShareMenu() {
   if (cancel) cancel.addEventListener("click", () => toggleModal(ui.shareMenu, false));
 }
 
+function setupSignatureModal() {
+  ui.signatureModal = document.getElementById("signature-modal");
+  ui.signatureProgress = document.getElementById("signature-progress");
+  ui.signatureWatch = document.getElementById("signature-watch");
+  ui.signatureClose = document.getElementById("signature-close");
+
+  if (ui.signatureWatch) ui.signatureWatch.addEventListener("click", handleSignatureWatch);
+  if (ui.signatureClose) ui.signatureClose.addEventListener("click", () => toggleModal(ui.signatureModal, false));
+  updateSignatureProgress();
+}
+
+function updateSignatureProgress() {
+  if (ui.signatureProgress) {
+    ui.signatureProgress.textContent = `${signatureViews}/${SIGNATURE_REQUIRED_VIEWS} anúncios assistidos`;
+  }
+  if (ui.signatureWatch) {
+    ui.signatureWatch.disabled = signatureViews >= SIGNATURE_REQUIRED_VIEWS;
+  }
+}
+
+function startSignatureFlow() {
+  if (!selectedCardId) return;
+  if (isSignatureCard(selectedCardId)) {
+    setActionFeedback("Este card já está autografado e é mais forte que GOLD.");
+    return;
+  }
+  const upgradeId = getSignatureUpgradeId(selectedCardId);
+  if (!upgradeId) {
+    setActionFeedback("Autógrafo disponível apenas para o Card 1 nesta fase.");
+    return;
+  }
+  if (signatureTargetCard !== selectedCardId) {
+    signatureViews = 0;
+  }
+  signatureTargetCard = selectedCardId;
+  updateSignatureProgress();
+  toggleModal(ui.signatureModal, true);
+  setActionFeedback("Assista a 2 anúncios Adsterra para liberar o autógrafo.");
+}
+
+function openAdsterraPopup(step) {
+  try {
+    const win = window.open(SIGNATURE_AD_URL, "_blank", "noopener");
+    if (!win) console.warn(`Popup do anúncio ${step} bloqueado`);
+    return !!win;
+  } catch (err) {
+    console.warn("Falha ao abrir anúncio Adsterra:", err);
+    return false;
+  }
+}
+
+function handleSignatureWatch() {
+  if (!signatureTargetCard) {
+    setActionFeedback("Selecione um card para liberar o autógrafo.");
+    return;
+  }
+  if (signatureViews >= SIGNATURE_REQUIRED_VIEWS) {
+    setActionFeedback("Autógrafo já liberado para este card.");
+    return;
+  }
+  const step = signatureViews + 1;
+  const opened = openAdsterraPopup(step);
+  signatureViews = Math.min(signatureViews + 1, SIGNATURE_REQUIRED_VIEWS);
+  updateSignatureProgress();
+  setActionFeedback(opened ? `Anúncio ${step}/2 aberto. Volte após assistir.` : "Ative pop-ups para assistir ao anúncio.");
+  if (signatureViews >= SIGNATURE_REQUIRED_VIEWS) {
+    setTimeout(completeSignatureReward, 1200);
+  }
+}
+
+function completeSignatureReward() {
+  if (!signatureTargetCard) return;
+  const upgradeId = getSignatureUpgradeId(signatureTargetCard);
+  if (!upgradeId) return;
+  replaceCardInList(signatureTargetCard, upgradeId);
+  selectedCardId = upgradeId;
+  selectedCardImg = getCardImageUrl(upgradeId);
+  // trava a UI no estado concluído
+  signatureViews = SIGNATURE_REQUIRED_VIEWS;
+  signatureTargetCard = null;
+  updateSignatureProgress();
+  toggleModal(ui.signatureModal, false);
+  const msg = `🏆 Autógrafo conquistado! Card ${upgradeId.toUpperCase()} é mais forte que GOLD.`;
+  setActionFeedback(msg);
+  if (typeof window.showVictoryOverlay === "function") {
+    window.showVictoryOverlay(msg, upgradeId);
+  }
+}
+
 function setupPreview() {
   ui.previewModal = document.getElementById("card-preview-modal");
   ui.previewImg = document.getElementById("card-preview-img");
@@ -905,6 +1040,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupActionMenu();
   setupLoginModal();
   setupShareMenu();
+  setupSignatureModal();
   setupPreview();
   setupRoomPotDrop();
   renderNFTList();

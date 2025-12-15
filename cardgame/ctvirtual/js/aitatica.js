@@ -53,6 +53,46 @@ if (!hudBox) {
   console.warn("⚠ hudBox não encontrado no DOM!");
 }
 
+// ============================
+// ♻️ HELIA CACHE (anti-flood)
+// ============================
+const HELIA_CACHE_TTL = 15000; // 15s para repetir sem chamar Vision
+
+function normalizePositions(list = []) {
+  return list.map((p) => ({
+    id: p.id,
+    left: Math.round((Number(p.left) || 0) * 10) / 10,
+    top: Math.round((Number(p.top) || 0) * 10) / 10
+  }));
+}
+
+function captureHeliaSnapshot() {
+  const green = typeof getGuaraniPositions === "function" ? normalizePositions(getGuaraniPositions() || []) : [];
+  const black = typeof getOpponentPositions === "function" ? normalizePositions(getOpponentPositions() || []) : [];
+  const ball = typeof getBall === "function" ? getBall() : null;
+  return { green, black, ball };
+}
+
+function heliaKey(snapshot) {
+  try {
+    return JSON.stringify(snapshot);
+  } catch {
+    return null;
+  }
+}
+
+function readHeliaCache(key) {
+  const cache = window.heliaCache;
+  if (!cache || cache.key !== key) return null;
+  if (Date.now() - cache.ts > HELIA_CACHE_TTL) return null;
+  return cache;
+}
+
+function saveHeliaCache(key, data, snapshot) {
+  if (!key || !data) return;
+  window.heliaCache = { key, data, snapshot, ts: Date.now() };
+}
+
 
 // ==============================
 // 🧠 FUNÇÃO PRINCIPAL DA IA VISION
@@ -62,8 +102,25 @@ async function startVision() {
     if (typeof notify === "function") notify("🤖 Careca avaliando o adversário...", 3000);
     else console.warn("🤖 Careca avaliando o adversário...");
 
-    // 1️⃣ Envia imagem + posições para a IA Vision
-    const visionData = await sendVisionTactic(); // UMA VEZ APENAS!
+    // 0️⃣ Snapshot atual do campo para cache anti-flood
+    const snapshot = captureHeliaSnapshot();
+    const cacheKey = heliaKey(snapshot);
+    const cached = cacheKey ? readHeliaCache(cacheKey) : null;
+
+    // 1️⃣ Envia imagem + posições para a IA Vision (ou usa cache)
+    let visionData = null;
+    if (cached?.data) {
+      visionData = cached.data;
+      window.lastBlackPositions = cached.snapshot?.black || window.lastBlackPositions;
+      console.log("♻️ Helia cache HIT — reaproveitando visão (sem Google Vision)");
+    } else {
+      visionData = await sendVisionTactic(); // UMA VEZ APENAS!
+      saveHeliaCache(cacheKey, visionData, snapshot);
+    }
+
+    if (!visionData) {
+      throw new Error("vision-data-empty");
+    }
     console.log("📊 Visão Tática (backend):", visionData);
 
     // 🧠 Salvar visão (para votação híbrida no core.js)
