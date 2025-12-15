@@ -103,12 +103,11 @@
   <div id="card-placeholder" style="
     position:absolute;
     left:20px;
-    bottom:0px;
+    bottom:70px;
     width:120px;
     height:200px;
     background: transparent;
-    box-shadow:0 2px 6px rgba(0,0,0,0.15);
-    z-index:15000;
+    z-index:1000000;
   "></div>
 
  <button id="ai-analise-btn" class="force-bottom"
@@ -128,7 +127,7 @@ Conectar CT Virtual
 <script src="js/auth.js"></script>
 <script src="js/NFT--list.js"></script>
 <script src="js/reward.js"></script>
-
+<div id="rotated-ad" class="rotated-ad"></div>
 <!-- === MODAL PARA PIN DE SALA PRIVADA === -->
 <div id="rt-room-modal" style="
   position:fixed;inset:0;background:rgba(0,0,0,0.65);
@@ -162,6 +161,33 @@ Conectar CT Virtual
     </button>
   </div>
 </div>
+
+<script>
+  (function () {
+    const AD_SRC = "https://pl28253335.effectivegatecpm.com/3c/b6/ab/3cb6ab24c18d774fcdba91549d345c7d.js";
+    const adContainer = document.getElementById("rotated-ad");
+    const triggerBtn = document.getElementById("ai-analise-btn");
+    if (!adContainer || !triggerBtn) return;
+
+    let clickCount = 0;
+
+    function loadRotatedAd() {
+      adContainer.innerHTML = "";
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = `${AD_SRC}?cb=${Date.now()}`;
+      script.dataset.rotatedAd = "1";
+      adContainer.appendChild(script);
+    }
+
+    triggerBtn.addEventListener("click", () => {
+      clickCount += 1;
+      if (clickCount % 3 === 0) {
+        loadRotatedAd();
+      }
+    });
+  })();
+</script>
 
 <script src="js/formations.js" defer></script>
 <script src="js/sheenpath.js"></script>
@@ -245,6 +271,7 @@ Conectar CT Virtual
   <button class="card-action-btn" data-action="view">Ver card</button>
   <button class="card-action-btn" data-action="save">Guardar card</button>
   <button class="card-action-btn" data-action="bet">Apostar card</button>
+  <button class="card-action-btn" data-action="signature">Ganhe autógrafo</button>
   <button class="card-action-btn" data-action="share">Compartilhar card</button>
 </div>
 
@@ -282,6 +309,19 @@ Conectar CT Virtual
     <div class="card-login-actions">
       <button id="card-share-confirm">Compartilhar</button>
       <button id="card-share-cancel" class="ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fluxo para liberar card autografado -->
+<div id="signature-modal" class="card-login-modal" aria-hidden="true">
+  <div class="card-login-box">
+    <h4>Ganhar autógrafo</h4>
+    <p>Assista a 2 anúncios da Adsterra para trocar por um card autografado mais forte que GOLD.</p>
+    <div id="signature-progress" class="card-action-feedback" style="margin:8px 0 4px 0;">0/2 anúncios assistidos</div>
+    <div class="card-login-actions">
+      <button id="signature-watch">Assistir anúncio</button>
+      <button id="signature-close" class="ghost">Cancelar</button>
     </div>
   </div>
 </div>
@@ -427,5 +467,6 @@ Conectar CT Virtual
 <script src="./tokens-api-go/js/erc20_gols.js"></script> 
 <script type="module" src="marketplace.js"></script>
 <script src="../menu.js"></script>
+<script src="./js/mobile-desktop-recog.js"></script>
 </body>
 </html>
