@@ -351,6 +351,12 @@
 
       schedulePreviewSequence();
 
+      // expõe para rearmar a sequência (ex.: ao fechar overlay de vitória)
+      window.runMissionPreviewSequence = () => {
+        finalMinimizeLock = false;
+        schedulePreviewSequence();
+      };
+
       // atualiza opções quando os cards mudarem (ganho/perda)
       window.addEventListener("cards:changed", () => {
         populateMissionSelect(window.currentMissionCard?.id);

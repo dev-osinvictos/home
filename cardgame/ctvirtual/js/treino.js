@@ -10,8 +10,15 @@ if (window.LEVELS) {
   window.TRAINERS = Object.values(window.LEVELS);
 }
 
+// Backend base (Render em produção, origin em dev/local)
+const API_BASE =
+  (typeof location !== "undefined" &&
+    (location.origin.includes("onrender.com") || location.origin.includes("localhost")))
+    ? location.origin
+    : "https://fifa26.onrender.com";
+
 // tenta API do Go (se existir)
-fetch("http://127.0.0.1:8080/api/ct-virtual/trainers")
+fetch(`${API_BASE}/api/ct-virtual/trainers`)
   .then(async (r) => {
     if (!r.ok) throw new Error("API falhou");
     window.TRAINERS = (await r.json()).levels;
@@ -100,10 +107,6 @@ let iaListenerAdded = false;
   const $rkList  = document.getElementById("rk-list");
   const rkTabs   = Array.from(document.querySelectorAll(".rk-tab"));
 
-  const API_BASE = location.origin.includes("onrender.com") || location.origin.includes("localhost")
-    ? location.origin
-    : "https://fifa26.onrender.com";
-
   // Helpers
   function notifyTop(msg, ms=7200){
     const n = document.getElementById("ai-notification");
@@ -119,7 +122,7 @@ async function syncWithBackend() {
   const email = localStorage.getItem("user_email");
   if (!email) return;
   
-  await fetch("http://localhost:8080/api/tokens/mint-from-goals", {
+  await fetch(`${API_BASE}/api/tokens/mint-from-goals`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -137,7 +140,7 @@ async function tryMintToWallet() {
   const gols = window.state.goals || 0;
 
   // 1) Envia para backend GO (banco de dados + log)
-  await fetch("http://localhost:8080/api/tokens/mint-from-goals", {
+  await fetch(`${API_BASE}/api/tokens/mint-from-goals`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -610,6 +613,11 @@ function closeVictoryOverlay() {
   } else if (typeof window.maximizeMissionSelector === "function") {
     window.maximizeMissionSelector();
   }
+
+  // Reaplica o timer de maximizar/minimizar do "Card da Vez" após o OK
+  if (typeof window.runMissionPreviewSequence === "function") {
+    window.runMissionPreviewSequence();
+  }
 }
 
 // 🆕 POP-UP NOVA MISSÃO
@@ -891,83 +899,6 @@ console.log("✔ RESPOSTA FINAL      =", isCorrectLevel(st.mission, detected, op
 }
 
 
-
-// ⚠️ NÃO use direto: const socket = window.socket;
-
-// 🚀 Aguarda o socket existir antes de registrar o listener
-function waitForSocketAndListen(attempt = 0) {
-  if (attempt > 20) {
-    console.warn("❌ socket.io não carregou!");
-    return;
-  }
-
-  // socket ainda não existe?
-  if (!window.socket || !window.socket.connected) {
-    console.log("⏳ Aguardando socket...", attempt);
-    return setTimeout(() => waitForSocketAndListen(attempt + 1), 300);
-  }
-
-  //quando carregar, registra:
-  const socket = window.socket;
-  console.log("🟢 SOCKET OK — Listener da ALEXA ativado!");
-
-  socket.on("alexa-formation", ({ formation }) => {
-    console.log("📡 Recebido via socket:", formation);
-    notifyTop(`🎙️ Alexa solicitou: ${formation}`);
-
-    const formations = window.FORMATIONS || {};
-    const to = formations[formation];
-
-    if (to) {
-      animateFormationTransition("circleOpp", null, to, "alexa");
-    } else {
-      notifyTop("⚠️ Formação não encontrada: " + formation);
-    }
-  });
-}
-
-// ⏩ INICIA
-waitForSocketAndListen();
-
-// ---------------------------------------
-// REGISTRADOR DE LISTENER ALEXA FINAL
-// ---------------------------------------
-(function ensureAlexaSocketListener() {
-  function tryRegister(attempt = 0) {
-    const socket = window.socket;
-
-    if (!socket || !socket.connected) {
-      console.warn(`⏳ Aguardando socket... tentativa ${attempt}`);
-      return setTimeout(() => tryRegister(attempt + 1), 300);
-    }
-
-    if (socket._hasAlexaListener) {
-      console.log("🔁 Listener Alexa já registrado.");
-      return;
-    }
-
-    socket._hasAlexaListener = true;
-    console.log("🟢 Alexa listener conectado via socket.io");
-
-    socket.on("alexa-formation", (data) => {
-      console.log("📡 RECEBIDO EVENTO ALEXA:", data);
-
-      const formation = data?.formation || data;
-      notifyTop(`🎙️ Alexa solicitou: ${formation}`);
-
-      const formations = window.FORMATIONS || {};
-      const to = formations[formation];
-
-      if (to) {
-        animateFormationTransition("circleOpp", null, to, "alexa");
-      } else {
-        notifyTop("⚠️ Formação não encontrada: " + formation);
-      }
-    });
-  }
-
-  tryRegister();
-})();
 
 window.state.mission = getRandomLevel1();
 
