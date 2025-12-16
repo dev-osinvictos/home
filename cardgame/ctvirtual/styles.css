@@ -251,6 +251,12 @@
     height: 200px !important;
     z-index: 20050 !important;
   }
+
+  .nft-horizontal {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
 }
 
 @media (min-width: 768px) {
