@@ -236,26 +236,41 @@
 }
 
 @media (max-width: 767px) {
+  :root {
+    --card-placeholder-bottom: 70px;
+    --card-placeholder-height: 200px;
+    --nft-panel-gap: 16px;
+  }
+
   .nft-panel {
-    left: 10px !important;
-    bottom: 10px !important;
+    left: 20px !important;
+    bottom: 5px !important;
     width: 190px;
     max-width: 190px;
   }
 
   #card-placeholder {
     position: fixed !important;
-    left: 10px !important;
-    bottom: 70px !important;
+    left: 20px !important;
+    bottom: 115px !important;
     width: 120px !important;
-    height: 200px !important;
-    z-index: 20050 !important;
+    height: var(--card-placeholder-height) !important;
+    z-index: 200050 !important;
+  }
+
+  #mission-selector {
+    left: 20px !important;
+    bottom: 115px !important;
   }
 
   .nft-horizontal {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+  }
+
+  .nft-card {
+    width: 180px;
   }
 }
 
