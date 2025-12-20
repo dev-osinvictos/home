@@ -4,6 +4,7 @@
     { "src": "dashboard/server.js", "use": "@vercel/node" },
     { "src": "dashboard/(.*)", "use": "@vercel/static" },
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "styles.css", "use": "@vercel/static" },
     { "src": "quotes.html", "use": "@vercel/static" },
     { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
@@ -53,4 +54,3 @@
     }
   ]
 }
-
