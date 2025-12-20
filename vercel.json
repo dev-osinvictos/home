@@ -8,7 +8,8 @@
     { "src": "store.html", "use": "@vercel/static" },
     { "src": "assets/**/*", "use": "@vercel/static" },
     { "src": "book/**/*", "use": "@vercel/static" },
-    { "src": "resultados/**/*", "use": "@vercel/static" }
+    { "src": "resultados/**/*", "use": "@vercel/static" },
+    { "src": "cardgame/**/*", "use": "@vercel/static" }
   ],
 
   "rewrites": [
