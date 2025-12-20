@@ -4,6 +4,7 @@
       if(!menuBtn || !overlay) return;
 
       const loginLink = overlay.querySelector('.submenu[data-action="login"]');
+      const faqLink = overlay.querySelector('.submenu[data-action="faq"]');
 
       function toggleMenu(forceClose = false){
         const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
@@ -41,6 +42,11 @@
         }
       }
 
+      function openFaqPage() {
+        const path = window.location.pathname.includes('ctvirtual') ? '../FAQ.html' : './FAQ.html';
+        window.location.href = path;
+      }
+
       function doLogout() {
         if (typeof window.logoutAndClearCards === 'function') {
           window.logoutAndClearCards();
@@ -67,6 +73,13 @@
       }
 
       if (loginLink) loginLink.addEventListener('click', handleAuthClick);
+      if (faqLink) {
+        faqLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          openFaqPage();
+          toggleMenu(true);
+        });
+      }
 
       document.addEventListener('auth:user', (ev) => {
         updateAuthLink(ev.detail);
