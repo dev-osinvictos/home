@@ -13,16 +13,26 @@
     <meta property="og:image" content="https://www.osinvitos.com.br/cardgame/previa.jpg">
     <link rel="stylesheet" href="styles.css">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
-
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-ZDWS2F3NE8');
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
     </script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
 </head>
 <body style="
   background-color: #000000;
