@@ -20,7 +20,18 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-ZDWS2F3NE8');
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
     </script>
 </head>
 <body style="
@@ -191,7 +202,7 @@
   font-family:'Segoe UI',sans-serif;font-size:14px;">
 <div id="chat-header" style="background:#222;padding:10px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;color:#fff;">
   <img src="img/escudo-crflamengo.svg" alt="Careca" style="width:24px;height:24px;border-radius:50%;">
-  Felipe Luis (IA)
+  Felipe Luís (IA)
 </div>
   <div id="chat-body" style="flex:1;overflow-y:auto;padding:10px;display:none;"></div>
   <div id="chat-input-area" style="display:none;border-top:1px solid #333;padding:6px;gap:4px;">
