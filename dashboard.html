@@ -9,7 +9,25 @@
   <meta property="og:image" content="https://www.osinvictos.com.br/assets/xplain.png">
   <link rel="stylesheet" href="https://www.osinvictos.com.br/styles.css">
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
+    </script>
   <style>
     :root { --cor-fundo: #0C1D2B; }
 
@@ -71,11 +89,12 @@
     .orbit-3  { top: 40%;  right: 5%;  transform: translate(0,-50%); background-image: url('assets/escudo-riverplate.png'); }
     .orbit-4  { bottom: 30%; right: 10%; transform: translate(0,0);  background-image: url('assets/escudo-sepalmeiras.png'); }
     .orbit-5  { bottom: 18%; left: 70%; transform: translate(0,0);  background-image: url('assets/escudo-santos.png'); }
-    .orbit-6  { bottom: 16%;  left: 45%; transform: translate(-50%,0);  background-image: url('assets/escudo-guaranifc.png'); }
+    .orbit-6  { bottom: 16%;  left: 30%; transform: translate(-30%,0);  background-image: url('assets/escudo-guaranifc.png'); }
     .orbit-7  { bottom: 15%; left: 20%; transform: translate(0,0);    background-image: url('assets/escudo-milan.svg'); }
     .orbit-8  { bottom: 38%; left: 18%;  transform: translate(0,0);    background-image: url('assets/escudo-juventus.png'); }
     .orbit-9  { top: 32%;  left: 10%; transform: translate(0,0);      background-image: url('assets/escudo-scinternacional.svg'); }
     .orbit-10 { top: 15%;  left: 32%; transform: translate(0,0);      background-image: url('assets/escudo-flamengo.svg'); }
+    .orbit-11 { bottom: 16%;  left: 60%; transform: translate(-50%,0);  background-image: url('assets/escudo-spfc.png'); }
 
     /* responsividade */
     @media (max-width:768px){
@@ -91,6 +110,13 @@
   </style>
 </head>
 <body>
+<button id="btn-supertrunfo"
+  style="position:fixed;top:323px;left:450px;z-index:10000;
+  padding:8px 16px;border-radius:8px;
+  background:#ff9800;color:#fff;border:none;">
+  🃏 Super-Trunfo
+</button>
+
   <div id="center-scene">
     <div id="logo-container">
       <model-viewer src="assets/logo.glb" alt="Logo OS INVICTOS" auto-rotate camera-controls></model-viewer>
@@ -189,6 +215,15 @@
          onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
       <div class="thumb-label">Flamengo — 1x invicto</div>
     </div>
+    
+    <div class="thumbnail orbit orbit-11"
+         role="link" tabindex="0"
+         data-href="./dashboard/spfc/index.html"
+         title="SPFC — 6x"
+         onclick="location.href=this.dataset.href"
+         onkeypress="if(event.key==='Enter') location.href=this.dataset.href">
+      <div class="thumb-label">S.P.F.C. — 6x campeão invicto</div>
+    </div>
 
   </div>
 
@@ -203,7 +238,37 @@
       el.addEventListener('touchstart', ()=>{ el.classList.add('touch-active'); });
       el.addEventListener('touchend', ()=>{ el.classList.remove('touch-active'); });
     });
+
+    const btnSupertrunfo = document.getElementById('btn-supertrunfo');
+    if (btnSupertrunfo) {
+      btnSupertrunfo.addEventListener('click', () => {
+        window.location.href = "/cardgame/ctvirtual/index.html";
+      });
+    }
   </script>
+  
+  <div id="popup-supertrunfo"
+ style="display:none;position:fixed;inset:0;z-index:20000;
+ background:rgba(0,0,0,0.75);color:#fff;align-items:center;justify-content:center;">
+  <div style="background:#111;padding:20px;border-radius:12px;width:320px;">
+     <h3>🃏 Super-Trunfo</h3>
+     <p>Selecione seu treinador NFT:</p>
+     <select id="my-card"></select>
+
+     <p>Categoria de disputa:</p>
+     <select id="my-attr">
+        <option value="champions">🏆 Títulos conquistados</option>
+        <option value="teams">👔 Times comandados</option>
+        <option value="major_title_year">📅 Título mais antigo</option>
+     </select>
+
+     <button id="st-send"
+       style="margin-top:12px;width:100%;padding:10px;
+        border:none;border-radius:8px;background:#28a745;color:#fff;">
+       Enviar para disputa
+     </button>
+  </div>
+</div>
+
 </body>
 </html>
-

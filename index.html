@@ -13,7 +13,7 @@
     <meta property="og:image:width" content="580"/>
     <meta property="og:image:height" content="464"/>
     <meta name="google-adsense-account" content="ca-pub-6390604470898441">
-    <link rel="stylesheet" href="https://www.osinvictos.com.br/styles.css">
+    <link rel="stylesheet" href="./styles.css">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
@@ -22,237 +22,20 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-ZDWS2F3NE8');
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
     </script>
-  <style>
-    :root {
-      --cor-fundo: #0C1D2B;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      color: white;
-      font-family: Arial, sans-serif;
-      background-image: url('assets/background-image.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      overflow: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: var(--cor-fundo);
-      opacity: 0.8;
-      z-index: -1;
-    }
-
-    #center-scene {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* --- LOGO CENTRAL --- */
-    #logo-container {
-      position: relative;
-      z-index: 5;
-      width: 350px;
-      height: 350px;
-      filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
-    }
-
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      --environment-image: var(--cor-fundo);
-      --progress-bar-color: var(--cor-fundo);
-    }
-
-/* --- THUMBNAILS QUADRADOS SEM GLOW, COM TEXTO CENTRALIZADO --- */
-.thumbnail {
-  position: absolute;
-  width: 137px;
-  height: 139px;
-  border: none;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #FFFFFF;
-  font-size: 12px;               /* tamanho reduzido */
-  font-family: Arial, sans-serif;
-  font-weight: bold;
-  text-transform: uppercase;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  animation: float 6s ease-in-out infinite;
-}
-
-.thumbnail a {
-  color: #FFFFFF;
-  text-decoration: none;
-  font-family: Arial, sans-serif;
-  font-size: 12px;               /* texto dentro do link também 8px */
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-
-.thumbnail a:hover {
-  transform: scale(1.05);
-  color: #FFFFFF;
-}
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-
-    /* --- POSIÇÕES ORBITANTES --- */
-.orbit-1 {
-  bottom: 25%;
-  left: 30%;
-  transform: translate(50%, 50%);
-}
-.orbit-2 {
-  top: 35%;
-  left: 68%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-tees.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-3 {
- top: 10%;
-  left: 30%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-quotes.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-4 {
-  bottom: 35%;
-  left: 5%;
-  transform: translateX(-50%);
-  background-image: url('assets/icon-tactic.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-.orbit-5 {
-  top: 15%;
-  right: 18%;
-  transform: translate(-50%);
-  background-image: url('assets/icon-book.png');
-  background-size: cover;       /* makes it fill the element */
-  background-position: center;  /* centers the image */
-  background-repeat: no-repeat; /* prevents tiling */
-}
-
-    @media (max-width: 768px) {
-      #logo-container { width: 250px; height: 250px; }
-      .thumbnail { width: 100px; height: 100px; box-shadow: none; }
-    }
-
-    #main-footer {
-      width: 100%;
-      background-color: #000;
-      color: #fff;
-      text-align: center;
-      padding: 10px 0;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      font-size: 14px;
-    }
-/* === MODO DE TRANSIÇÃO (LOGO + THUMBNAILS 2–5 NO TOPO) === */
-#center-scene.transition-layout {
-  position: relative;
-  overflow: hidden;
-}
-
-/* --- LOGO sobe e alinha a 10% da esquerda --- */
-#center-scene.transition-layout #logo-container {
-  position: absolute;
-  top: 30px;
-  left: 10%;
-  transform: scale(0.6);
-  transition: all 1.5s ease-in-out;
-}
-
-/* --- THUMBNAIL-1 desaparece com fade-out --- */
-#center-scene.transition-layout .orbit-1 {
-  opacity: 0;
-  transform: scale(0.4);
-  transition: all 0.8s ease-in-out;
-}
-
-/* --- OUTROS THUMBNAILS sobem e alinham ao lado do logo --- */
-#center-scene.transition-layout .orbit-2,
-#center-scene.transition-layout .orbit-3,
-#center-scene.transition-layout .orbit-4,
-#center-scene.transition-layout .orbit-5 {
-  position: absolute;
-  top: 40px;
-  transform: scale(0.6);
-  opacity: 1;
-  transition: all 1.5s ease-in-out;
-}
-
-/* --- POSIÇÕES ALINHADAS AO LADO DO LOGO --- */
-#center-scene.transition-layout .orbit-2 { left: 5%; }
-#center-scene.transition-layout .orbit-3 { left: 30%; }
-#center-scene.transition-layout .orbit-4 { left: 50%; }
-#center-scene.transition-layout .orbit-5 { left: 70%; }
-
-/* === Containers das frases === */
-#coach-quotes {
-  display: none;
-  position: absolute;
-  top: 350px; /* 👈 empurra o bloco mais abaixo do logo */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  max-width: 900px;
-  text-align: center;
-  color: white;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.4em;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#coach-quotes.visible {
-  display: flex;
-  opacity: 1;
-}
-
-.quote-box {
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 0 6px rgba(255,255,255,0.2);
-}
-  </style>
+</head>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const orbit3 = document.querySelector(".orbit-3");
@@ -285,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <div class="thumbnail orbit orbit-2">
-      <a href="ctvirtual/index.html">FIFA '26<br>CARD-GAME</a>
+      <a href="cardgame/index.html">FIFA '26<br>CARD-GAME</a>
     </div>
 
     <div class="thumbnail orbit orbit-3">
@@ -378,4 +161,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-

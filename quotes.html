@@ -12,11 +12,27 @@
     <meta property="og:image:width" content="580"/>
     <meta property="og:image:height" content="464"/>
     <meta name="google-adsense-account" content="ca-pub-6390604470898441">
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
+    </script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <script src="https://fpyf8.com/88/tag.min.js" data-zone="179533" async data-cfasync="false"></script>
-  <style>
+    <style>
     :root {
       --cor-fundo: #0C1D2B;
     }
@@ -208,4 +224,3 @@
   </footer>
 </body>
 </html>
-

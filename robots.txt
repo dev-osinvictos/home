@@ -12,8 +12,8 @@
 # mesa tática compartilhada
 # ia futebol
 # ai soccer analizer
-# card-game
-# supertrunfo
+# online cardgame
+# supertrunfo online
 
 User-agent: *
 Allow: /
