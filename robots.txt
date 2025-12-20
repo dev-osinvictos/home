@@ -1,0 +1,21 @@
+# ferramenta esportiva
+# sportool
+# aprimoramento esportivo
+# sports enhance
+# ct virtual
+# virtual tactical field
+# ct privado
+# soccer scout
+# escolte esportivo
+# campo tático
+# mesa tática interativa
+# mesa tática compartilhada
+# ia futebol
+# ai soccer analizer
+# online card game
+# super trunfo online
+
+User-agent: *
+Allow: /
+
+Sitemap: https://osinvictos.com.br/sitemap.xml

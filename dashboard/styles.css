@@ -1,0 +1,347 @@
+        .background-square {  /* Gramado */
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 600px;
+            height: 300px;
+            background: #16c516;
+            z-index: 0;
+            border-radius: 8px;
+        }
+        #background-line { /* Linha superior */
+            position: absolute;
+            left: 22px;
+            top: 22px;
+            width: 596px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line2 { /* Linha inferior */
+            position: absolute;
+            left: 22px;
+            top: 316px;
+            width: 596px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line3 { /* Linha esquerda*/
+            position: absolute;
+            left: 22px;
+            top: 22px;
+            width: 2px;
+            height: 296px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line4 { /* Linha direita */
+            position: absolute;
+            left: 616px;
+            top: 22px;
+            width: 2px;
+            height: 296px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line5 { /* Linha central */
+            position: absolute;
+            left: 308px;
+            top: 22px;
+            width: 2px;
+            height: 296px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line6 { /* Linha grande Área direita */
+            position: absolute;
+            left: 88px;
+            top: 97px;
+            width: 2px;
+            height: 150px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line7 { /* Linha Pequena Área direita */
+            position: absolute;
+            left: 58px;
+            top: 120px;
+            width: 2px;
+            height: 102px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line8 {
+            position: absolute;
+            left: 22px;
+            top: 120px; /* Linha Pequena Área superior*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line9 {
+            position: absolute;
+            left: 22px;
+            top: 220px; /* Linha Pequena Área inferior*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line10 {
+            position: absolute;
+            left: 552px;
+            top: 97px; /* Linha Grande Área superior*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line11 {
+            position: absolute;
+            left: 22px;
+            top: 245px; /* Linha Grande Área inferior*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line12{ /* Linha grande Área direita */
+            position: absolute;
+            left: 550px;
+            top: 97px;
+            width: 2px;
+            height: 150px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line13 { /* Linha Pequena Área direita */
+            position: absolute;
+            left: 580px;
+            top: 120px;
+            width: 2px;
+            height: 102px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line14 {
+            position: absolute;
+            left: 582px;
+            top: 120px; /* Linha Pequena Área superior*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line15 {
+            position: absolute;
+            left: 582px;
+            top: 220px; /* Linha Pequena Área inferior*/
+            width: 36px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line16 {
+            position: absolute;
+            left: 22px;
+            top: 97px; /* Linha Grande Área superior*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+        #background-line17 {
+            position: absolute;
+            left: 552px;
+            top: 245px; /* Linha Grande Área inferior*/
+            width: 66px;
+            height: 2px;
+            background: #fff;
+            z-index: 0;
+            border-radius: 1px;
+            pointer-events: none;
+        }
+/* 🔧 Garante que o chat fique acima da IA e o overlay acima de tudo */
+#chat-container {
+  z-index: 10005 !important;
+}
+
+/* 🔧 Garante que o painel da IA (formação detectada / fala do mister) fique visível acima do campo */
+#formation-info,
+#coach-comment,
+#tactical-analysis,
+.ai-info-box,
+#ai-notification {
+  bottom: 120px !important;
+  left: 120px !important;
+  right: auto !important;
+  z-index: 10004 !important;
+}
+
+
+        .gol-square {
+            position: absolute;
+            left: 10px;  /* Adjust to place the square under the circles */
+            top: 135px;
+            width: 10px;
+            height: 70px;
+            background: #ffffff;
+            z-index: 0;
+            border-radius: 8px;
+        }
+        .gol2-square {
+            position: absolute;
+            left: 620px;  /* Adjust to place the square under the circles */
+            top: 135px;
+            width: 10px;
+            height: 70px;
+            background: #ffffff;
+            z-index: 0;
+            border-radius: 8px;
+        }
+        .circlecentral {
+            width: 140px; height: 140px;
+            background: #33aaff; border-radius: 50%;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 14px;
+            user-select: none;
+        }
+        .circle {
+            width: 26px; height: 26px;
+            background: #33aaff; border-radius: 50%;
+            position: absolute;
+            cursor: grab;
+            touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 14px;
+            user-select: none;
+        }
+
+
+
+        #circle1 { left: 25px; top: 160px; background: #ff33aa; }
+        #circle2 { left: 160px; top: 270px; background: #000000; }
+        #circle3 { left: 120px; top: 130px; background: #000000; }
+        #circle4 { left: 120px; top: 200px; background: #000000; }
+        #circle5 { left: 200px; top: 160px; background: #000000; }
+        #circle6 { left: 160px; top: 40px; background: #000000; }
+        #circle7 { left: 300px; top: 270px; background: #000000; }
+        #circle8 { left: 260px; top: 160px; background: #000000; }
+        #circle9 { left: 370px; top: 160px; background: #000000; }
+        #circle10 { left: 230px; top: 120px; background: #000000; }
+        #circle11 { left: 320px; top: 40px; background: #000000; }
+        /* Goleiro no gol direito por padrão */
+        #circle23 { left: 620px !important; top: 150px !important; background: #660000; }
+        #circle24 { left: 420px; top: 40px; background: #ffffff; }
+        body { margin: 0; overflow: hidden; background-color: green; }
+
+/* === Botões principais OS INVICTOS === */
+button {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.1em;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 10px 18px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+}
+
+#ai-analise-btn {
+  background: linear-gradient(145deg, #33aaff, #1e8bd8);
+  color: #fff;
+}
+#ai-analise-btn:hover {
+  background: linear-gradient(145deg, #4dc6ff, #33aaff);
+  transform: scale(1.05);
+}
+
+#pen-path-btn {
+  background: linear-gradient(145deg, #333, #111);
+  color: #fff;
+}
+#pen-path-btn:hover {
+  background: linear-gradient(145deg, #444, #222);
+  transform: scale(1.05);
+}
+
+#exit-fullscreen-btn {
+  background: linear-gradient(145deg, #222, #000);
+  color: #fff;
+}
+#exit-fullscreen-btn:hover {
+  background: linear-gradient(145deg, #333, #111);
+  transform: scale(1.05);
+}
+
+#mute-btn {
+  background: linear-gradient(145deg, #aa3333, #881d1d);
+  color: #fff;
+}
+#mute-btn:hover {
+  background: linear-gradient(145deg, #cc4444, #aa3333);
+  transform: scale(1.05);
+}
+
+/* Layout fix for button bar */
+#exit-fullscreen-btn,
+#ai-analise-btn,
+#pen-path-btn,
+#mute-btn {
+  position: fixed;
+  top: 330px;
+  z-index: 10000;
+}
+
+/* Posicionamento lateral progressivo */
+#exit-fullscreen-btn { left: 20px; }
+#ai-analise-btn     { left: 130px; }
+#pen-path-btn       { left: 310px; }
+#mute-btn           { left: 500px; }
+

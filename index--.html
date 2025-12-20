@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>OS INVICTOS -- Campo Tático Interativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.osinvictos.com.br/dashboard/">
+    <meta property="og:title" content="Sports Social Network / WEB 3.0"/>
+    <meta property="og:description" content="Converse com a IA do Treinador José Mourinho n@ Campo tático interativo"/>
+    <meta property="og:image" content="https://sportsocialnet.vercel.app/assets/xplain.png"/>
+    <meta property="og:image:width" content="580"/>
+    <meta property="og:image:height" content="464"/>
+    <meta name="google-adsense-account" content="ca-pub-6390604470898441">
+    <link rel="stylesheet" href="https://www.osinvictos.com.br/dashboard/styles.css">
+    <link rel="icon" type="image/png" href="https://www.osinvictos.com.br/dashboard/img/favicon.png">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8');
+    </script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body style="background-image:url('https://www.osinvictos.com.br/dashboard/img/estadium.jpg'); background-size:cover; background-repeat:no-repeat; background-position:center;">
+
+  <!-- ===== Campo Tático ===== -->
+    <div id="background-square" class="background-square"></div>
+    <div id="background-line"></div>
+    <div id="background-line2"></div>
+    <div id="background-line3"></div>
+    <div id="background-line4"></div>
+    <div id="background-line5"></div>
+    <div id="background-line6"></div>
+    <div id="background-line7"></div>
+    <div id="background-line8"></div>
+    <div id="background-line9"></div>
+    <div id="background-line10"></div>
+    <div id="background-line11"></div>
+    <div id="background-line12"></div>
+    <div id="background-line13"></div>
+    <div id="background-line14"></div>
+    <div id="background-line15"></div>
+    <div id="background-line16"></div>
+    <div id="background-line17"></div>
+  <div id="circle12" class="circlecentral" style="background:transparent;left:237px;top:100px;border:2px solid #fff;"></div>
+  <div id="gol-square" class="gol-square"></div>
+  <div id="gol2-square" class="gol2-square"></div>
+
+  <!-- Jogadores -->
+  <div id="circle1" class="circle">1</div>
+  <div id="circle2" class="circle">2</div>
+  <div id="circle3" class="circle">3</div>
+  <div id="circle4" class="circle">4</div>
+  <div id="circle5" class="circle">5</div>
+  <div id="circle6" class="circle">6</div>
+  <div id="circle7" class="circle">7</div>
+  <div id="circle8" class="circle">8</div>
+  <div id="circle9" class="circle">9</div>
+  <div id="circle10" class="circle">10</div>
+  <div id="circle11" class="circle">11</div>
+
+  <div id="circle13" class="circle" style="background:#33FFCC;">11</div>
+  <div id="circle14" class="circle" style="background:#33FFCC;">2</div>
+  <div id="circle15" class="circle" style="background:#33FFCC;">3</div>
+  <div id="circle16" class="circle" style="background:#33FFCC;">4</div>
+  <div id="circle17" class="circle" style="background:#33FFCC;">5</div>
+  <div id="circle18" class="circle" style="background:#33FFCC;">6</div>
+  <div id="circle19" class="circle" style="background:#33FFCC;">7</div>
+  <div id="circle20" class="circle" style="background:#33FFCC;">8</div>
+  <div id="circle21" class="circle" style="background:#33FFCC;">9</div>
+  <div id="circle22" class="circle" style="background:#33FFCC;">10</div>
+  <div id="circle23" class="circle">01</div>
+  <div id="circle24" class="circle"></div>
+
+<canvas id="trace-canvas" width="600" height="300"
+ style="position:absolute;left:20px;top:20px;z-index:10;border-radius:8px;background:transparent;">
+</canvas>
+
+  <div id="ai-notification" style="display:none;position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#33aaff;color:#fff;padding:18px 32px;border-radius:8px;z-index:10001;font-size:1.3em;box-shadow:0 2px 10px rgba(0,0,0,0.18);"></div>
+
+  <!-- ===== Botões ===== -->
+  <div id="fullscreen-overlay" style="position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;font-size:2em;cursor:pointer;">
+    Toque para entrar na Mesa Tática
+  </div>
+
+  <button id="exit-fullscreen-btn" style="position:fixed;top:330px;left:20px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer;display:none;">Sair (x)</button>
+  <button id="ai-analise-btn" style="position:fixed;top:330px;left:120px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#33aaff;color:#fff;border:none;cursor:pointer;display:none;">AI Análise</button>
+  <button id="pen-path-btn" style="position:fixed;top:330px;left:302px;z-index:10000;font-size:1.2em;padding:10px 18px;border-radius:8px;background:#222;color:#fff;border:none;cursor:pointer;display:none;">✎ Desenho Tático</button>
+
+<!-- 🎧 Botão Mute -->
+<button id="mute-btn"
+  style="
+    position:fixed;
+    top:330px;
+    left:500px;
+    z-index:10000;
+    font-size:1.2em;
+    padding:10px 18px;
+    border-radius:8px;
+    background:#aa3333;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    display:none;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    transition:all .25s ease;
+  ">
+  🔇 Mute
+</button>
+
+  <!-- ===== Lógica do Campo e Botões ===== -->
+  <script>
+const _traceCanvas = document.getElementById('trace-canvas');
+if (_traceCanvas) {
+  _traceCanvas.style.pointerEvents = 'none';
+  _traceCanvas.style.zIndex = '1';
+}
+const socket = io("https://juventusfc.onrender.com", {
+  transports: ["websocket"]
+});
+window.socket = socket; // 🔌 torna o socket global
+const circles = {};
+const dragState = {};
+let activeId = null;
+
+for (let i = 1; i <= 24; i++) {
+  const el = document.getElementById("circle" + i);
+  circles[i] = el;
+  dragState[i] = { dragging: false, offsetX: 0, offsetY: 0 };
+if (el) {
+  el.style.position = el.style.position || 'absolute';
+  el.style.zIndex = '20';
+}
+  // 🖱️ Mouse
+  el.addEventListener("mousedown", (e) => {
+    dragState[i].dragging = true;
+    dragState[i].offsetX = e.offsetX;
+    dragState[i].offsetY = e.offsetY;
+    activeId = i;
+  });
+
+  // 📱 Touch
+  el.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    const rect = el.getBoundingClientRect();
+    dragState[i].dragging = true;
+    dragState[i].offsetX = touch.clientX - rect.left;
+    dragState[i].offsetY = touch.clientY - rect.top;
+    activeId = i;
+    e.preventDefault(); // evita scroll
+  }, { passive: false });
+}
+
+// === Movimentos ===
+function moveElement(id, x, y) {
+  const el = circles[id];
+  if (el) {
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+  }
+}
+
+// 🖱️ Mouse move
+document.addEventListener("mousemove", (e) => {
+  if (!activeId) return;
+  const i = activeId;
+  const x = e.clientX - dragState[i].offsetX;
+  const y = e.clientY - dragState[i].offsetY;
+  moveElement(i, x, y);
+  socket.emit("move_circle", { x, y, id: i });
+});
+
+// 📱 Touch move
+document.addEventListener("touchmove", (e) => {
+  if (!activeId) return;
+  const i = activeId;
+  const touch = e.touches[0];
+  const rect = circles[i].getBoundingClientRect();
+  const x = touch.clientX - dragState[i].offsetX;
+  const y = touch.clientY - dragState[i].offsetY;
+  moveElement(i, x, y);
+  socket.emit("move_circle", { x, y, id: i });
+  e.preventDefault(); // evita scroll
+}, { passive: false });
+
+// 🖱️ / 📱 Fim do arrasto
+function endDrag() {
+  if (activeId) {
+    dragState[activeId].dragging = false;
+    activeId = null;
+  }
+}
+document.addEventListener("mouseup", endDrag);
+document.addEventListener("touchend", endDrag);
+
+// === Receber atualizações ===
+socket.on("update_circle", (data) => {
+  moveElement(data.id, data.x, data.y);
+});
+    // === Fullscreen ===
+    const overlay=document.getElementById('fullscreen-overlay');
+    const exitBtn=document.getElementById('exit-fullscreen-btn');
+    const aiBtn=document.getElementById('ai-analise-btn');
+    const penBtn=document.getElementById('pen-path-btn');
+    document.addEventListener('fullscreenchange',updateButtons);
+    overlay.addEventListener('click',async()=>{await document.documentElement.requestFullscreen();overlay.style.display='none';updateButtons();});
+    exitBtn.addEventListener('click',async()=>{if(document.exitFullscreen)await document.exitFullscreen();updateButtons();});
+
+    // === MUTE BUTTON ===
+    const muteBtn = document.getElementById('mute-btn');
+    let soundEnabled = true;
+
+    function updateButtons() {
+      const show = document.fullscreenElement ? 'block' : 'none';
+      exitBtn.style.display = show;
+      aiBtn.style.display = show;
+      penBtn.style.display = show;
+      muteBtn.style.display = show;
+    }
+
+      muteBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      muteBtn.textContent = soundEnabled ? '🔇 Mute' : '🔊 Unmute';
+      muteBtn.style.background = soundEnabled ? '#aa3333' : '#33aa33';
+      muteBtn.style.boxShadow = soundEnabled
+        ? '0 2px 6px rgba(0,0,0,0.25)'
+        : '0 0 10px rgba(51,170,51,0.8)';
+      muteBtn.style.transform = soundEnabled ? 'scale(1)' : 'scale(1.05)';
+
+      // Envia para o servidor o estado atual do som
+      if (window.socket) {
+        window.socket.emit('toggle_sound', soundEnabled);
+      }
+
+     });
+    // === AI Análise ===
+    function getPositions(prefix){const arr=[];for(let i=2;i<=11;i++){const el=document.getElementById(prefix+i);arr.push({id:i,left:parseInt(el.style.left||el.offsetLeft),top:parseInt(el.style.top||el.offsetTop)});}return arr;}
+    function setPositions(red){for(const p of red){const el=document.getElementById('circle'+p.id);if(el){el.style.left=p.left+'px';el.style.top=p.top+'px';}}}
+    function getBall(){const el=document.getElementById('circle24');return {left:parseInt(el.style.left||el.offsetLeft),top:parseInt(el.style.top||el.offsetTop)};}
+    function notify(msg){const n=document.getElementById('ai-notification');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',2000);}
+    aiBtn.addEventListener('click',async function(){
+      this.disabled=true;this.textContent="Analisando...";
+      try{
+        const res=await fetch('https://juventusfc.onrender.com/ai/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({green:getPositions('circle'),ball:getBall()})});
+        const data=await res.json();if(data.red){setPositions(data.red);notify("AI posicionou o time vermelho!");}
+      }catch(e){notify("Erro na análise.");}
+      this.disabled=false;this.textContent="AI Análise";
+
+    });
+  </script>
+<script>
+/* ===== Desenho Tático: correção para offset mobile (HiDPI + CSS size sync) ===== */
+(function(){
+  const canvas = document.getElementById("trace-canvas");
+  const penBtn = document.getElementById("pen-path-btn");
+  const socket = window.socket;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Faz o canvas ocupar um tamanho CSS estável (se quiser, ajuste aqui)
+  // Se preferir que o canvas seja responsivo, ajuste o CSS; aqui usamos o rect atual.
+  function resizeCanvasForDisplay() {
+    const ratio = window.devicePixelRatio || 1;
+    // pega o tamanho CSS real do canvas (dependendo do layout)
+    const rect = canvas.getBoundingClientRect();
+
+    // forçar CSS width/height para o tamanho do rect (garante consistência)
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+
+    // ajusta o buffer físico do canvas para HiDPI
+    canvas.width = Math.round(rect.width * ratio);
+    canvas.height = Math.round(rect.height * ratio);
+
+    // faz o ctx trabalhar em CSS pixels (transforma coords automaticamente)
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }
+
+  // chama no load e quando a viewport muda
+  resizeCanvasForDisplay();
+  window.addEventListener('resize', resizeCanvasForDisplay);
+  // também quando há rolagem (às vezes rect muda por UI do navegador)
+  window.addEventListener('scroll', () => {
+    // atualização leve — só se o canvas estiver visível
+    resizeCanvasForDisplay();
+  }, { passive: true });
+
+  // estado
+  let penMode = false;
+  let drawing = false;
+  let currentPath = [];
+  let pointerId = null;
+
+  // Toggle pen button: ativa/desativa captura de eventos
+  penBtn.addEventListener('click', () => {
+    penMode = !penMode;
+    penBtn.style.background = penMode ? "#33aaff" : "#222";
+    canvas.style.pointerEvents = penMode ? "auto" : "none";
+    penBtn.textContent = penMode ? "✎ Desenhando..." : "✎ Desenho Tático";
+    if (penMode) {
+      canvas.style.zIndex = "1000";
+    } else {
+      canvas.style.zIndex = "1";
+    }
+  });
+
+  // evita scroll durante desenho
+  canvas.style.touchAction = "none";
+
+  // converte evento -> coordenada em CSS pixels relativa ao canvas
+  function getCoordFromEvent(evt) {
+    const rect = canvas.getBoundingClientRect();
+    // pointer events: clientX/clientY
+    if (evt.clientX !== undefined && evt.clientY !== undefined) {
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+    // touch fallback
+    if (evt.touches && evt.touches[0]) {
+      return { x: evt.touches[0].clientX - rect.left, y: evt.touches[0].clientY - rect.top };
+    }
+    return { x: 0, y: 0 };
+  }
+
+  // pointer events (recomendado)
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!penMode || !e.isPrimary) return;
+    drawing = true;
+    pointerId = e.pointerId;
+    try { canvas.setPointerCapture(pointerId); } catch (er) {}
+    const { x, y } = getCoordFromEvent(e);
+    currentPath = [[x, y]];
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!penMode || !drawing || e.pointerId !== pointerId) return;
+    const { x, y } = getCoordFromEvent(e);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "#ff3333";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    currentPath.push([x, y]);
+  });
+
+  function finishDrawing(e) {
+    if (!drawing) return;
+    drawing = false;
+    try { canvas.releasePointerCapture(pointerId); } catch (er) {}
+    ctx.closePath();
+    if (socket && currentPath.length > 1) {
+      socket.emit('path_draw', { path: currentPath });
+    }
+    currentPath = [];
+    pointerId = null;
+  }
+
+  canvas.addEventListener('pointerup', finishDrawing);
+  canvas.addEventListener('pointercancel', finishDrawing);
+  canvas.addEventListener('pointerout', (e) => {
+    if (drawing && e.pointerId === pointerId) finishDrawing(e);
+  });
+
+  // touch fallback (mantém compatibilidade)
+  canvas.addEventListener('touchstart', (e) => {
+    if (!penMode) return;
+    e.preventDefault();
+    const c = getCoordFromEvent(e);
+    drawing = true;
+    currentPath = [[c.x, c.y]];
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!penMode || !drawing) return;
+    e.preventDefault();
+    const c = getCoordFromEvent(e);
+    ctx.lineTo(c.x, c.y);
+    ctx.strokeStyle = "#ff3333";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    currentPath.push([c.x, c.y]);
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (!penMode || !drawing) return;
+    e.preventDefault();
+    drawing = false;
+    ctx.closePath();
+    if (socket && currentPath.length > 1) socket.emit('path_draw', { path: currentPath });
+    currentPath = [];
+  }, { passive: false });
+
+  // recebe e desenha paths de outros clientes (coord em CSS pixels)
+  if (socket) {
+    socket.on('path_draw', (data) => {
+      if (!data || !Array.isArray(data.path) || data.path.length === 0) return;
+      ctx.beginPath();
+      for (let i = 0; i < data.path.length; i++) {
+        const [x, y] = data.path[i];
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "#ff3333";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.closePath();
+    });
+  }
+})();
+// ===== 1. Função Fullscreen + Rotação =====
+async function fullScreen() {
+  try {
+    await document.documentElement.requestFullscreen();
+    if (screen.orientation && screen.orientation.lock) {
+      await screen.orientation.lock("landscape");
+    }
+  } catch (err) {
+    console.warn("Não foi possível travar orientação:", err);
+  }
+  overlay.style.display = "none";
+  updateButtons();
+}
+overlay.addEventListener('click', fullScreen);
+
+
+// ===== hitTest + fala via servidor ::V.I.V.A.S. -- VECTOR INTERACT VISUAL AUDIO SYSTEM (PATENT AS M.U@BRZ"INPI" M.U. REFFERS Utility Model") =====
+function isColliding(el1, el2) {
+  const r1 = el1.getBoundingClientRect();
+  const r2 = el2.getBoundingClientRect();
+  return !(
+    r1.top > r2.bottom ||
+    r1.bottom < r2.top ||
+    r1.left > r2.right ||
+    r1.right < r2.left
+  );
+}
+
+function checkBallCollision() {
+  const ball = document.getElementById('circle24');
+  if (!ball || !window.socket) return;
+
+  for (let i = 1; i <= 23; i++) {
+    const player = document.getElementById('circle' + i);
+    if (!player) continue;
+    if (isColliding(ball, player)) {
+      const playerText = player.textContent.trim() || `jogador ${i}`;
+      window.socket.emit('ball_hit', { playerText });
+      break;
+    }
+  }
+}
+
+
+// Roda a verificação a cada 300ms
+setInterval(checkBallCollision, 300);
+</script>
+  <!-- ===== Chat do Treinador Português ===== -->
+  <div id="coach-chat" style="position:fixed;bottom:20px;right:20px;width:320px;height:420px;background:rgba(30,30,30,0.95);border:2px solid #444;border-radius:12px;display:flex;flex-direction:column;font-family:sans-serif;color:#fff;z-index:12000;transition:all .4s ease;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#222;border-bottom:1px solid #555;">
+      <b>Treinador</b> 🧠
+      <button id="minimize-btn" style="background:transparent;color:#fff;border:none;font-size:1.1em;cursor:pointer;">_</button>
+    </div>
+    <div id="chat-log" style="flex:1;overflow-y:auto;padding:10px;"></div>
+    <div style="display:flex;border-top:1px solid #555;">
+      <input id="chat-input" placeholder="Fale com o mister..." style="flex:1;background:#111;color:#fff;border:none;padding:10px;outline:none;">
+      <button id="send-btn" type="button" style="background:#33aaff;border:none;color:white;padding:10px;cursor:pointer;">▶</button>
+    </div>
+  </div>
+  <div id="chat-icon" style="display:none;position:fixed;bottom:20px;right:20px;background:#33aaff;color:#fff;border:none;border-radius:50%;width:60px;height:60px;font-size:1.8em;cursor:pointer;z-index:12000;box-shadow:0 3px 6px rgba(0,0,0,0.3);align-items:center;justify-content:center;">💬</div>
+
+  <!-- ===== Chat Script ===== -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const chatBox=document.getElementById("coach-chat"),chatIcon=document.getElementById("chat-icon"),minimizeBtn=document.getElementById("minimize-btn"),chatLog=document.getElementById("chat-log"),input=document.getElementById("chat-input"),sendBtn=document.getElementById("send-btn");
+    sendBtn.type='button';
+    function addMessage(sender,text){const el=document.createElement("div");el.style.marginBottom="8px";el.innerHTML=`<b>${sender}:</b> ${text}`;chatLog.appendChild(el);chatLog.scrollTop=chatLog.scrollHeight;}
+    async function sendMessage(){
+      const userText=input.value.trim();if(!userText)return;addMessage("Você",userText);input.value="";sendBtn.disabled=true;const prev=sendBtn.textContent;sendBtn.textContent="…";
+      const personality=`És um treinador português lendário, sarcástico, confiante e direto. Foste campeão no Porto, Chelsea, Inter, Real Madrid e Manchester United. Fala com autoridade e ironia.`;
+      const prompt=`${personality}\n\nJogador: ${userText}\nTreinador:`;
+      try{
+        const r=await fetch("https://juventusfc.onrender.com/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:prompt})});
+        const d=await r.json();
+        addMessage("Treinador",d.reply||"O mister não tem tempo pra conversa fiada.");
+      }catch{addMessage("Treinador","Tás a brincar comigo? Falha na ligação.");}
+      sendBtn.disabled=false;sendBtn.textContent=prev;
+    }
+    sendBtn.addEventListener('click',e=>{e.preventDefault();sendMessage();});
+    input.addEventListener('keydown',e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}});
+    minimizeBtn.addEventListener("click",()=>{chatBox.style.opacity="0";chatBox.style.transform="translateY(100px)";setTimeout(()=>{chatBox.style.display="none";chatIcon.style.display="flex";chatIcon.style.alignItems="center";chatIcon.style.justifyContent="center";},300);});
+    chatIcon.addEventListener("click",()=>{chatIcon.style.display="none";chatBox.style.display="flex";setTimeout(()=>{chatBox.style.opacity="1";chatBox.style.transform="translateY(0)";input.focus();},80);});
+  });
+  </script>
+</body>
+</html>
+

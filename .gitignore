@@ -1,0 +1,16 @@
+.vercel
+node_modules
+*.log
+.DS_Store
+dist
+build
+coverage
+*.env
+*.env.*
+/dashboard/*/node_modules
+/cardgame/*/node_modules
+dashboard/**/*.env
+cardgame/**/*.env
+google-vision-key.json
+*service-account*.json
+*invictos*.json

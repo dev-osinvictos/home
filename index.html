@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">    
+    <title>OS INVICTOS -- Rede Social dos Invictos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.osinvictos.com.br/">
+    <meta property="og:title" content="Sports Social Network / WEB 3.0"/>
+    <meta property="og:description" content="Interação no Campo-Tático'Interativo -- +1000 conexões simultãneas"/>
+    <meta property="og:image" content="https://www.osinvictos.com.br/assets/logotaca.png"/>
+    <meta property="og:image:width" content="580"/>
+    <meta property="og:image:height" content="464"/>
+    <meta name="google-adsense-account" content="ca-pub-6390604470898441">
+    <link rel="stylesheet" href="./styles.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDWS2F3NE8"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZDWS2F3NE8', {
+      send_page_view: false
+      });
+
+      if (!window.__pageview_sent__) {
+      window.__pageview_sent__ = true;
+
+      gtag('event', 'page_view', {
+      page_path: location.pathname,
+      page_title: document.title
+      });
+    }
+    </script>
+</head>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const orbit3 = document.querySelector(".orbit-3");
+  const centerScene = document.querySelector("#center-scene");
+
+  if (orbit3 && centerScene) {
+    orbit3.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // Start animation
+      centerScene.classList.add("transition-layout");
+
+      // After animation, redirect to quotes.html
+      setTimeout(() => {
+        window.location.href = "./quotes.html";
+      }, 1500); // match your animation timing
+    });
+  }
+});
+</script>
+</head>
+<body>
+  <div id="center-scene">
+    <div id="logo-container">
+      <model-viewer src="assets/logo.glb" alt="Logo 3D" shadow-intensity="1" camera-controls auto-rotate ar></model-viewer>
+    </div>
+
+    <div class="thumbnail orbit orbit-1">
+      <img id="gif-rotativo" src="assets/icon1-gifs.gif" alt="Video">
+    </div>
+
+    <div class="thumbnail orbit orbit-2">
+      <a href="cardgame/index.html">FIFA '26<br>CARD-GAME</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-3">
+     <a href="./quotes.html">Frases<br>de<br>Coach!</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-4">
+      <a href="./dashboard.html">Campo<br>Tático</a>
+    </div>
+
+    <div class="thumbnail orbit orbit-5">
+      <a href="./book/">Agenda<br>do<br>Coach!</a>
+    </div>
+<div id="coach-quotes">
+  <div class="quote-box">1️⃣ "Algumas pessoas acreditam que o futebol é uma questão de vida ou morte. Essa atitude me decepciona. É mais importante que isso. "- Bill Shankly</div>
+  <div class="quote-box">2️⃣ "O futebol é o mais importante dos menos importantes" .- Jorge Valdano</div>
+  <div class="quote-box">3️⃣ "Para jogar futebol você não deve sofrer. O que é feito sofrimento não pode ir bem ".- Carles Rexach</div>
+  <div class="quote-box">4️⃣ "Eles dizem que é mais fácil mudar as mulheres do que as equipes de futebol ... E é verdade" .- Pep Guardiola</div>
+  <div class="quote-box">5️⃣ "Eu não posso acreditar, eu não posso acreditar. É futebol. Demônios! ".- Sir Alex Ferguson depois de vencer a final da Liga dos Campeões de 1999 contra o Bayern de Munique.</div>
+  <div class="quote-box">6️⃣ "O futebol é um esporte simples em que enquanto alguns gostam de conversar, eu adoro ganhar" .- Fabio Capello
+
+</div>
+  <div class="quote-box">7️⃣ "Nesta vida a única coisa que você não pode mudar é mãe e equipe" .- Diego Simeone</div>
+</div>
+  </div>
+
+  <footer id="main-footer">
+    <p>
+      RIRO TOYSPORT — <a href="mailto:dev@osinvictos.com.br" style="color:#25D366;">dev@osinvictos.com.br</a> — Brasil's CC '25
+    </p>
+  </footer>
+
+<script>
+(function() {
+  const gifFiles = [
+    'icon1-gifs.gif',
+    'icon2-gifs.gif',
+    'icon3-gifs.gif',
+    'icon4-gifs.gif',
+    'icon5-gifs.gif'
+  ];
+  const assetPath = 'assets/';
+
+  function setImageSrc(imgEl, filename) {
+    const cacheBuster = Date.now();
+    imgEl.src = assetPath + filename + '?v=' + cacheBuster;
+  }
+
+  function setOrbitBackground(selector, filename) {
+    const el = document.querySelector(selector);
+    if (!el) return false;
+    el.style.backgroundImage = "url('" + assetPath + filename + "')";
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    return true;
+  }
+
+  function rotateRandomGif() {
+    const randomIndex = Math.floor(Math.random() * gifFiles.length);
+    const selectedGif = gifFiles[randomIndex];
+
+    const imageElement = document.getElementById('gif-rotativo');
+    if (imageElement) {
+      setImageSrc(imageElement, selectedGif);
+      console.log('[rotateRandomGif] set <img#gif-rotativo> ->', selectedGif);
+      return;
+    }
+
+    const applied = setOrbitBackground('.orbit-1', selectedGif);
+    if (applied) {
+      console.log('[rotateRandomGif] set .orbit-1 background ->', selectedGif);
+      return;
+    }
+
+    console.warn('[rotateRandomGif] no target found for GIF rotation');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      rotateRandomGif();
+      setInterval(rotateRandomGif, 16000);
+    });
+  } else {
+    rotateRandomGif();
+    setInterval(rotateRandomGif, 16000);
+  }
+})();
+</script>
+
+</body>
+</html>
