@@ -1,0 +1,269 @@
+    :root {
+      --cor-fundo: #000000;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      color: rgb(255, 255, 255);
+      font-family: Arial, sans-serif;
+      background-color: var(--cor-fundo);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #center-scene {
+      position: relative;
+      width: 270px;
+      height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('./img/worldcup26_cell_background.png');
+      background-size: 90%;
+      background-position: center;
+      background-repeat: no-repeat;
+      backdrop-filter: blur(4px);
+      overflow: visible;
+    }
+
+    #side-badge {
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 350px;
+      width: auto;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    /* --- LOGO CENTRAL --- */
+    #logo-container {
+      position: relative;
+      z-index: 5;
+      width: 300px;
+      height: 300px;
+      top: -30px;
+      text-align: center;
+      filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+    }
+
+    #logo-container h1 {
+      margin: 12px 0 0 0;
+      font-size: 48px;
+      letter-spacing: 6px;
+      position: relative;
+      top: -10px;
+    }
+
+    model-viewer {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      --environment-image: var(--cor-fundo);
+    --progress-bar-color: var(--cor-fundo);
+  }
+
+  /* === Login modal (reaproveita CT Virtual) === */
+  .card-login-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10060;
+  }
+  .card-login-modal.open {
+    display: flex;
+  }
+  .card-login-box {
+    background: #111;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px;
+    width: min(92vw, 320px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card-login-box input,
+  .card-login-box select {
+    background: #0b0b0b;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+  }
+  .card-login-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .card-login-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .card-login-actions .ghost {
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+  }
+  .card-login-actions button:not(.ghost) {
+    background: #28a745;
+    color: #fff;
+  }
+  .checkbox-line {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+  }
+  .card-action-feedback {
+    color: #ffd700;
+    font-size: 13px;
+    min-height: 18px;
+  }
+    /* --- HAMBURGER MENU (top-right) --- */
+    #menu-button.hamburger {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 44px;
+      height: 40px;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      background: transparent;
+      border: none;
+      z-index: 9999;
+      cursor: pointer;
+    }
+
+    #menu-button.hamburger:focus {
+      outline: 2px solid rgba(255,255,255,0.2);
+      outline-offset: 4px;
+    }
+
+    #menu-button .line {
+      display: block;
+      width: 32px;
+      height: 10px; /* increased thickness */
+      margin: 2px 0;
+      background: #ffffff;
+      border-radius: 3px;
+      box-sizing: border-box;
+      border: 1px solid rgba(0,0,0,0.6); /* 1px stroke */
+      transform-origin: center;
+      transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 180ms ease, background 180ms ease;
+    }
+
+    /* open -> cross animation */
+    #menu-button.hamburger.open .line:nth-child(1) {
+      transform: translateY(11px) rotate(45deg);
+    }
+    #menu-button.hamburger.open .line:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0.2);
+    }
+    #menu-button.hamburger.open .line:nth-child(3) {
+      transform: translateY(-11px) rotate(-45deg);
+    }
+
+    /* --- MENU OVERLAY --- */
+    #menu-overlay {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: 50vw; /* covers 50% of viewport width from the right */
+      max-width: 100%;
+      background: rgba(255,255,255,0.55);
+      transform: translateX(100%); /* start off-canvas to the right */
+      transition: transform 360ms cubic-bezier(.2,.8,.2,1);
+      z-index: 9998; /* below the menu button */
+      pointer-events: none;
+    }
+
+    #menu-overlay.open {
+      transform: translateX(0); /* slide in to show 50% overlay */
+      pointer-events: auto;
+    }
+
+    /* optional content area inside overlay */
+    #menu-overlay .content {
+      height: 100%;
+      overflow-y: auto;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    /* --- SUB-MENUS ROTATED AT TOP --- */
+    #menu-overlay .overlay-top {
+      position: absolute;
+      top: 120px;
+      left: 16px;
+      display: flex;
+      gap: 48px; /* increased horizontal spacing between items */
+      align-items: flex-start;
+      pointer-events: auto;
+    }
+
+    #menu-overlay .overlay-top .submenu {
+      display: inline-block;
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      color: rgba(0,0,0,0.95);
+      font-weight: 700;
+      font-size: 18px;
+      text-decoration: none;
+      padding: 6px 8px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 160ms ease, opacity 160ms ease, transform 220ms ease;
+    }
+
+    #menu-overlay .overlay-top .submenu:focus,
+    #menu-overlay .overlay-top .submenu:hover {
+      color: #28a745; /* hover/focus turns green */
+      opacity: 0.95;
+      text-decoration: underline;
+    }
+
+    #menu-overlay .overlay-top .submenu[data-action="login"],
+    #menu-overlay .overlay-top .submenu:nth-child(2) {
+      margin-left: -90px;
+    }
+    /* FAQ remains at -60px */
+    #menu-overlay .overlay-top .submenu[data-action="faq"],
+    #menu-overlay .overlay-top .submenu:nth-child(3) {
+      margin-left: -60px;
+    }
+
+    /* make sure rotated elements don't overflow the overlay edge on small screens */
+    @media (max-width: 640px) {
+      #menu-overlay .overlay-top {
+        gap: 24px;
+        left: 8px;
+      }
+      #menu-overlay .overlay-top .submenu {
+        font-size: 16px;
+        padding: 4px 6px;
+        margin-left: 0; /* reset for small screens */
+      }
+    }

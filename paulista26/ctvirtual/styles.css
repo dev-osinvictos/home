@@ -1,0 +1,700 @@
+/* --- HAMBURGER MENU (top-right) --- */
+#menu-button.hamburger {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 40px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  z-index: 200300;
+  cursor: pointer;
+}
+
+#menu-button.hamburger:focus {
+  outline: 2px solid rgba(255,255,255,0.2);
+  outline-offset: 4px;
+}
+
+#menu-button .line {
+  display: block;
+  width: 32px;
+  height: 10px;
+  margin: 2px 0;
+  background: #ffffff;
+  border-radius: 3px;
+  box-sizing: border-box;
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 180ms ease, background 180ms ease;
+}
+
+/* open -> cross animation */
+#menu-button.hamburger.open .line:nth-child(1) {
+  transform: translateY(11px) rotate(45deg);
+}
+#menu-button.hamburger.open .line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.2);
+}
+#menu-button.hamburger.open .line:nth-child(3) {
+  transform: translateY(-11px) rotate(-45deg);
+}
+
+/* --- MENU OVERLAY --- */
+#menu-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 50vw;
+  max-width: 100%;
+  background: rgba(255,255,255,0.55);
+  transform: translateX(100%);
+  transition: transform 360ms cubic-bezier(.2,.8,.2,1);
+  z-index: 200290;
+  pointer-events: none;
+}
+
+#menu-overlay.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* optional content area inside overlay */
+#menu-overlay .content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* --- SUB-MENUS ROTATED AT TOP --- */
+#menu-overlay .overlay-top {
+  position: absolute;
+  top: 120px;
+  left: 16px;
+  display: flex;
+  gap: 7px; /* aproxima ainda mais os submenus */
+  align-items: flex-start;
+  pointer-events: auto;
+}
+
+#menu-overlay .overlay-top .submenu {
+  display: inline-block;
+  transform: rotate(-90deg);
+  transform-origin: left top;
+  color: rgba(0,0,0,0.95);
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease, opacity 160ms ease, transform 220ms ease;
+}
+
+#menu-overlay .overlay-top .submenu:focus,
+#menu-overlay .overlay-top .submenu:hover {
+  color: #28a745;
+  opacity: 0.95;
+  text-decoration: underline;
+}
+
+#menu-overlay .overlay-top .submenu[data-action="login"],
+#menu-overlay .overlay-top .submenu:nth-child(2) {
+  margin-left: 0;
+}
+
+#menu-overlay .overlay-top .submenu[data-action="faq"],
+#menu-overlay .overlay-top .submenu:nth-child(3) {
+  margin-left: 0;
+}
+
+/* make sure rotated elements don't overflow the overlay edge on small screens */
+@media (max-width: 640px) {
+  #menu-overlay .overlay-top {
+    gap: 6px;
+    left: 8px;
+  }
+  #menu-overlay .overlay-top .submenu {
+    font-size: 16px;
+    padding: 4px 6px;
+    margin-left: 0;
+  }
+}
+
+
+.background-square {
+  /* Gramado para aprimoramento esportivo */
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 340px;
+  height: 550px;
+  background: #16c516;
+  opacity: 0.75;
+  z-index: 0;
+  border-radius: 8px;
+}
+
+#background-line {
+  /* Linha esquerda */
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: 2px;
+  height: 545px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line2 {
+  /* Linha inferior */
+  position: absolute;
+  left: 22px;
+  top: 566px;
+  width: 335px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line3 {
+  /* Linha direita*/
+  position: absolute;
+  left: 357px;
+  top: 22px;
+  width: 2px;
+  height: 545px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line4 {
+  /* Linha superior */
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: 335px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line5 {
+  /* Linha central */
+  position: absolute;
+  left: 22px;
+  top: 293px;
+  width: 335px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line6 {
+  /* Linha grande Área superior topo */
+  position: absolute;
+  left: 184px;
+  top: 5px;
+  width: 2px;
+  height: 165px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line7 {
+  /* Linha Pequena Área superior topo */
+  position: absolute;
+  left: 185px;
+  top: 9px;
+  width: 2px;
+  height: 102px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line8 {
+  position: absolute;
+  left: 219px;
+  top: 40px;
+  /* Linha Pequena Área direita topo*/
+  width: 36px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line9 {
+  position: absolute;
+  left: 216px;
+  top: 547px;
+  /* Linha Pequena Área direita baixa*/
+  width: 36px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line10 {
+  position: absolute;
+  left: 235px;
+  top: 55px;
+  /* Linha Grande Área direita topo*/
+  width: 66px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line11 {
+  position: absolute;
+  left: 235px;
+  top: 534px;
+  /* Linha Grande Área direita baixa*/
+  width: 66px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line12 {
+  /* Linha grande Área superior baixa */
+  position: absolute;
+  left: 184px;
+  top: 420px;
+  width: 2px;
+  height: 165px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line13 {
+  /* Linha Pequena Área superior baixa */
+  position: absolute;
+  left: 183px;
+  top: 480px;
+  width: 2px;
+  height: 102px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line14 {
+  position: absolute;
+  left: 118px;
+  top: 40px;
+  /* Linha Pequena Área esquerda topo*/
+  width: 36px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line15 {
+  position: absolute;
+  left: 116px;
+  top: 547px;
+  /* Linha Pequena Área esquerda baixa*/
+  width: 36px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line16 {
+  position: absolute;
+  left: 70px;
+  top: 535px;
+  /* Linha Grande Área esquerda baixa*/
+  width: 66px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+#background-line17 {
+  position: absolute;
+  left: 70px;
+  top: 55px;
+  /* Linha Grande Área esquerda topo*/
+  width: 66px;
+  height: 2px;
+  background: #fff;
+  z-index: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* Rotate 90deg all lines that belong to Pequena Área and Grande Área */
+#background-line6,
+#background-line7,
+#background-line8,
+#background-line9,
+#background-line10,
+#background-line11,
+#background-line12,
+#background-line13,
+#background-line14,
+#background-line15,
+#background-line16,
+#background-line17 {
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.gol-square {
+  position: absolute;
+  left: 180px;
+  /* Adjust to place the square under the circles */
+  top: 535px;
+  width: 10px;
+  height: 70px;
+  background: #ffffff;
+  z-index: 10080;
+  border-radius: 8px;
+  transform: rotate(90deg);
+}
+
+.gol2-square {
+  position: absolute;
+  left: 180px;
+  /* Adjust to place the square under the circles */
+  top: -15px;
+  width: 10px;
+  height: 70px;
+  background: #ffffff;
+  z-index: 10080;
+  border-radius: 8px;
+  transform: rotate(90deg);
+}
+
+.circlecentral {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  left: 120px !important;
+  top: 223px !important;
+  z-index: 1000;
+  display: flex;
+  color: #fff;
+  user-select: none;
+}
+
+.circle,
+.circleOpp {
+  width: 26px;
+  height: 26px;
+  background: #33aaff;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 200000 !important;
+  pointer-events: auto !important;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  color: #fff;
+  font-weight: bold;
+  font-family: sans-serif;
+  font-size: 13px;
+  user-select: none;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+}
+
+.placed-cards-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 200400;
+}
+
+.selected-card-layer {
+  position: absolute;
+  width: 83px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: auto;
+  transform: scale(0.96);
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 1;
+  cursor: grab;
+}
+
+.selected-card-layer.dragging {
+  cursor: grabbing;
+}
+.selected-card-layer.open {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.selected-card-layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.guarani-cards {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 200ms ease, transform 200ms ease;
+  z-index: 200600;
+}
+
+.guarani-cards.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.guarani-cards-title {
+  color: #ffffff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+}
+
+.guarani-cards-track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+  scrollbar-width: auto;
+  scrollbar-color: #ffffff transparent;
+}
+
+.guarani-cards-track::-webkit-scrollbar {
+  height: 12px;
+}
+
+.guarani-cards-track::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+.guarani-card {
+  height: 100%;
+  max-height: 185px;
+  width: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tactics-panel {
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  z-index: 200250;
+  color: #fff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+@media (max-width: 767px) {
+  .tactics-panel {
+    bottom: 0;
+    left: 20px;
+    right: auto;
+  }
+}
+
+.tactics-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.tactics-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #0b0b0b;
+  color: #fff;
+  font-size: 14px;
+}
+
+.tactics-notes {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 240px;
+  line-height: 1.3;
+}
+
+.share-team {
+  position: fixed;
+  top: 20px;
+  right: 300px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #1f8a3d;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 200650;
+}
+
+.share-team:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 767px) {
+  .share-team {
+    top: auto;
+    bottom: 0;
+    right: 20px;
+  }
+}
+
+.record-controls {
+  position: fixed;
+  left: 370px;
+  top: 0;
+  z-index: 200650;
+}
+
+.record-btn {
+  position: fixed;
+  left: 370px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #0b0b0b;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.record-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+.record-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.record-btn[data-action="record"] {
+  top: 100px;
+}
+
+.record-btn[data-action="play"] {
+  top: 150px;
+}
+
+.record-btn[data-action="stop"] {
+  top: 200px;
+}
+
+
+/* GOLEIRO */
+#circle1  { left: 180px; top: 520px; background:#c78c00; color:green; z-index: 10100; }
+
+/* DEFESA (linha de 4) */
+#circle2  { left: 60px;  top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle3  { left: 140px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle4  { left: 220px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+#circle5  { left: 300px; top: 480px; background:#FFFFFF; color:green; z-index: 10090; }
+
+/* MEIO (linha em triângulo) */
+#circle6  { left: 160px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+#circle7  { left: 120px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+#circle8  { left: 200px; top: 320px; background:#FFFFFF; color:green; z-index: 10080; }
+
+/* ATAQUE (linha em triângulo) */
+#circle9  { left: 100px; top: 100px; background:#FFFFFF; color:green; z-index: 10070; }
+#circle10 { left: 160px; top: 200px; background:#FFFFFF; color:green; z-index: 10070; }
+#circle11 { left: 220px; top: 100px; background:#FFFFFF; color:green; z-index: 10070; }
+ 
+#circle24 { left: 420px; top: 40px; background: #ffffff; z-index: 10070;}
