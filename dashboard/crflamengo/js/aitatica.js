@@ -207,7 +207,7 @@ function getCurrentPossession() {
   aiBtn.addEventListener('click', async function() {
   aiBtn.disabled = true;
   aiBtn.textContent = "Analisando⚙️";
-  notify("🤖 Careca, está avaliando o adversário e ajustando o Guarani...", 3000);
+  notify("🤖 Felipe Luís, está avaliando o adversário e ajustando o Flamengo...", 3000);
 
   const hudBox = document.getElementById("tactical-hud");
   const hudForm = document.getElementById("hud-formations");

@@ -82,8 +82,24 @@ chatSend.addEventListener("click", async () => {
       body: JSON.stringify({ message })
     });
 
-    const data = await res.json();
-    appendMessage("bot", data.reply || "O Treinador ficou em silêncio...");
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      console.warn("Resposta nao JSON no /api/chat:", parseErr);
+    }
+
+    if (!res.ok) {
+      const errMsg = data?.error
+        ? `${data.error}. Verifique a quota do provedor.`
+        : "Erro no servidor do chat. Verifique a quota do provedor.";
+      appendMessage("bot", errMsg);
+      dockChat();
+      chatBody.scrollTop = chatBody.scrollHeight;
+      return;
+    }
+
+    appendMessage("bot", data?.reply || "O Treinador ficou em silencio...");
 
     // volta ao estado original (aberto e dockado)
     dockChat();
@@ -181,12 +197,12 @@ chatSend.addEventListener("click", async () => {
           }, 500);
         })
         .catch(e => {
-          appendMessage("bot", "Erro de comunicação com o Careca.");
+          appendMessage("bot", "Erro de comunicação com o Felipe.");
           console.error(e);
         });
     }
   } catch (e) {
-    appendMessage("bot", "Erro de comunicação com o Careca.");
+    appendMessage("bot", "Erro de comunicação com o Felipe.");
     console.error(e);
   }
 });
