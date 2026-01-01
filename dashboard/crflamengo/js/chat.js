@@ -90,9 +90,10 @@ chatSend.addEventListener("click", async () => {
     }
 
     if (!res.ok) {
+      const details = data?.details ? ` (${data.details})` : "";
       const errMsg = data?.error
-        ? `${data.error}. Verifique a quota do provedor.`
-        : "Erro no servidor do chat. Verifique a quota do provedor.";
+        ? `${data.error}${details}. Verifique a quota do provedor.`
+        : `Erro no servidor do chat${details}. Verifique a quota do provedor.`;
       appendMessage("bot", errMsg);
       dockChat();
       chatBody.scrollTop = chatBody.scrollHeight;
