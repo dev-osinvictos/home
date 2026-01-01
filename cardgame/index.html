@@ -34,6 +34,19 @@
       });
     }
     </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "OS Invictos",
+  "url": "https://www.osinvictos.com.br",
+  "logo": "https://www.osinvictos.com.br/cardgame/previa.jpg",
+  "description": "Plataforma GameFi de treinamento tático em futebol com inteligência artificial, CT Virtual e card game esportivo.",
+  "sameAs": [
+    "https://www.osinvictos.com.br/cardgame/"
+  ]
+}
+</script>
 </head>
 <body>
   <button id="menu-button" class="hamburger" aria-label="Abrir menu" aria-expanded="false">
@@ -43,7 +56,7 @@
   </button>
   <div id="center-scene">
     <div id="logo-container">
-      <model-viewer src="./ctvirtual/models/logo.glb" alt="Logo 3D" auto-rotate camera-controls exposure="1" shadow-intensity="1" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look"></model-viewer>
+      <model-viewer id="manche-logo" src="./ctvirtual/models/logo.glb" alt="Logo 3D Manche" auto-rotate camera-controls exposure="1" shadow-intensity="1" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look"></model-viewer>
       <h1>FIFA</h1>
     </div>
     <img id="side-badge" src="./img/super-trumfo_cc.png" alt="Super Trunfo" />
@@ -80,5 +93,54 @@
 
   <script src="./ctvirtual/js/auth.js"></script>
   <script src="./menu.js"></script>
+  <script>
+    (function() {
+      const viewer = document.getElementById('manche-logo');
+      if (!viewer) {
+        return;
+      }
+
+      const FULL_CIRCLE_DEG = 360;
+      const TRIGGER_DEG = FULL_CIRCLE_DEG * 0.15;
+      const RAD_TO_DEG = 180 / Math.PI;
+      let lastThetaDeg = null;
+      let accumulatedDeg = 0;
+      let redirected = false;
+
+      function normalizeDelta(delta) {
+        return ((delta + 540) % 360) - 180;
+      }
+
+      viewer.addEventListener('camera-change', () => {
+        if (redirected) {
+          return;
+        }
+
+        const orbit = viewer.getCameraOrbit ? viewer.getCameraOrbit() : viewer.cameraOrbit;
+        const theta = orbit && typeof orbit.theta === 'number' ? orbit.theta : orbit?.theta?.value;
+        if (theta == null) {
+          return;
+        }
+
+        const thetaDeg = theta * RAD_TO_DEG;
+        if (lastThetaDeg === null) {
+          lastThetaDeg = thetaDeg;
+          return;
+        }
+
+        const deltaDeg = normalizeDelta(thetaDeg - lastThetaDeg);
+        if (deltaDeg > 0) {
+          accumulatedDeg += deltaDeg;
+        }
+
+        lastThetaDeg = thetaDeg;
+
+        if (accumulatedDeg >= TRIGGER_DEG) {
+          redirected = true;
+          window.location.href = "./ctvirtual/index.html";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
