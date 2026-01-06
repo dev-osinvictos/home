@@ -155,6 +155,7 @@
     let missionSelectWrap = null;
     let missionSelect = null;
     let dragStartX = null;
+    let dragStartY = null;
 
     function currentEmail() {
       const u = typeof window.getLoggedUser === "function" ? window.getLoggedUser() : null;
@@ -288,6 +289,8 @@
       label.style.padding = "0";
       label.style.textAlign = "left";
       label.style.fontSize = "13px";
+      label.style.touchAction = "none";
+      label.style.userSelect = "none";
       missionSelectWrap.appendChild(label);
 
       missionSelect = document.createElement("select");
@@ -315,6 +318,71 @@
       preview.style.boxShadow = "0 2px 6px rgba(0,0,0,0.4)";
       preview.style.transition = "opacity 200ms ease";
       missionSelectWrap.appendChild(preview);
+
+      let labelDragState = null;
+      let labelHoldTimer = null;
+      let ignoreLabelClick = false;
+
+      const isMinimized = () => preview.style.display === "none";
+
+      const setWrapPosition = (left, top) => {
+        missionSelectWrap.style.right = "";
+        missionSelectWrap.style.bottom = "";
+        missionSelectWrap.style.left = `${left}px`;
+        missionSelectWrap.style.top = `${top}px`;
+      };
+
+      const startLabelDrag = (e) => {
+        if (!isMinimized()) return;
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+        const rect = missionSelectWrap.getBoundingClientRect();
+        labelDragState = {
+          pointerId: e.pointerId,
+          offsetX: e.clientX - rect.left,
+          offsetY: e.clientY - rect.top,
+          startX: e.clientX,
+          startY: e.clientY
+        };
+        ignoreLabelClick = false;
+        label.setPointerCapture(e.pointerId);
+        labelHoldTimer = setTimeout(() => {
+          ignoreLabelClick = true;
+          setWrapPosition(rect.left, rect.top);
+          missionSelectWrap.style.cursor = "grabbing";
+        }, 180);
+      };
+
+      const moveLabelDrag = (e) => {
+        if (!labelDragState || e.pointerId !== labelDragState.pointerId) return;
+        const moved = Math.hypot(e.clientX - labelDragState.startX, e.clientY - labelDragState.startY);
+        if (moved > 4 && labelHoldTimer) {
+          clearTimeout(labelHoldTimer);
+          labelHoldTimer = null;
+        }
+        if (!ignoreLabelClick) return;
+        const rect = missionSelectWrap.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width;
+        const maxTop = window.innerHeight - rect.height;
+        const nextLeft = Math.min(Math.max(0, e.clientX - labelDragState.offsetX), Math.max(0, maxLeft));
+        const nextTop = Math.min(Math.max(0, e.clientY - labelDragState.offsetY), Math.max(0, maxTop));
+        setWrapPosition(nextLeft, nextTop);
+      };
+
+      const endLabelDrag = (e) => {
+        if (!labelDragState || e.pointerId !== labelDragState.pointerId) return;
+        if (labelHoldTimer) {
+          clearTimeout(labelHoldTimer);
+          labelHoldTimer = null;
+        }
+        try { label.releasePointerCapture(e.pointerId); } catch {}
+        labelDragState = null;
+        missionSelectWrap.style.cursor = "pointer";
+      };
+
+      label.addEventListener("pointerdown", startLabelDrag);
+      label.addEventListener("pointermove", moveLabelDrag);
+      label.addEventListener("pointerup", endLabelDrag);
+      label.addEventListener("pointercancel", endLabelDrag);
 
       document.body.appendChild(missionSelectWrap);
 
@@ -377,6 +445,10 @@
       // Maximiza/minimiza apenas ao clicar no título para não conflitar com swipe
       label.addEventListener("click", (e) => {
         e.stopPropagation();
+        if (ignoreLabelClick) {
+          ignoreLabelClick = false;
+          return;
+        }
         togglePreview();
       });
 
@@ -462,24 +534,94 @@
     // expõe para o aiBtn poder chamar nova missão após reconhecimento da formação
     window.startCardMission = startMission;
 
-    // swipe estilo Tinder para trocar missão (funciona em mouse/touch)
+    // drag do "Card da Vez" com swipe rápido horizontal para trocar missão
     let swipePointerId = null;
+    let dragMode = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let dragHoldTimer = null;
+    let dragOriginRect = null;
+
+    cardEl.style.touchAction = "none";
+
+    const setCardPosition = (left, top) => {
+      cardEl.style.setProperty("position", "fixed", "important");
+      cardEl.style.setProperty("left", `${left}px`, "important");
+      cardEl.style.setProperty("top", `${top}px`, "important");
+      cardEl.style.setProperty("right", "auto", "important");
+      cardEl.style.setProperty("bottom", "auto", "important");
+    };
+
     cardEl.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0 && e.pointerType === "mouse") return;
       swipePointerId = e.pointerId;
       dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      dragMode = null;
+      dragOriginRect = cardEl.getBoundingClientRect();
+      dragOffsetX = e.clientX - dragOriginRect.left;
+      dragOffsetY = e.clientY - dragOriginRect.top;
       cardEl.setPointerCapture(swipePointerId);
+      dragHoldTimer = setTimeout(() => {
+        dragMode = "dragging";
+        setCardPosition(dragOriginRect.left, dragOriginRect.top);
+        cardEl.style.cursor = "grabbing";
+      }, 160);
     });
     cardEl.addEventListener("pointermove", (e) => {
       if (swipePointerId === null || e.pointerId !== swipePointerId) return;
-      if (dragStartX === null) dragStartX = e.clientX;
-      const delta = e.clientX - dragStartX;
-      if (Math.abs(delta) > 8) {
-        randomMission();
-        dragStartX = e.clientX; // evita disparo múltiplo em um mesmo movimento longo
+      if (dragStartX === null || dragStartY === null) {
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+      }
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+
+      if (!dragMode) {
+        const dist = Math.hypot(dx, dy);
+        if (dist < 6) return;
+        const isSwipe = Math.abs(dx) > Math.abs(dy) * 1.3;
+        if (isSwipe) {
+          dragMode = "swipe";
+          if (dragHoldTimer) clearTimeout(dragHoldTimer);
+          dragHoldTimer = null;
+        } else {
+          dragMode = "dragging";
+          if (dragHoldTimer) clearTimeout(dragHoldTimer);
+          dragHoldTimer = null;
+          setCardPosition(dragOriginRect.left, dragOriginRect.top);
+          cardEl.style.cursor = "grabbing";
+        }
+      }
+
+      if (dragMode === "swipe") {
+        if (Math.abs(dx) > 10) {
+          randomMission();
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+        }
+        return;
+      }
+
+      if (dragMode === "dragging") {
+        const rect = cardEl.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width;
+        const maxTop = window.innerHeight - rect.height;
+        const nextLeft = Math.min(Math.max(0, e.clientX - dragOffsetX), Math.max(0, maxLeft));
+        const nextTop = Math.min(Math.max(0, e.clientY - dragOffsetY), Math.max(0, maxTop));
+        setCardPosition(nextLeft, nextTop);
       }
     });
     const endSwipe = () => {
       dragStartX = null;
+      dragStartY = null;
+      dragMode = null;
+      dragOriginRect = null;
+      if (dragHoldTimer) {
+        clearTimeout(dragHoldTimer);
+        dragHoldTimer = null;
+      }
+      cardEl.style.cursor = "";
       if (swipePointerId !== null) {
         try { cardEl.releasePointerCapture(swipePointerId); } catch {}
       }

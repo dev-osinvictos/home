@@ -27,10 +27,10 @@ function isGoalRight(ballEl) {
   const ball = ballEl.getBoundingClientRect();
   const goal = goalEl.getBoundingClientRect();
 
-  const passedLine = ball.right >= goal.left;                // passou da linha do gol
-  const withinPosts = ball.top >= goal.top && ball.bottom <= goal.bottom; // entre as traves
+  const overlapsX = ball.left <= goal.right && ball.right >= goal.left;
+  const overlapsY = ball.top <= goal.bottom && ball.bottom >= goal.top;
 
-  return passedLine && withinPosts;
+  return overlapsX && overlapsY;
 }
 
 const circles = {};
@@ -38,6 +38,97 @@ const dragState = {};
 let activeId = null;
 
 let movedDuringDrag = false;
+
+const dragCardMetric = {
+  count: 0,
+  firstTs: 0,
+  secondTs: 0,
+  ids: [],
+  timeoutId: null
+};
+
+function resetDragCardMetric() {
+  if (dragCardMetric.timeoutId) {
+    clearTimeout(dragCardMetric.timeoutId);
+    dragCardMetric.timeoutId = null;
+  }
+  dragCardMetric.count = 0;
+  dragCardMetric.firstTs = 0;
+  dragCardMetric.secondTs = 0;
+  dragCardMetric.ids = [];
+}
+
+function awardCurrentMissionCard() {
+  const mission = window.currentMissionCard;
+  if (!mission || !mission.id) return;
+  if (typeof window.addCardToNFTList === "function") {
+    window.addCardToNFTList(mission.id);
+  }
+  if (typeof window.showVictoryOverlay === "function") {
+    window.showVictoryOverlay(`Card ${mission.id} conquistado!`, mission.id);
+  }
+}
+
+function scheduleMetricTimeout(ms) {
+  if (dragCardMetric.timeoutId) clearTimeout(dragCardMetric.timeoutId);
+  dragCardMetric.timeoutId = setTimeout(() => {
+    resetDragCardMetric();
+  }, ms);
+}
+
+function registerCircleDragMetric(circleId) {
+  if (!window.currentMissionCard) return;
+  const now = Date.now();
+
+  if (dragCardMetric.count === 0) {
+    dragCardMetric.count = 1;
+    dragCardMetric.firstTs = now;
+    dragCardMetric.ids = [circleId];
+    scheduleMetricTimeout(2500);
+    return;
+  }
+
+  if (dragCardMetric.count === 1) {
+    if (dragCardMetric.ids.includes(circleId)) {
+      resetDragCardMetric();
+      dragCardMetric.count = 1;
+      dragCardMetric.firstTs = now;
+      dragCardMetric.ids = [circleId];
+      scheduleMetricTimeout(2500);
+    } else if (now - dragCardMetric.firstTs <= 2500) {
+      dragCardMetric.count = 2;
+      dragCardMetric.secondTs = now;
+      dragCardMetric.ids = [dragCardMetric.ids[0], circleId];
+      scheduleMetricTimeout(3000);
+    } else {
+      resetDragCardMetric();
+      dragCardMetric.count = 1;
+      dragCardMetric.firstTs = now;
+      dragCardMetric.ids = [circleId];
+      scheduleMetricTimeout(2500);
+    }
+    return;
+  }
+
+  if (dragCardMetric.count === 2) {
+    if (dragCardMetric.ids.includes(circleId)) {
+      resetDragCardMetric();
+      dragCardMetric.count = 1;
+      dragCardMetric.firstTs = now;
+      dragCardMetric.ids = [circleId];
+      scheduleMetricTimeout(2500);
+    } else if (now - dragCardMetric.secondTs <= 3000) {
+      awardCurrentMissionCard();
+      resetDragCardMetric();
+    } else {
+      resetDragCardMetric();
+      dragCardMetric.count = 1;
+      dragCardMetric.firstTs = now;
+      dragCardMetric.ids = [circleId];
+      scheduleMetricTimeout(2500);
+    }
+  }
+}
 
 window.trainingBallLock = false;
 window.trainingPlayMode = false;
@@ -59,6 +150,7 @@ for (let i = 1; i <= 24; i++) {
     dragState[id].offsetX = e.offsetX;
     dragState[id].offsetY = e.offsetY;
     activeId = id;
+    registerCircleDragMetric(id);
   });
 
   el.addEventListener("touchstart", (e) => {
@@ -69,6 +161,7 @@ for (let i = 1; i <= 24; i++) {
     dragState[i].offsetX = touch.clientX - rect.left;
     dragState[i].offsetY = touch.clientY - rect.top;
     activeId = i;
+    registerCircleDragMetric(i);
     e.preventDefault();
   }, { passive: false });
 }
@@ -312,6 +405,7 @@ function updateBallPhysics() {
       new CustomEvent("goal:scored", { detail: { side: "right" } })
     );
 
+    awardCurrentMissionCard();
     ballMoving = false; // para a bola após o gol
     autoShotPending = false;
     return;            // evita disparar múltiplos gols no mesmo lance
